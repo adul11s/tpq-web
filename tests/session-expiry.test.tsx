@@ -71,6 +71,18 @@ describe("session expiry and logout UX", () => {
     );
   });
 
+  it("first visit without a session redirects WITHOUT reason=expired (no misleading banner)", async () => {
+    server.use(
+      http.get(`${API_BASE}/admin/me`, () =>
+        HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
+      )
+    );
+    renderShell();
+
+    await waitFor(() => expect(mockRedirectToLogin).toHaveBeenCalled());
+    expect(mockRedirectToLogin).toHaveBeenCalledWith(undefined);
+  });
+
   it("logs out: confirms, calls the logout API, clears the session state, and redirects", async () => {
     const onLogout = vi.fn();
     server.use(

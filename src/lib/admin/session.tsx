@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { ReactNode } from "react";
@@ -32,11 +33,13 @@ const SessionContext = createContext<SessionValue | null>(null);
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<SessionStatus>("loading");
   const [user, setUser] = useState<AdminMe | null>(null);
+  const hadSession = useRef(false);
 
   const probe = useCallback(() => {
     adminApi
       .me()
       .then((me) => {
+        hadSession.current = true;
         setUser(me);
         setStatus("authenticated");
       })
@@ -52,7 +55,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setOnUnauthorized(() => redirectToLogin("expired"));
+    setOnUnauthorized(() => {
+      redirectToLogin(hadSession.current ? "expired" : undefined);
+    });
     probe();
   }, [probe]);
 
@@ -91,7 +96,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-cream px-6 text-center">
         <p className="text-sm font-bold text-mint-900">
-          Sesi berakhir. Silakan masuk kembali.
+          Silakan masuk untuk mengakses panel admin.
         </p>
         <Link
           href="/admin/login"

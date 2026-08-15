@@ -50,7 +50,7 @@ describe("SessionProvider", () => {
     expect(mockRedirectToLogin).not.toHaveBeenCalled();
   });
 
-  it("becomes unauthenticated and redirects with reason=expired when /admin/me returns 401", async () => {
+  it("becomes unauthenticated on first visit (redirect WITHOUT reason=expired)", async () => {
     server.use(adminMeUnauthorized);
 
     render(
@@ -64,7 +64,7 @@ describe("SessionProvider", () => {
         "unauthenticated"
       )
     );
-    expect(mockRedirectToLogin).toHaveBeenCalledWith("expired");
+    expect(mockRedirectToLogin).toHaveBeenCalledWith(undefined);
   });
 
   it("renders children on login routes even when unauthenticated", async () => {
@@ -81,10 +81,10 @@ describe("SessionProvider", () => {
     await waitFor(() =>
       expect(screen.getByTestId("login-form")).toBeInTheDocument()
     );
-    expect(mockRedirectToLogin).toHaveBeenCalledWith("expired");
+    expect(mockRedirectToLogin).toHaveBeenCalledWith(undefined);
   });
 
-  it("renders the session-expired fallback on non-login routes when unauthenticated", async () => {
+  it("renders the unauthenticated fallback on non-login routes when unauthenticated", async () => {
     mockPathname.current = "/admin/pengguna";
     server.use(adminMeUnauthorized);
 
@@ -98,7 +98,7 @@ describe("SessionProvider", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText("Sesi berakhir. Silakan masuk kembali.")
+        screen.getByText("Silakan masuk untuk mengakses panel admin.")
       ).toBeInTheDocument()
     );
     expect(screen.queryByTestId("secret")).not.toBeInTheDocument();
