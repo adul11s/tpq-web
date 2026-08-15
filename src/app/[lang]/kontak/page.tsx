@@ -145,36 +145,61 @@ export default async function KontakPage({ params }: KontakPageProps) {
               <h2 className="px-6 pt-6 font-display text-lg font-extrabold text-mint-900">
                 {lang === "en" ? "Our Location" : "Lokasi Kami"}
               </h2>
-              <a
-                href={settings.mapLink ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group mt-4 block"
-              >
-                <div className="relative flex h-44 items-center justify-center bg-gradient-to-br from-mint-100 via-cream to-gold-100">
-                  <svg
-                    className="h-12 w-12 text-mint-400 transition-transform group-hover:scale-110"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path d="M12 21s-7-5.3-7-11a7 7 0 1 1 14 0c0 5.7-7 11-7 11Z" />
-                    <circle cx="12" cy="10" r="2.5" />
-                  </svg>
-                  <span className="sr-only">
-                    {lang === "en" ? "Open map location" : "Buka lokasi di peta"}
-                  </span>
+              {settings.mapLink ? (
+                <a
+                  href={settings.mapLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group mt-4 block"
+                >
+                  <div className="relative flex h-44 items-center justify-center bg-gradient-to-br from-mint-100 via-cream to-gold-100">
+                    <svg
+                      className="h-12 w-12 text-mint-400 transition-transform group-hover:scale-110"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path d="M12 21s-7-5.3-7-11a7 7 0 1 1 14 0c0 5.7-7 11-7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                    <span className="sr-only">
+                      {lang === "en" ? "Open map location" : "Buka lokasi di peta"}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 px-6 py-4">
+                    <p className="text-center text-xs font-bold text-mint-800/60">
+                      {lang === "en"
+                        ? "Interactive map will be embedded here (Google Maps)"
+                        : "Peta interaktif akan dipasang di sini (Google Maps embed)"}
+                    </p>
+                  </div>
+                </a>
+              ) : (
+                <div className="mt-4 block">
+                  <div className="relative flex h-44 items-center justify-center bg-gradient-to-br from-mint-100 via-cream to-gold-100">
+                    <svg
+                      className="h-12 w-12 text-mint-400"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path d="M12 21s-7-5.3-7-11a7 7 0 1 1 14 0c0 5.7-7 11-7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 px-6 py-4">
+                    <p className="text-center text-xs font-bold text-mint-800/60">
+                      {lang === "en"
+                        ? "Interactive map will be embedded here (Google Maps)"
+                        : "Peta interaktif akan dipasang di sini (Google Maps embed)"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-center gap-2 px-6 py-4">
-                  <p className="text-center text-xs font-bold text-mint-800/60">
-                    {lang === "en"
-                      ? "Interactive map will be embedded here (Google Maps)"
-                      : "Peta interaktif akan dipasang di sini (Google Maps embed)"}
-                  </p>
-                </div>
-              </a>
+              )}
             </div>
 
             <div className="rounded-3xl bg-gold-500 p-6 text-center shadow-lg shadow-gold-500/30">

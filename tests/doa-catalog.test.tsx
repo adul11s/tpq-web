@@ -1,6 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { DoaCatalog } from "@/components/doa/DoaCatalog";
+import type { PrayerGuide } from "@/lib/types/prayerGuide";
+
+const API_GUIDES: PrayerGuide[] = [
+  {
+    id: 1,
+    occasion: "Masuk masjid",
+    occasionSlug: "masuk-masjid",
+    arabicText: "اللَّهُمَّ افْتَحْ لِي أَبْوَابَ رَحْمَتِكَ",
+    transliteration: "Allahummaf-tah lii abwaaba rahmatik",
+    meaningId: "Ya Allah, bukakanlah untukku pintu-pintu rahmat-Mu.",
+    meaningEn: "O Allah, open for me the gates of Your mercy.",
+    sortOrder: 0,
+  },
+  {
+    id: 2,
+    occasion: "Sebelum tidur",
+    occasionSlug: "sebelum-tidur",
+    arabicText: "بِاسْمِكَ اللَّهُمَّ أَحْيَا وَأَمُوتُ",
+    transliteration: "Bismika allahumma ahyaa wa amuut",
+    meaningId: "Dengan nama-Mu ya Allah, aku hidup dan aku mati.",
+    meaningEn: "In Your name, O Allah, I live and I die.",
+    sortOrder: 1,
+  },
+];
 
 describe("DoaCatalog", () => {
   beforeEach(() => {
@@ -61,5 +85,40 @@ describe("DoaCatalog", () => {
     const card = document.getElementById("doa-card-doa-sebelum-makan");
     expect(card).toHaveFocus();
     expect(screen.queryByText("Doa Bangun Tidur")).not.toBeInTheDocument();
+  });
+
+  it("renders API guides instead of hardcoded cards when guides are provided", () => {
+    render(<DoaCatalog lang="id" guides={API_GUIDES} />);
+    expect(screen.getAllByText("Masuk masjid").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Sebelum tidur")).toBeInTheDocument();
+    expect(screen.queryByText("Doa Sesudah Makan")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/berkahilah rezeki-Mu untuk kami/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it("matches ?occasion= against API guide slugs when guides are provided", () => {
+    window.history.pushState({}, "", "/doa?occasion=masuk-masjid");
+    render(<DoaCatalog lang="id" guides={API_GUIDES} />);
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+
+    const card = document.getElementById("doa-card-doa-masuk-masjid");
+    expect(card).toHaveFocus();
+    expect(screen.queryByText("Sebelum tidur")).not.toBeInTheDocument();
+  });
+
+  it("shows a graceful note for an unmatched ?occasion= param", () => {
+    window.history.pushState({}, "", "/doa?occasion=tidak-ada");
+    render(<DoaCatalog lang="id" guides={API_GUIDES} />);
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(
+      screen.getByText(/Doa untuk momen ini belum tersedia/i),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Masuk masjid").length).toBeGreaterThanOrEqual(2);
   });
 });

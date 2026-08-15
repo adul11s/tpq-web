@@ -157,6 +157,40 @@ function downloadHandler() {
   );
 }
 
+function manyResourcesHandler() {
+  return http.get(`${API_BASE}/resources`, ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get("page") ?? 1);
+    const pageSize = Number(url.searchParams.get("page_size") ?? 12);
+    const all = Array.from({ length: 120 }, (_, index) => ({
+      id: index + 1,
+      slug: `kaligrafi-${index}`,
+      title: `Kaligrafi ${index}`,
+      description: null,
+      category: {
+        id: 4,
+        slug: "calligraphy",
+        name: "Kaligrafi",
+        description: null,
+      },
+      age_group: "tk",
+      thumbnail_url: "/placeholders/calligraphy.svg",
+      download_count: 0,
+      published_at: null,
+    }));
+    const start = (page - 1) * pageSize;
+    return HttpResponse.json({
+      data: all.slice(start, start + pageSize),
+      meta: {
+        page,
+        page_size: pageSize,
+        total: all.length,
+        total_pages: Math.ceil(all.length / pageSize),
+      },
+    });
+  });
+}
+
 function renderDashboard() {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -291,5 +325,15 @@ describe("ResourcesDashboard (public resources page)", () => {
     expect(
       await screen.findByText(/tahan lama tombol Unduh untuk menyimpan berkas PDF/),
     ).toBeInTheDocument();
+  });
+
+  it("counts categories across all pages when more than 100 materials exist", async () => {
+    server.use(manyResourcesHandler(), downloadHandler());
+    renderDashboard();
+
+    const kaligrafi = await screen.findByRole("button", { name: /^Kaligrafi/ });
+    await waitFor(() =>
+      expect(within(kaligrafi).getByText("120")).toBeInTheDocument(),
+    );
   });
 });

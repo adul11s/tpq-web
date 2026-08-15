@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { CategoryIllustration } from "@/components/resources/CategoryIllustration";
 import { ResourceActions } from "@/components/resources/ResourceActions";
 import { Badge } from "@/components/ui/Badge";
 import { fetchResourceBySlug } from "@/lib/data/resources";
 import { isLang, localizedHref, type Lang } from "@/lib/lang";
+import { isPlaceholderThumb } from "@/lib/resourceThumb";
 import { buildMetadata } from "@/lib/seo";
 import { AGE_GROUP_LABELS, CATEGORY_LABELS } from "@/lib/types/api";
 
@@ -63,14 +65,18 @@ export default async function ResourceDetailPage({
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
-          <Image
-            src={resource.thumbnailUrl}
-            alt={`Thumbnail ${resource.title}`}
-            fill
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-            priority
-          />
+          {isPlaceholderThumb(resource.thumbnailUrl) ? (
+            <CategoryIllustration category={resource.category.slug} />
+          ) : (
+            <Image
+              src={resource.thumbnailUrl}
+              alt={`Thumbnail ${resource.title}`}
+              fill
+              sizes="(min-width: 1024px) 50vw, 100vw"
+              className="object-cover"
+              priority
+            />
+          )}
         </div>
 
         <div className="flex flex-col">

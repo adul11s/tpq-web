@@ -1,15 +1,24 @@
 "use client";
 
 import { AGE_GROUP_LABELS } from "@/lib/types/api";
+import type { Lang } from "@/lib/lang";
 import type { AgeFilter, CategoryFilter } from "@/lib/types/resource";
 
 interface FilterBarProps {
+  lang: Lang;
   category: CategoryFilter;
   ageGroup: AgeFilter;
   counts: Record<string, number>;
   onCategoryChange: (category: CategoryFilter) => void;
   onAgeGroupChange: (ageGroup: AgeFilter) => void;
 }
+
+const AGE_GROUP_LABELS_EN: Record<AgeFilter, string> = {
+  paud: "PAUD (3–4 yrs)",
+  tk: "TK (5–6 yrs)",
+  tpa: "TPA (7–12 yrs)",
+  all: "All ages",
+};
 
 const CATEGORY_CHIPS: { slug: CategoryFilter; id: string; en: string }[] = [
   { slug: "all", id: "Semua", en: "All" },
@@ -35,6 +44,7 @@ function CheckIcon() {
 }
 
 export function FilterBar({
+  lang,
   category,
   ageGroup,
   counts,
@@ -45,7 +55,11 @@ export function FilterBar({
     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div
         role="group"
-        aria-label="Filter kategori materi"
+        aria-label={
+          lang === "en"
+            ? "Filter materials by category"
+            : "Filter kategori materi"
+        }
         className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0 lg:justify-start"
       >
         {CATEGORY_CHIPS.map((chip) => {
@@ -91,7 +105,7 @@ export function FilterBar({
       </div>
 
       <label className="sr-only" htmlFor="filter-age">
-        Kelompok usia
+        {lang === "en" ? "Age group" : "Kelompok usia"}
       </label>
       <select
         id="filter-age"
@@ -101,10 +115,11 @@ export function FilterBar({
         }
         className="h-11 shrink-0 rounded-full border border-mint-200 bg-white px-4 text-sm font-bold text-mint-700 focus:border-mint-500 focus:outline-none focus:ring-2 focus:ring-mint-500/30"
       >
-        <option value="all">Semua usia</option>
-        {Object.entries(AGE_GROUP_LABELS).map(([age, label]) => (
+        {Object.entries(AGE_GROUP_LABELS).map(([age]) => (
           <option key={age} value={age}>
-            {label}
+            {lang === "en"
+              ? AGE_GROUP_LABELS_EN[age as AgeFilter]
+              : AGE_GROUP_LABELS[age as AgeFilter]}
           </option>
         ))}
       </select>

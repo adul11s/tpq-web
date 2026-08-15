@@ -28,6 +28,14 @@ export async function fetchClasses(): Promise<ClassSummary[]> {
   return list.map(mapClassSummary);
 }
 
+export async function fetchClassDetails(): Promise<ClassDetail[]> {
+  const summaries = await fetchClasses();
+  const details = await Promise.all(
+    summaries.map((item) => fetchClassByCode(item.code).catch(() => null)),
+  );
+  return details.filter((item): item is ClassDetail => item !== null);
+}
+
 export async function fetchClassByCode(code: string): Promise<ClassDetail> {
   if (USE_MOCK_DATA) {
     const classDetail = mockClasses.find(

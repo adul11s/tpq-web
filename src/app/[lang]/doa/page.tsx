@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DoaCatalog } from "@/components/doa/DoaCatalog";
+import { fetchPrayerGuides } from "@/lib/data/prayerGuides";
 import { isLang, type Lang } from "@/lib/lang";
 import { buildMetadata } from "@/lib/seo";
 
@@ -37,6 +38,7 @@ export default async function PrayerGuidesPage({
 }: PrayerGuidesPageProps) {
   const { lang: langParam } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
+  const guides = await fetchPrayerGuides().catch(() => []);
 
   return (
     <>
@@ -62,7 +64,7 @@ export default async function PrayerGuidesPage({
           </p>
         </div>
       </section>
-      <DoaCatalog lang={lang} />
+      <DoaCatalog lang={lang} guides={guides} />
     </>
   );
 }

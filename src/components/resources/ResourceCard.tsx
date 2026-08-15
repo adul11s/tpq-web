@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CategoryIllustration } from "@/components/resources/CategoryIllustration";
 import { useDownload } from "@/hooks/useDownload";
 import { localizedHref, type Lang } from "@/lib/lang";
+import { isPlaceholderThumb } from "@/lib/resourceThumb";
 import { AGE_GROUP_LABELS, CATEGORY_LABELS } from "@/lib/types/api";
 import type { ResourceCategorySlug } from "@/lib/types/api";
 import type { ResourceSummary } from "@/lib/types/resource";
@@ -60,7 +61,7 @@ export function ResourceCard({
 }: ResourceCardProps) {
   const { download, isDownloading } = useDownload(resource, lang);
   const detailHref = localizedHref(lang, `/resources/${resource.slug}`);
-  const isPlaceholderThumb = resource.thumbnailUrl.startsWith("/placeholders/");
+  const placeholderThumb = isPlaceholderThumb(resource.thumbnailUrl);
 
   return (
     <article
@@ -69,9 +70,9 @@ export function ResourceCard({
       <Link
         href={detailHref}
         className="relative block aspect-[4/3] overflow-hidden bg-mint-100"
-        aria-label={`Pratinjau ${resource.title}`}
+        aria-label={`${lang === "en" ? "Preview" : "Pratinjau"} ${resource.title}`}
       >
-        {isPlaceholderThumb ? (
+        {placeholderThumb ? (
           <CategoryIllustration category={resource.category.slug} />
         ) : (
           <Image
@@ -125,7 +126,7 @@ export function ResourceCard({
           </span>
           <button
             type="button"
-            aria-label={`Unduh PDF ${resource.title}`}
+            aria-label={`${lang === "en" ? "Download PDF" : "Unduh PDF"} ${resource.title}`}
             disabled={isDownloading}
             onClick={async () => {
               await download();

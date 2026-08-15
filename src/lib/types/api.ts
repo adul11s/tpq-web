@@ -39,3 +39,11 @@ export const CATEGORY_LABELS: Record<ResourceCategorySlug, string> = {
   calligraphy: "Kaligrafi",
   documents: "Dokumen",
 };
+
+export const CATEGORY_LABELS_EN: Record<ResourceCategorySlug, string> = {
+  prayers: "Daily Prayers",
+  readings: "Readings",
+  coloring: "Coloring",
+  calligraphy: "Calligraphy",
+  documents: "Documents",
+};

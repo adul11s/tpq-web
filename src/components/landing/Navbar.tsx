@@ -57,7 +57,7 @@ export function Navbar({ lang }: NavbarProps) {
             <span className="block font-display text-lg font-extrabold text-mint-900">
               TPQ Qur&rsquo;ani
             </span>
-            <span className="hidden text-[11px] font-bold uppercase tracking-widest text-mint-600 sm:block">
+            <span className="hidden text-[11px] font-bold uppercase tracking-widest text-mint-700 sm:block">
               PAUD &middot; TK &middot; TPA
             </span>
           </span>
@@ -101,7 +101,15 @@ export function Navbar({ lang }: NavbarProps) {
           onClick={() => setOpen((value) => !value)}
           aria-controls="mobile-menu"
           aria-expanded={open}
-          aria-label={open ? "Tutup menu" : "Buka menu"}
+          aria-label={
+            open
+              ? lang === "en"
+                ? "Close menu"
+                : "Tutup menu"
+              : lang === "en"
+                ? "Open menu"
+                : "Buka menu"
+          }
           className="inline-flex min-h-11 items-center justify-center rounded-lg p-2.5 text-mint-800 hover:bg-mint-50 md:hidden"
         >
           <svg

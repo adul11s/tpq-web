@@ -6,7 +6,8 @@ import { fetchClasses } from "@/lib/data/classes";
 import { fetchPageBySlug, fetchSiteSettings } from "@/lib/data/pages";
 import { isLang, localizedHref, type Lang } from "@/lib/lang";
 import { metadataFromPage } from "@/lib/seo";
-import { CATEGORY_LABELS } from "@/lib/types/api";
+import { waLink } from "@/lib/wa";
+import { CATEGORY_LABELS, CATEGORY_LABELS_EN } from "@/lib/types/api";
 
 export const revalidate = 600;
 
@@ -192,9 +193,9 @@ const TESTIMONIALS: {
   },
 ];
 
-function StarRow() {
+function StarRow({ lang }: { lang: Lang }) {
   return (
-    <div className="flex gap-0.5 text-gold-500" aria-label="5 dari 5 bintang">
+    <div className="flex gap-0.5 text-gold-500" aria-label={lang === "en" ? "5 out of 5 stars" : "5 dari 5 bintang"}>
       {Array.from({ length: 5 }).map((_, index) => (
         <svg key={index} className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="m12 2 2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9.2l7.1-.6Z" />
@@ -308,7 +309,9 @@ export default async function HomePage({ params }: HomePageProps) {
                   </svg>
                 </div>
                 <span className="mt-3 block font-display text-sm font-bold text-mint-900">
-                  {CATEGORY_LABELS[tile.slug]}
+                  {lang === "en"
+                    ? CATEGORY_LABELS_EN[tile.slug]
+                    : CATEGORY_LABELS[tile.slug]}
                 </span>
                 <span className="mt-1 block text-xs font-semibold text-mint-800/60">
                   {lang === "en" ? tile.countEn : tile.count}
@@ -351,7 +354,7 @@ export default async function HomePage({ params }: HomePageProps) {
         <div className="mt-8 grid gap-5 md:grid-cols-3">
           {TESTIMONIALS.map((item) => (
             <figure key={item.initials} className="rounded-3xl border border-mint-100 bg-white p-6 shadow-sm">
-              <StarRow />
+              <StarRow lang={lang} />
               <blockquote className="mt-3 text-sm leading-relaxed text-mint-900/80">
                 &ldquo;{lang === "en" ? item.quoteEn : item.quote}&rdquo;
               </blockquote>
@@ -424,7 +427,7 @@ export default async function HomePage({ params }: HomePageProps) {
               {lang === "en" ? "Enroll Now" : "Daftar Sekarang"}
             </a>
             <a
-              href="https://wa.me/6281234567890"
+              href={waLink(settings.whatsapp)}
               target="_blank"
               rel="noopener"
               className="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/40 bg-white/10 px-7 py-3 text-sm font-extrabold text-white transition-colors hover:bg-white/20"

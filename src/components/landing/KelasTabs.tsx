@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { localizedHref, type Lang } from "@/lib/lang";
+import { formatTime } from "@/lib/admin/time";
+import { localizedHref, pick, type Lang } from "@/lib/lang";
+import { waLink } from "@/lib/wa";
+import type { CurriculumAspect } from "@/lib/types/api";
+import type { ClassDetail } from "@/lib/types/class";
 
 type TabKey = "paud" | "tk" | "tpa";
 
@@ -127,8 +131,8 @@ const PROGRAMS: Record<TabKey, ProgramData> = {
       "The first step of your child's Qur'ani journey. Through play, singing, and coloring, children are introduced to hijaiyah letters, short daily prayers, and good habits from an early age.",
     learnBg: "bg-mint-50",
     learnItems: [
-      { id: "Mengenal huruf hijaiyah", en: "Recognize hijaiyah letters", chip: "text-mint-600", icon: LEARN_ICONS.check },
-      { id: "Doa harian sederhana", en: "Simple daily prayers", chip: "text-gold-600", icon: LEARN_ICONS.heart },
+      { id: "Mengenal huruf hijaiyah", en: "Recognize hijaiyah letters", chip: "text-mint-700", icon: LEARN_ICONS.check },
+      { id: "Doa harian sederhana", en: "Simple daily prayers", chip: "text-gold-700", icon: LEARN_ICONS.heart },
       { id: "Motorik halus (mewarnai, menempel)", en: "Fine motor skills (coloring, pasting)", chip: "text-rose-500", icon: LEARN_ICONS.flower },
       { id: "Adab dan kemandirian", en: "Manners and independence", chip: "text-sky-600", icon: LEARN_ICONS.sparkle },
     ],
@@ -179,8 +183,8 @@ const PROGRAMS: Record<TabKey, ProgramData> = {
       "Children begin reading the Qur'an with early tahsin, memorize short surahs, and build early literacy and math skills — all through fun, joyful activities.",
     learnBg: "bg-gold-50",
     learnItems: [
-      { id: "Tahsin & baca Al-Qur'an awal", en: "Early tahsin & Qur'an reading", chip: "text-mint-600", icon: LEARN_ICONS.book },
-      { id: "Hafalan surat pendek", en: "Memorizing short surahs", chip: "text-gold-600", icon: LEARN_ICONS.star },
+      { id: "Tahsin & baca Al-Qur'an awal", en: "Early tahsin & Qur'an reading", chip: "text-mint-700", icon: LEARN_ICONS.book },
+      { id: "Hafalan surat pendek", en: "Memorizing short surahs", chip: "text-gold-700", icon: LEARN_ICONS.star },
       { id: "Calistung (baca-tulis-hitung)", en: "Reading, writing & math (calistung)", chip: "text-sky-600", icon: LEARN_ICONS.doc },
       { id: "Doa harian & praktik ibadah", en: "Daily prayers & worship practice", chip: "text-rose-500", icon: LEARN_ICONS.heart },
     ],
@@ -233,7 +237,7 @@ const PROGRAMS: Record<TabKey, ProgramData> = {
     learnBg: "bg-violet-50",
     learnItems: [
       { id: "Tahsin & tajwid", en: "Tahsin & tajwid", chip: "text-violet-600", icon: LEARN_ICONS.book },
-      { id: "Hafalan Juz 30", en: "Juz 30 memorization", chip: "text-gold-600", icon: LEARN_ICONS.star },
+      { id: "Hafalan Juz 30", en: "Juz 30 memorization", chip: "text-gold-700", icon: LEARN_ICONS.star },
       { id: "Praktik ibadah & adab", en: "Worship practice & manners", chip: "text-sky-600", icon: LEARN_ICONS.mosque },
       { id: "Latihan kepemimpinan & dakwah cilik", en: "Leadership & little da'wah practice", chip: "text-rose-500", icon: LEARN_ICONS.heart },
     ],
@@ -291,6 +295,28 @@ const TAB_ICONS: Record<TabKey, React.ReactNode> = {
 
 const AGES: Record<TabKey, string> = { paud: "3–4 th", tk: "5–6 th", tpa: "7–12 th" };
 
+const ASPECT_ICONS: Record<CurriculumAspect, { icon: React.ReactNode; chip: string }> = {
+  quran_targets: { icon: LEARN_ICONS.book, chip: "text-mint-700" },
+  adab: { icon: LEARN_ICONS.heart, chip: "text-rose-600" },
+  academics: { icon: LEARN_ICONS.doc, chip: "text-sky-700" },
+  life_skills: { icon: LEARN_ICONS.sparkle, chip: "text-violet-700" },
+};
+
+function formatRupiah(value: number): string {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function ageLabel(classItem: ClassDetail | undefined, lang: Lang): string {
+  if (classItem) {
+    return `${classItem.ageMin}–${classItem.ageMax} ${lang === "en" ? "yrs" : "th"}`;
+  }
+  return "";
+}
+
 function ArrowIcon() {
   return (
     <svg
@@ -306,8 +332,38 @@ function ArrowIcon() {
   );
 }
 
-export function KelasTabs({ lang }: { lang: Lang }) {
+interface KelasTabsProps {
+  lang: Lang;
+  classes?: ClassDetail[];
+  whatsapp?: string;
+}
+
+export function KelasTabs({ lang, classes = [], whatsapp }: KelasTabsProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("paud");
+  const tabKeys = Object.keys(PROGRAMS) as TabKey[];
+
+  const focusTab = (key: TabKey) => {
+    document.getElementById(`tab-${key}`)?.focus();
+    setActiveTab(key);
+  };
+
+  const handleTablistKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const currentIndex = tabKeys.indexOf(activeTab);
+    let next: TabKey | null = null;
+    if (event.key === "ArrowRight") {
+      next = tabKeys[(currentIndex + 1) % tabKeys.length];
+    } else if (event.key === "ArrowLeft") {
+      next = tabKeys[(currentIndex - 1 + tabKeys.length) % tabKeys.length];
+    } else if (event.key === "Home") {
+      next = tabKeys[0];
+    } else if (event.key === "End") {
+      next = tabKeys[tabKeys.length - 1];
+    }
+    if (next) {
+      event.preventDefault();
+      focusTab(next);
+    }
+  };
 
   return (
     <>
@@ -315,16 +371,24 @@ export function KelasTabs({ lang }: { lang: Lang }) {
         <div
           role="tablist"
           aria-label={lang === "en" ? "Choose a class level" : "Pilih jenjang kelas"}
+          onKeyDown={handleTablistKeyDown}
           className="no-scrollbar -mx-4 mt-8 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0"
         >
-          {(Object.keys(PROGRAMS) as TabKey[]).map((key) => {
+          {tabKeys.map((key) => {
             const active = activeTab === key;
+            const classItem = classes.find(
+              (item) => item.code.toLowerCase() === key,
+            );
+            const age = classItem
+              ? ageLabel(classItem, lang)
+              : AGES[key];
             return (
               <button
                 key={key}
                 type="button"
                 role="tab"
                 id={`tab-${key}`}
+                tabIndex={active ? 0 : -1}
                 aria-selected={active}
                 aria-controls={`panel-${key}`}
                 onClick={() => setActiveTab(key)}
@@ -343,16 +407,82 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                       : "rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500"
                   }
                 >
-                  {AGES[key]}
+                  {age}
                 </span>
               </button>
             );
           })}
         </div>
 
-        {(Object.keys(PROGRAMS) as TabKey[]).map((key) => {
+        {tabKeys.map((key) => {
           const program = PROGRAMS[key];
           const active = activeTab === key;
+          const classItem = classes.find(
+            (item) => item.code.toLowerCase() === key,
+          );
+          const age = classItem ? ageLabel(classItem, lang) : AGES[key];
+
+          const introText =
+            pick(lang, classItem?.description, classItem?.descriptionEn) ||
+            (lang === "en" ? program.introEn : program.introId);
+
+          const learnItems: LearnItem[] =
+            classItem && classItem.curriculum.length > 0
+              ? classItem.curriculum.map((item) => ({
+                  id: item.title,
+                  en: item.titleEn ?? item.title,
+                  chip: ASPECT_ICONS[item.aspect].chip,
+                  icon: ASPECT_ICONS[item.aspect].icon,
+                }))
+              : program.learnItems;
+
+          const schedule: ScheduleRow[] =
+            classItem && classItem.schedule.length > 0
+              ? classItem.schedule.map((row) => ({
+                  dayId: row.dayName,
+                  dayEn: row.dayName,
+                  time: `${formatTime(row.startTime)}–${formatTime(row.endTime)} WIB`,
+                  activityId: row.activity,
+                  activityEn: row.activity,
+                }))
+              : program.schedule;
+
+          const fees =
+            classItem && classItem.fees !== null
+              ? [
+                  {
+                    labelId: "SPP per bulan",
+                    labelEn: "Monthly fee",
+                    valueId: formatRupiah(classItem.fees),
+                    valueEn: formatRupiah(classItem.fees),
+                  },
+                  ...(classItem.hours
+                    ? [
+                        {
+                          labelId: "Jam belajar",
+                          labelEn: "Hours",
+                          valueId: classItem.hours,
+                          valueEn: classItem.hours,
+                        },
+                      ]
+                    : []),
+                  ...(classItem.capacity
+                    ? [
+                        {
+                          labelId: "Kapasitas",
+                          labelEn: "Capacity",
+                          valueId: classItem.capacity,
+                          valueEn: classItem.capacity,
+                        },
+                      ]
+                    : []),
+                ]
+              : program.fees;
+
+          const ctaHref = classItem
+            ? localizedHref(lang, `/kelas/${classItem.code.toLowerCase()}`)
+            : localizedHref(lang, "/kontak");
+
           return (
             <div
               key={key}
@@ -369,7 +499,7 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                       {program.title} Qur&rsquo;ani
                     </span>
                     <span className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-extrabold shadow-sm ${program.badgeRight}`}>
-                      {lang === "en" ? "Ages" : "Usia"} {AGES[key]}
+                      {lang === "en" ? "Ages" : "Usia"} {age}
                     </span>
                     <span className="absolute left-1/2 top-1/2 w-1/3 -translate-x-1/2 -translate-y-1/2">
                       {program.illustration}
@@ -377,13 +507,13 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                   </div>
                   <div className="p-6 sm:p-8">
                     <p className="text-sm leading-relaxed text-mint-900/75">
-                      {lang === "en" ? program.introEn : program.introId}
+                      {introText}
                     </p>
                     <h2 className="mt-6 font-display text-lg font-bold text-mint-900">
                       {lang === "en" ? "What Children Learn" : "Yang Dipelajari"}
                     </h2>
                     <ul className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                      {program.learnItems.map((item) => (
+                      {learnItems.map((item) => (
                         <li key={item.id} className={`flex items-center gap-2.5 rounded-xl ${program.learnBg} px-3.5 py-2.5 text-sm font-bold text-mint-800`}>
                           {iconChip(item.icon, item.chip)}
                           {lang === "en" ? item.en : item.id}
@@ -412,7 +542,7 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-mint-100 font-semibold text-mint-900/80">
-                          {program.schedule.map((row) => (
+                          {schedule.map((row) => (
                             <tr key={row.dayId}>
                               <td className="px-4 py-3">{lang === "en" ? row.dayEn : row.dayId}</td>
                               <td className="px-4 py-3">{row.time}</td>
@@ -442,7 +572,7 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                       {lang === "en" ? "Fees & Info" : "Biaya & Info"}
                     </h2>
                     <dl className="mt-4 space-y-3 text-sm">
-                      {program.fees.map((fee) => (
+                      {fees.map((fee) => (
                         <div key={fee.labelId} className="flex items-center justify-between gap-3">
                           <dt className="font-semibold text-mint-800/70">
                             {lang === "en" ? fee.labelEn : fee.labelId}
@@ -481,7 +611,7 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                   </article>
 
                   <Link
-                    href={localizedHref(lang, "/kontak")}
+                    href={ctaHref}
                     className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-extrabold text-on-primary shadow-md shadow-primary/25 transition-colors hover:bg-primary-hover"
                   >
                     {lang === "en" ? program.ctaEn : program.ctaId}
@@ -489,14 +619,16 @@ export function KelasTabs({ lang }: { lang: Lang }) {
                   </Link>
                   <p className="text-center text-xs font-bold text-mint-800/60">
                     {lang === "en" ? "Want a free consultation first?" : "Konsultasi gratis dulu?"}{" "}
-                    <a
-                      href="https://wa.me/6281234567890"
-                      target="_blank"
-                      rel="noopener"
-                      className="text-mint-600 underline underline-offset-2 hover:text-mint-700"
-                    >
-                      {lang === "en" ? "Chat on WhatsApp" : "Chat WhatsApp"}
-                    </a>
+                    {whatsapp ? (
+                      <a
+                        href={waLink(whatsapp)}
+                        target="_blank"
+                        rel="noopener"
+                        className="text-mint-700 underline underline-offset-2 hover:text-mint-800"
+                      >
+                        {lang === "en" ? "Chat on WhatsApp" : "Chat WhatsApp"}
+                      </a>
+                    ) : null}
                   </p>
                 </div>
               </div>

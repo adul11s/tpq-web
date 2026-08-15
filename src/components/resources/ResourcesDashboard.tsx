@@ -1,11 +1,12 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import { FilterBar } from "@/components/resources/FilterBar";
 import { ResourceGrid } from "@/components/resources/ResourceGrid";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Toast } from "@/components/ui/Toast";
+import { useResourceCounts } from "@/hooks/useResourceCounts";
 import { useResources } from "@/hooks/useResources";
 import type { Lang } from "@/lib/lang";
 import { CATEGORY_LABELS } from "@/lib/types/api";
@@ -96,17 +97,7 @@ export function ResourcesDashboard({ lang }: ResourcesDashboardProps) {
     pageSize: PAGE_SIZE,
   });
 
-  const countsQuery = useResources({ page: 1, pageSize: 100 });
-
-  const counts = useMemo(() => {
-    const list = countsQuery.data?.data ?? [];
-    const result: Record<string, number> = { all: list.length };
-    for (const resource of list) {
-      result[resource.category.slug] =
-        (result[resource.category.slug] ?? 0) + 1;
-    }
-    return result;
-  }, [countsQuery.data]);
+  const counts = useResourceCounts();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -184,7 +175,7 @@ export function ResourcesDashboard({ lang }: ResourcesDashboardProps) {
               onSubmit={(event) => event.preventDefault()}
             >
               <label className="sr-only" htmlFor="material-search">
-                Cari materi
+                {lang === "en" ? "Search materials" : "Cari materi"}
               </label>
               <div className="relative flex-1">
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
@@ -270,6 +261,7 @@ export function ResourcesDashboard({ lang }: ResourcesDashboardProps) {
 
         <div className="mt-6">
           <FilterBar
+            lang={lang}
             category={category}
             ageGroup={ageGroup}
             counts={counts}
@@ -332,7 +324,7 @@ export function ResourcesDashboard({ lang }: ResourcesDashboardProps) {
 
         <p className="no-print mt-8 rounded-2xl border border-mint-100 bg-mint-50 px-5 py-4 text-center text-sm font-bold text-mint-800">
           {lang === "en"
-            ? "Tip: on mobile, long-press the Unduh button to save the PDF file."
+            ? "Tip: on mobile, long-press the Download button to save the PDF file."
             : "Tip: di HP, tahan lama tombol Unduh untuk menyimpan berkas PDF."}
         </p>
 

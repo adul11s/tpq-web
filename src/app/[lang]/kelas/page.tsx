@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { KelasTabs } from "@/components/landing/KelasTabs";
+import { fetchClassDetails } from "@/lib/data/classes";
+import { fetchSiteSettings } from "@/lib/data/pages";
 import { isLang, type Lang } from "@/lib/lang";
 import { buildMetadata } from "@/lib/seo";
 
@@ -35,6 +37,10 @@ function StarIcon() {
 export default async function KelasPage({ params }: KelasPageProps) {
   const { lang: langParam } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
+  const [classes, settings] = await Promise.all([
+    fetchClassDetails().catch(() => []),
+    fetchSiteSettings(),
+  ]);
 
   return (
     <>
@@ -60,7 +66,7 @@ export default async function KelasPage({ params }: KelasPageProps) {
           </p>
         </div>
       </section>
-      <KelasTabs lang={lang} />
+      <KelasTabs lang={lang} classes={classes} whatsapp={settings.whatsapp} />
     </>
   );
 }

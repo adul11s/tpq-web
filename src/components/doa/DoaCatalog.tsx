@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Lang } from "@/lib/lang";
+import type { PrayerGuide } from "@/lib/types/prayerGuide";
 
 type FilterKey = "all" | "makan" | "tidur" | "pagi" | "rumah";
+
+type GuideCategory = Exclude<FilterKey, "all">;
 
 interface DoaCard {
   key: string;
@@ -121,7 +124,41 @@ const CARDS: DoaCard[] = [
   },
 ];
 
-const FEATURED = CARDS[0];
+const OCCASION_CATEGORY: Record<string, GuideCategory> = {
+  "sebelum-makan": "makan",
+  "sesudah-makan": "makan",
+  "sebelum-minum": "makan",
+  "sesudah-minum": "makan",
+  "sebelum-tidur": "tidur",
+  "bangun-tidur": "tidur",
+  "masuk-kamar-mandi": "pagi",
+  "keluar-kamar-mandi": "pagi",
+  "masuk-rumah": "rumah",
+  "keluar-rumah": "rumah",
+};
+
+const DEFAULT_CATEGORY: GuideCategory = "pagi";
+
+const GUIDE_TINTS = [
+  "bg-sky-100 text-sky-700",
+  "bg-violet-100 text-violet-700",
+  "bg-gold-100 text-gold-700",
+  "bg-mint-100 text-mint-700",
+];
+
+function guideToCard(guide: PrayerGuide, index: number): DoaCard {
+  return {
+    key: `doa-${guide.occasionSlug}`,
+    titleId: guide.occasion,
+    titleEn: guide.occasion,
+    category: OCCASION_CATEGORY[guide.occasionSlug] ?? DEFAULT_CATEGORY,
+    tint: GUIDE_TINTS[index % GUIDE_TINTS.length],
+    arabic: guide.arabicText,
+    translit: guide.transliteration,
+    meaningId: guide.meaningId,
+    meaningEn: guide.meaningEn ?? guide.meaningId,
+  };
+}
 
 function CheckIcon() {
   return (
@@ -155,10 +192,22 @@ function WhatsAppIcon() {
   );
 }
 
-export function DoaCatalog({ lang }: { lang: Lang }) {
+interface DoaCatalogProps {
+  lang: Lang;
+  guides?: PrayerGuide[];
+}
+
+export function DoaCatalog({ lang, guides }: DoaCatalogProps) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [unmatchedOccasion, setUnmatchedOccasion] = useState<string | null>(null);
   const [toast, setToast] = useState<{ title: string; href: string } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cards = useMemo(
+    () => (guides && guides.length > 0 ? guides.map(guideToCard) : CARDS),
+    [guides],
+  );
+  const featured = cards[0];
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -166,24 +215,30 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
     if (!occasion) {
       return;
     }
-    const match = CARDS.find((card) => card.key === `doa-${occasion}`);
-    if (!match) {
-      return;
-    }
     const timer = window.setTimeout(() => {
+      const match = cards.find((card) => card.key === `doa-${occasion}`);
+      if (!match) {
+        setUnmatchedOccasion(occasion);
+        return;
+      }
       setActiveFilter(match.category);
       const element = document.getElementById(`doa-card-${match.key}`);
       element?.scrollIntoView?.({ block: "center" });
       element?.focus({ preventScroll: true });
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [cards]);
 
   useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
+
+  const categoryLabel = (category: FilterKey) => {
+    const filter = FILTERS.find((f) => f.key === category);
+    return lang === "en" ? filter?.en ?? "" : filter?.id ?? "";
+  };
 
   const share = (titleId: string, titleEn: string, category: string) => {
     const title = lang === "en" ? titleEn : titleId;
@@ -198,7 +253,7 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
   };
 
   const visibleCards =
-    activeFilter === "all" ? CARDS : CARDS.filter((card) => card.category === activeFilter);
+    activeFilter === "all" ? cards : cards.filter((card) => card.category === activeFilter);
 
   return (
     <>
@@ -210,29 +265,27 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
           <div className="grid items-center gap-8 lg:grid-cols-2">
             <div className="text-center">
               <h2 className="font-display text-xl font-bold text-mint-900">
-                {lang === "en" ? FEATURED.titleEn : FEATURED.titleId}
+                {lang === "en" ? featured.titleEn : featured.titleId}
               </h2>
-              <p className="mt-1 text-xs font-extrabold uppercase tracking-wider text-gold-600">
-                {lang === "en" ? FEATURED.titleId : FEATURED.titleEn}
+              <p className="mt-1 text-xs font-extrabold uppercase tracking-wider text-gold-700">
+                {lang === "en" ? featured.titleId : featured.titleEn}
               </p>
               <p lang="ar" dir="rtl" className="font-arabic mt-6 text-3xl leading-relaxed text-mint-900 sm:text-4xl">
-                {FEATURED.arabic}
+                {featured.arabic}
               </p>
-              <p className="mt-4 text-sm font-bold italic text-mint-800/70">{FEATURED.translit}</p>
+              <p className="mt-4 text-sm font-bold italic text-mint-800/70">{featured.translit}</p>
             </div>
             <div>
               <p className="rounded-2xl bg-white/80 px-5 py-4 text-sm leading-relaxed text-mint-900/80 shadow-sm">
                 <span className="font-extrabold text-mint-900">
                   {lang === "en" ? "Meaning: " : "Arti: "}
                 </span>
-                {lang === "en"
-                  ? "\u201cO Allah, bless the food You have provided us, and protect us from the punishment of the Fire.\u201d"
-                  : "\u201cYa Allah, berkahilah rezeki yang Engkau berikan kepada kami, dan lindungilah kami dari siksa api neraka.\u201d"}
+                {lang === "en" ? featured.meaningEn : featured.meaningId}
               </p>
               <div className="no-print mt-6 flex flex-wrap gap-3">
-                {FEATURED.posterHref ? (
+                {featured.posterHref ? (
                   <a
-                    href={FEATURED.posterHref}
+                    href={featured.posterHref}
                     className="inline-flex min-h-11 items-center gap-2 rounded-full bg-mint-600 px-6 text-sm font-extrabold text-on-primary shadow-md shadow-mint-600/25 transition-colors hover:bg-mint-700"
                   >
                     <DownloadIcon />
@@ -241,8 +294,8 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
                 ) : null}
                 <button
                   type="button"
-                  aria-label={lang === "en" ? `Share ${FEATURED.titleEn}` : `Bagikan ${FEATURED.titleId}`}
-                  onClick={() => share(FEATURED.titleId, FEATURED.titleEn, "Doa")}
+                  aria-label={lang === "en" ? `Share ${featured.titleEn}` : `Bagikan ${featured.titleId}`}
+                  onClick={() => share(featured.titleId, featured.titleEn, categoryLabel(featured.category))}
                   className="inline-flex min-h-11 items-center gap-2 rounded-full border border-mint-300 bg-white px-6 text-sm font-extrabold text-mint-700 transition-colors hover:bg-mint-50"
                 >
                   <WhatsAppIcon />
@@ -252,6 +305,17 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
             </div>
           </div>
         </article>
+
+        {unmatchedOccasion ? (
+          <p
+            role="status"
+            className="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-gold-200 bg-gold-50 px-5 py-4 text-center text-sm font-bold text-gold-800"
+          >
+            {lang === "en"
+              ? "This prayer is not available yet — try one of the prayers below."
+              : "Doa untuk momen ini belum tersedia — coba salah satu doa di bawah ini."}
+          </p>
+        ) : null}
 
         <div
           role="group"
@@ -317,7 +381,7 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
                 <button
                   type="button"
                   aria-label={lang === "en" ? `Share ${card.titleEn}` : `Bagikan ${card.titleId}`}
-                  onClick={() => share(card.titleId, card.titleEn, FILTERS.find((f) => f.key === card.category)?.id ?? "")}
+                  onClick={() => share(card.titleId, card.titleEn, categoryLabel(card.category))}
                   className="no-print mt-4 inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-mint-300 text-sm font-extrabold text-mint-700 transition-colors hover:bg-mint-50"
                 >
                   <WhatsAppIcon />
