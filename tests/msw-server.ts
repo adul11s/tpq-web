@@ -1,6 +1,7 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import type {
+  AdminAuditRow,
   AdminInquiry,
   AdminMe,
   AdminMediaAsset,
@@ -336,6 +337,33 @@ export const userActivateHandler = (
     }
     row.is_active = true;
     return HttpResponse.json({ ok: true });
+  });
+
+export interface AuditMeta {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+}
+
+export const auditListHandler = (
+  rows: AdminAuditRow[],
+  meta: AuditMeta,
+  onQuery?: (params: URLSearchParams) => void
+) =>
+  http.get(`${API_BASE}/admin/audit`, ({ request }) => {
+    onQuery?.(new URL(request.url).searchParams);
+    return HttpResponse.json({ data: rows, meta });
+  });
+
+export const auditCsvHandler = (onRequest?: (request: Request) => void) =>
+  http.get(`${API_BASE}/admin/audit/export.csv`, ({ request }) => {
+    onRequest?.(request);
+    return HttpResponse.text(
+      'id,user_id,action,entity_type,entity_id,ip,user_agent,created_at\n' +
+        '10,2,content_publish,prayer_guide,7,"203.0.113.10","Mozilla/5.0",2026-08-14T09:30:00.000Z\n',
+      { headers: { "Content-Type": "text/csv; charset=utf-8" } }
+    );
   });
 
 export const server = setupServer(adminMeOk);
