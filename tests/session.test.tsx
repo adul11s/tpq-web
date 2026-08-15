@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import { server } from "./msw-server";
 import { adminMeUnauthorized } from "./msw-server";
-import { SessionProvider, useSession } from "../src/lib/admin/session";
+import { SessionProvider, useSession, AuthGate } from "../src/lib/admin/session";
 
 const { mockRedirectToLogin } = vi.hoisted(() => ({
   mockRedirectToLogin: vi.fn(),
@@ -10,6 +10,10 @@ const { mockRedirectToLogin } = vi.hoisted(() => ({
 
 vi.mock("../src/lib/admin/redirect", () => ({
   redirectToLogin: mockRedirectToLogin,
+}));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/admin/login",
 }));
 
 function StatusProbe() {
@@ -52,6 +56,23 @@ describe("SessionProvider", () => {
       expect(screen.getByTestId("session-status")).toHaveTextContent(
         "unauthenticated"
       )
+    );
+    expect(mockRedirectToLogin).toHaveBeenCalledWith("expired");
+  });
+
+  it("renders children on login routes even when unauthenticated", async () => {
+    server.use(adminMeUnauthorized);
+
+    render(
+      <SessionProvider>
+        <AuthGate>
+          <div data-testid="login-form">login form</div>
+        </AuthGate>
+      </SessionProvider>
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId("login-form")).toBeInTheDocument()
     );
     expect(mockRedirectToLogin).toHaveBeenCalledWith("expired");
   });

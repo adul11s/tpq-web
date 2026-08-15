@@ -9,6 +9,7 @@ import {
 } from "react";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { adminApi } from "../api/auth";
 import { setOnUnauthorized } from "../api/admin-client";
 import type { AdminMe } from "../types/admin";
@@ -66,6 +67,11 @@ export function useSession(): SessionValue {
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const { status } = useSession();
+  const pathname = usePathname();
+
+  if (pathname.startsWith("/admin/login")) {
+    return <>{children}</>;
+  }
 
   if (status === "loading") {
     return (
