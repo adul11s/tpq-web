@@ -4,6 +4,7 @@ import type {
   AdminInquiry,
   AdminMe,
   AdminMediaAsset,
+  AdminUser,
   InquiryStatus,
   Role,
 } from "../src/lib/types/admin";
@@ -295,6 +296,46 @@ export const inquiriesCsvHandler = (onRequest?: (request: Request) => void) =>
       'id,parent_name,phone\n1,"Ibu Siti Rahma",081234567801\n',
       { headers: { "Content-Type": "text/csv; charset=utf-8" } }
     );
+  });
+
+export const usersListHandler = (rows: AdminUser[], onRequest?: () => void) =>
+  http.get(`${API_BASE}/admin/users`, () => {
+    onRequest?.();
+    return HttpResponse.json({ users: rows });
+  });
+
+export const userReset2faHandler = (onRequest?: (request: Request) => void) =>
+  http.post(`${API_BASE}/admin/users/:id/reset-2fa`, ({ request }) => {
+    onRequest?.(request);
+    return HttpResponse.json({ ok: true });
+  });
+
+export const userDeactivateHandler = (
+  rows: AdminUser[],
+  onRequest?: (request: Request) => void
+) =>
+  http.post(`${API_BASE}/admin/users/:id/deactivate`, ({ request, params }) => {
+    onRequest?.(request);
+    const row = rows.find((r) => r.id === Number(params.id));
+    if (!row) {
+      return HttpResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    row.is_active = false;
+    return HttpResponse.json({ ok: true });
+  });
+
+export const userActivateHandler = (
+  rows: AdminUser[],
+  onRequest?: (request: Request) => void
+) =>
+  http.post(`${API_BASE}/admin/users/:id/activate`, ({ request, params }) => {
+    onRequest?.(request);
+    const row = rows.find((r) => r.id === Number(params.id));
+    if (!row) {
+      return HttpResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    row.is_active = true;
+    return HttpResponse.json({ ok: true });
   });
 
 export const server = setupServer(adminMeOk);
