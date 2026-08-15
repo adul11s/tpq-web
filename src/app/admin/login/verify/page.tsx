@@ -37,7 +37,7 @@ function VerifyForm() {
   } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const needsEmail = emailParam === null;
+  const needsEmail = !emailParam;
 
   function handleBackupChange(value: string) {
     let v = value.toUpperCase().slice(0, 9);

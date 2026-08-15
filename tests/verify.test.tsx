@@ -120,6 +120,13 @@ describe("Admin 2FA verify page", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it("shows the email input when the email param is present but empty", () => {
+    mockSearchParams.current = new URLSearchParams("email=");
+    render(<VerifyPage />);
+
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+  });
+
   it("renders an email input and verifies with it when the email param is missing", async () => {
     mockSearchParams.current = new URLSearchParams();
     server.use(adminVerifyOk);
