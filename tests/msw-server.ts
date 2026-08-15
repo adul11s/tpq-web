@@ -41,4 +41,22 @@ export const adminLoginDelayed = http.post(`${API_BASE}/admin/auth/login`, async
   return HttpResponse.json({ challenge: "totp" });
 });
 
+export const adminVerifyOk = http.post(`${API_BASE}/admin/auth/verify-2fa`, () =>
+  HttpResponse.json({ ok: true })
+);
+
+export const adminVerifyUnauthorized = http.post(
+  `${API_BASE}/admin/auth/verify-2fa`,
+  () => HttpResponse.json({ error: "Invalid credentials" }, { status: 401 })
+);
+
+export const adminVerifyRateLimited = http.post(
+  `${API_BASE}/admin/auth/verify-2fa`,
+  () =>
+    HttpResponse.json(
+      { error: "Terlalu banyak percobaan verifikasi, coba lagi nanti" },
+      { status: 429 }
+    )
+);
+
 export const server = setupServer(adminMeOk);
