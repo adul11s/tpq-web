@@ -37,10 +37,16 @@ function push(event: TrackableEvent): void {
 }
 
 export function trackDownload(event: DownloadEvent): void {
+  if (!GA4_MEASUREMENT_ID) {
+    return;
+  }
   push(event);
 }
 
 export function trackInquirySubmitted(event: InquirySubmittedEvent): void {
+  if (!GA4_MEASUREMENT_ID) {
+    return;
+  }
   push(event);
 }
 

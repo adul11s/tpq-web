@@ -161,6 +161,25 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const occasion = params.get("occasion");
+    if (!occasion) {
+      return;
+    }
+    const match = CARDS.find((card) => card.key === `doa-${occasion}`);
+    if (!match) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setActiveFilter(match.category);
+      const element = document.getElementById(`doa-card-${match.key}`);
+      element?.scrollIntoView?.({ block: "center" });
+      element?.focus({ preventScroll: true });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
@@ -264,6 +283,8 @@ export function DoaCatalog({ lang }: { lang: Lang }) {
           {visibleCards.map((card) => (
             <article
               key={card.key}
+              id={`doa-card-${card.key}`}
+              tabIndex={-1}
               className="group flex flex-col rounded-3xl border border-mint-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="flex items-center justify-between gap-2">

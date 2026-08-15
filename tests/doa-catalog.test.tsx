@@ -47,4 +47,19 @@ describe("DoaCatalog", () => {
     });
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
+
+  it("honors the ?occasion search param by filtering and focusing the matching card", () => {
+    window.history.pushState({}, "", "/doa?occasion=sebelum-makan");
+    render(<DoaCatalog lang="id" />);
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(
+      screen.getByRole("button", { name: /Makan & Minum/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+    const card = document.getElementById("doa-card-doa-sebelum-makan");
+    expect(card).toHaveFocus();
+    expect(screen.queryByText("Doa Bangun Tidur")).not.toBeInTheDocument();
+  });
 });

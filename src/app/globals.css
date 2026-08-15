@@ -167,9 +167,9 @@
   --shadow-card: var(--shadow-card);
   --shadow-lift: var(--shadow-lift);
 
-  --breakpoint-sm: var(--breakpoint-sm);
-  --breakpoint-md: var(--breakpoint-md);
-  --breakpoint-lg: var(--breakpoint-lg);
+  --breakpoint-sm: 480px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
 }
 
 body {
@@ -214,9 +214,15 @@ body {
 }
 
 @media print {
-  header, footer, .no-print { display: none !important; }
-  body { background: #fff !important; }
-  article { break-inside: avoid; }
+  header, footer, nav, button, a[href^="https://wa.me"], [data-no-print] {
+    display: none !important;
+  }
+  body { background: #fff !important; color: #000 !important; font-size: 11.5pt; line-height: 1.5; }
+  main, article { box-shadow: none !important; border-color: #ddd !important; }
+  article, .card { break-inside: avoid; }
+  a { color: inherit; text-decoration: none; }
+  .font-arabic, [lang="ar"] { font-family: Amiri, serif !important; }
+  @page { margin: 14mm; }
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }

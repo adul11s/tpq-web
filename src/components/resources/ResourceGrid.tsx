@@ -10,7 +10,7 @@ interface ResourceGridProps {
   isLoading: boolean;
   isPlaceholderData: boolean;
   lang: Lang;
-  emptyMessage?: string;
+  onDownloaded?: (title: string) => void;
 }
 
 export function ResourceGrid({
@@ -18,7 +18,7 @@ export function ResourceGrid({
   isLoading,
   isPlaceholderData,
   lang,
-  emptyMessage = "Belum ada materi yang cocok dengan filter ini.",
+  onDownloaded,
 }: ResourceGridProps) {
   if (isLoading) {
     return (
@@ -26,25 +26,17 @@ export function ResourceGrid({
         {Array.from({ length: 8 }, (_, index) => (
           <div
             key={index}
-            className="overflow-hidden rounded-2xl border border-slate-200 bg-white"
+            className="overflow-hidden rounded-3xl border border-mint-100 bg-white"
           >
-            <Skeleton className="aspect-[4/3] rounded-none" />
+            <Skeleton className="aspect-[4/3] rounded-none bg-mint-100" />
             <div className="space-y-2 p-4">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-4 w-3/4 bg-mint-100" />
+              <Skeleton className="h-3 w-full bg-mint-100" />
+              <Skeleton className="h-3 w-1/2 bg-mint-100" />
             </div>
           </div>
         ))}
       </div>
-    );
-  }
-
-  if (resources.length === 0) {
-    return (
-      <p className="rounded-2xl border border-dashed border-slate-300 bg-white py-16 text-center text-sm text-slate-500">
-        {emptyMessage}
-      </p>
     );
   }
 
@@ -55,6 +47,7 @@ export function ResourceGrid({
           key={resource.id}
           resource={resource}
           lang={lang}
+          onDownloaded={onDownloaded}
           className={isPlaceholderData ? "opacity-60" : ""}
         />
       ))}

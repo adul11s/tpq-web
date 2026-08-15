@@ -1,60 +1,94 @@
 "use client";
 
-import { AGE_GROUP_LABELS, CATEGORY_LABELS } from "@/lib/types/api";
+import { AGE_GROUP_LABELS } from "@/lib/types/api";
 import type { AgeFilter, CategoryFilter } from "@/lib/types/resource";
 
 interface FilterBarProps {
   category: CategoryFilter;
   ageGroup: AgeFilter;
-  query: string;
+  counts: Record<string, number>;
   onCategoryChange: (category: CategoryFilter) => void;
   onAgeGroupChange: (ageGroup: AgeFilter) => void;
-  onQueryChange: (query: string) => void;
 }
 
-const selectClasses =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 sm:w-auto";
+const CATEGORY_CHIPS: { slug: CategoryFilter; id: string; en: string }[] = [
+  { slug: "all", id: "Semua", en: "All" },
+  { slug: "prayers", id: "Doa Harian", en: "Daily Prayers" },
+  { slug: "calligraphy", id: "Kaligrafi", en: "Calligraphy" },
+  { slug: "coloring", id: "Mewarnai", en: "Coloring" },
+  { slug: "readings", id: "Bacaan", en: "Prayer Readings" },
+];
+
+function CheckIcon() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={3}
+      aria-hidden="true"
+    >
+      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 export function FilterBar({
   category,
   ageGroup,
-  query,
+  counts,
   onCategoryChange,
   onAgeGroupChange,
-  onQueryChange,
 }: FilterBarProps) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <label className="sr-only" htmlFor="filter-search">
-        Cari materi
-      </label>
-      <input
-        id="filter-search"
-        type="search"
-        value={query}
-        onChange={(event) => onQueryChange(event.target.value)}
-        placeholder="Cari materi…"
-        className="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-      />
-
-      <label className="sr-only" htmlFor="filter-category">
-        Kategori
-      </label>
-      <select
-        id="filter-category"
-        value={category}
-        onChange={(event) =>
-          onCategoryChange(event.target.value as CategoryFilter)
-        }
-        className={selectClasses}
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div
+        role="group"
+        aria-label="Filter kategori materi"
+        className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0 lg:justify-start"
       >
-        <option value="all">Semua kategori</option>
-        {Object.entries(CATEGORY_LABELS).map(([slug, label]) => (
-          <option key={slug} value={slug}>
-            {label}
-          </option>
-        ))}
-      </select>
+        {CATEGORY_CHIPS.map((chip) => {
+          const active = category === chip.slug;
+          const count = counts[chip.slug] ?? 0;
+          return (
+            <button
+              key={chip.slug}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onCategoryChange(chip.slug)}
+              className={
+                active
+                  ? "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-primary bg-primary px-4 py-2 text-left text-on-primary shadow-md shadow-primary/20"
+                  : "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border border-mint-200 bg-white px-4 py-2 text-left text-mint-700 transition-colors hover:bg-mint-50"
+              }
+            >
+              {active ? <CheckIcon /> : null}
+              <span>
+                <span className="block text-sm font-extrabold leading-tight">
+                  {chip.id}
+                </span>
+                <span
+                  className={`block text-[10px] font-bold uppercase tracking-wide ${
+                    active ? "text-mint-100" : "text-mint-800/50"
+                  }`}
+                >
+                  {chip.en}
+                </span>
+              </span>
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-extrabold ${
+                  active
+                    ? "bg-white/20 text-white"
+                    : "bg-mint-100 text-mint-700"
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
       <label className="sr-only" htmlFor="filter-age">
         Kelompok usia
@@ -65,7 +99,7 @@ export function FilterBar({
         onChange={(event) =>
           onAgeGroupChange(event.target.value as AgeFilter)
         }
-        className={selectClasses}
+        className="h-11 shrink-0 rounded-full border border-mint-200 bg-white px-4 text-sm font-bold text-mint-700 focus:border-mint-500 focus:outline-none focus:ring-2 focus:ring-mint-500/30"
       >
         <option value="all">Semua usia</option>
         {Object.entries(AGE_GROUP_LABELS).map(([age, label]) => (

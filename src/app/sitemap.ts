@@ -58,11 +58,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const guide of prayerGuides) {
     entries.push({
-      url: `${SITE_URL}/doa#${guide.occasionSlug}`,
+      url: `${SITE_URL}/doa?occasion=${guide.occasionSlug}`,
+      lastModified: undefined,
       alternates: {
         languages: {
-          id: `${SITE_URL}/doa`,
-          en: `${SITE_URL}/en/doa`,
+          id: `${SITE_URL}/doa?occasion=${guide.occasionSlug}`,
+          en: `${SITE_URL}/en/doa?occasion=${guide.occasionSlug}`,
         },
       },
     });
