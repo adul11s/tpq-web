@@ -220,6 +220,8 @@ describe("Konten editor page", () => {
     const onPatch = vi.fn();
     server.use(
       contentPreviewHandler("classes", CLASS_ROWS[0]),
+      contentListHandler("class_schedule_items", []),
+      contentListHandler("curriculum_items", []),
       contentUpdateHandler("classes", onPatch)
     );
     const user = userEvent.setup();

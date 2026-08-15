@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { contentApi, toApiError } from "@/lib/api/content";
+import { contentApi, saveChildRows, toApiError } from "@/lib/api/content";
 import { ENTITY_CONFIG } from "@/lib/admin/entities";
 import { EntityForm } from "@/components/admin/EntityForm";
 import { Button } from "@/components/ui/Button";
@@ -19,10 +19,21 @@ export default function KontenEditorPage() {
   const router = useRouter();
 
   const [row, setRow] = useState<Record<string, unknown> | null>(null);
+  const [children, setChildren] = useState<Record<string, Record<string, unknown>[]>>(
+    {}
+  );
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [serverError, setServerError] = useState<ContentApiError | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const childFields = useMemo(
+    () =>
+      config?.fields.filter(
+        (field) => field.type === "schedule" || field.type === "curriculum"
+      ) ?? [],
+    [config]
+  );
 
   useEffect(() => {
     contentApi
@@ -30,7 +41,27 @@ export default function KontenEditorPage() {
       .then(setRow)
       .catch((err: unknown) => setLoadError(toApiError(err).message))
       .finally(() => setLoading(false));
-  }, [entity, id]);
+    if (childFields.length > 0) {
+      Promise.all(
+        childFields.map((field) =>
+          contentApi
+            .list(field.name)
+            .then((result) => ({ name: field.name, rows: result[field.name] ?? [] }))
+            .catch(() => ({ name: field.name, rows: [] }))
+        )
+      ).then((groups) => {
+        const classId = Number(id);
+        setChildren(
+          Object.fromEntries(
+            groups.map((group) => [
+              group.name,
+              group.rows.filter((item) => Number(item.class_id) === classId),
+            ])
+          )
+        );
+      });
+    }
+  }, [entity, id, childFields]);
 
   if (!config) {
     return (
@@ -41,9 +72,14 @@ export default function KontenEditorPage() {
   }
 
   const initialValues = row
-    ? Object.fromEntries(
-        Object.entries(row).map(([key, value]) => [key, value ?? ""])
-      )
+    ? {
+        ...Object.fromEntries(
+          Object.entries(row).map(([key, value]) => [key, value ?? ""])
+        ),
+        ...Object.fromEntries(
+          childFields.map((field) => [field.name, children[field.name] ?? []])
+        ),
+      }
     : undefined;
 
   async function handleSave(values: Record<string, unknown>) {
@@ -51,6 +87,13 @@ export default function KontenEditorPage() {
     setServerError(null);
     try {
       await contentApi.update(entity, Number(id), values);
+      for (const field of childFields) {
+        await saveChildRows(
+          field.name,
+          Number(id),
+          (values[field.name] as Record<string, unknown>[]) ?? []
+        );
+      }
       router.push(`/admin/konten/${entity}`);
     } catch (err) {
       setServerError(toApiError(err));

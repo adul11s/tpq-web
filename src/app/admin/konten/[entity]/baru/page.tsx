@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { contentApi, toApiError } from "@/lib/api/content";
+import { contentApi, saveChildRows, toApiError } from "@/lib/api/content";
 import { ENTITY_CONFIG } from "@/lib/admin/entities";
 import { EntityForm } from "@/components/admin/EntityForm";
 import type { ContentApiError } from "@/lib/api/content";
@@ -30,7 +30,18 @@ export default function KontenNewPage() {
     setBusy(true);
     setServerError(null);
     try {
-      await contentApi.create(entity, values);
+      const created = await contentApi.create(entity, values);
+      const childFields =
+        ENTITY_CONFIG[entity]?.fields.filter(
+          (field) => field.type === "schedule" || field.type === "curriculum"
+        ) ?? [];
+      for (const field of childFields) {
+        await saveChildRows(
+          field.name,
+          Number(created.id),
+          (values[field.name] as Record<string, unknown>[]) ?? []
+        );
+      }
       router.push(`/admin/konten/${entity}`);
     } catch (err) {
       setServerError(toApiError(err));

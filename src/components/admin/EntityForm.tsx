@@ -1,10 +1,22 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { EntityConfig, FieldOption, FieldSpec } from "@/lib/admin/entities";
+import {
+  ENTITY_CONFIG,
+  type EntityConfig,
+  type FieldOption,
+  type FieldSpec,
+} from "@/lib/admin/entities";
 import { slugify } from "@/lib/admin/slug";
 import { Button } from "@/components/ui/Button";
 import { MediaPicker } from "@/components/admin/MediaPicker";
@@ -46,6 +58,256 @@ function clean(values: FormValues): Record<string, unknown> {
   return output;
 }
 
+const CHILD_ENTITY: Record<string, string> = {
+  schedule: "class_schedule_items",
+  curriculum: "curriculum_items",
+};
+
+const EDITABLE_SKIP = new Set(["id", "class_id", "sort_order"]);
+
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+interface RowState {
+  id?: number;
+  values: Record<string, unknown>;
+  errors: Record<string, string>;
+}
+
+export interface RowEditorHandle {
+  validate: () => boolean;
+  getRows: () => Record<string, unknown>[];
+}
+
+interface RowEditorProps {
+  field: FieldSpec;
+  childEntity: EntityConfig;
+  initialRows?: Record<string, unknown>[];
+}
+
+function validateRow(
+  kind: "schedule" | "curriculum",
+  row: RowState
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const values = row.values;
+  if (kind === "schedule") {
+    if (!String(values.day_name ?? "").trim()) {
+      errors.day_name = "Hari wajib diisi";
+    }
+    const start = String(values.start_time ?? "");
+    const end = String(values.end_time ?? "");
+    if (!start) {
+      errors.start_time = "Waktu mulai wajib diisi";
+    } else if (!TIME_RE.test(start)) {
+      errors.start_time = "Waktu mulai format HH:MM";
+    }
+    if (!end) {
+      errors.end_time = "Waktu selesai wajib diisi";
+    } else if (!TIME_RE.test(end)) {
+      errors.end_time = "Waktu selesai format HH:MM";
+    }
+    if (!errors.start_time && !errors.end_time && end <= start) {
+      errors.end_time = "Waktu selesai harus setelah waktu mulai";
+    }
+    if (!String(values.activity ?? "").trim()) {
+      errors.activity = "Kegiatan wajib diisi";
+    }
+  } else {
+    if (!String(values.aspect ?? "")) {
+      errors.aspect = "Aspek wajib dipilih";
+    }
+    if (!String(values.title ?? "").trim()) {
+      errors.title = "Judul wajib diisi";
+    }
+  }
+  return errors;
+}
+
+function editableFields(childEntity: EntityConfig): FieldSpec[] {
+  return childEntity.fields.filter((field) => !EDITABLE_SKIP.has(field.name));
+}
+
+function pickEditable(
+  childEntity: EntityConfig,
+  row: Record<string, unknown>
+): Record<string, unknown> {
+  const values: Record<string, unknown> = {};
+  for (const field of editableFields(childEntity)) {
+    const value = row[field.name];
+    values[field.name] = value === null || value === undefined ? "" : String(value);
+  }
+  return values;
+}
+
+const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor(
+  { field, childEntity, initialRows },
+  ref
+) {
+  const isSchedule = field.type === "schedule";
+  const [rows, setRows] = useState<RowState[]>(() =>
+    [...(initialRows ?? [])]
+      .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
+      .map((row) => ({
+        id: row.id as number | undefined,
+        values: pickEditable(childEntity, row),
+        errors: {},
+      }))
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      validate() {
+        const next = rows.map((row) => ({
+          ...row,
+          errors: validateRow(field.type as "schedule" | "curriculum", row),
+        }));
+        setRows(next);
+        return next.every((row) => Object.keys(row.errors).length === 0);
+      },
+      getRows() {
+        return rows.map((row, index) => ({
+          ...(row.id !== undefined ? { id: row.id } : {}),
+          ...row.values,
+          sort_order: index,
+        }));
+      },
+    }),
+    [rows, field.type]
+  );
+
+  function updateRow(index: number, name: string, value: string) {
+    setRows((prev) =>
+      prev.map((row, i) =>
+        i === index
+          ? { ...row, values: { ...row.values, [name]: value }, errors: {} }
+          : row
+      )
+    );
+  }
+
+  function addRow() {
+    const empty: Record<string, unknown> = {};
+    for (const item of editableFields(childEntity)) {
+      empty[item.name] = "";
+    }
+    setRows((prev) => [...prev, { values: empty, errors: {} }]);
+  }
+
+  function moveRow(index: number, direction: -1 | 1) {
+    setRows((prev) => {
+      const target = index + direction;
+      if (target < 0 || target >= prev.length) return prev;
+      const next = [...prev];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  const emptyText = isSchedule
+    ? "Belum ada jadwal \u2014 tambah kegiatan pertama."
+    : "Belum ada kurikulum \u2014 tambah item pertama.";
+  const addLabel = isSchedule ? "Tambah Jadwal" : "Tambah Kurikulum";
+  const groupLabel = isSchedule ? "Jadwal" : "Kurikulum";
+
+  return (
+    <div className="space-y-3">
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">{emptyText}</p>
+      ) : (
+        rows.map((row, index) => (
+          <div
+            key={index}
+            role="group"
+            aria-label={`${groupLabel} baris ${index + 1}`}
+            className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+          >
+            <div className="grid gap-3 sm:grid-cols-2">
+              {editableFields(childEntity).map((item) => (
+                <div key={item.name}>
+                  <label
+                    htmlFor={`${field.name}-${index}-${item.name}`}
+                    className="mb-1 block text-sm font-semibold text-slate-700"
+                  >
+                    {item.label}
+                  </label>
+                  {item.type === "select" ? (
+                    <select
+                      id={`${field.name}-${index}-${item.name}`}
+                      className={inputClasses}
+                      value={String(row.values[item.name] ?? "")}
+                      onChange={(event) =>
+                        updateRow(index, item.name, event.target.value)
+                      }
+                    >
+                      <option value="">Pilih\u2026</option>
+                      {(item.options ?? []).map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : item.type === "textarea" ? (
+                    <textarea
+                      id={`${field.name}-${index}-${item.name}`}
+                      rows={2}
+                      className={inputClasses}
+                      value={String(row.values[item.name] ?? "")}
+                      onChange={(event) =>
+                        updateRow(index, item.name, event.target.value)
+                      }
+                    />
+                  ) : (
+                    <input
+                      id={`${field.name}-${index}-${item.name}`}
+                      type="text"
+                      className={inputClasses}
+                      value={String(row.values[item.name] ?? "")}
+                      placeholder={item.time ? "HH:MM" : undefined}
+                      maxLength={item.time ? 5 : undefined}
+                      onChange={(event) =>
+                        updateRow(index, item.name, event.target.value)
+                      }
+                    />
+                  )}
+                  {row.errors[item.name] ? (
+                    <p className="mt-1 text-xs font-semibold text-red-600">
+                      {row.errors[item.name]}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={index === 0}
+                onClick={() => moveRow(index, -1)}
+              >
+                Naik
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={index === rows.length - 1}
+                onClick={() => moveRow(index, 1)}
+              >
+                Turun
+              </Button>
+            </div>
+          </div>
+        ))
+      )}
+      <Button type="button" variant="secondary" size="sm" onClick={addRow}>
+        {addLabel}
+      </Button>
+    </div>
+  );
+});
+
 export function EntityForm({
   entity,
   initialValues,
@@ -67,6 +329,24 @@ export function EntityForm({
   const [loadedOptions, setLoadedOptions] = useState<
     Record<string, FieldOption[]>
   >({});
+
+  const childRefs = useRef<Record<string, RowEditorHandle>>({});
+  const childFields = entity.fields.filter(
+    (field) => field.type === "schedule" || field.type === "curriculum"
+  );
+
+  async function handleFormSubmit(values: FormValues) {
+    for (const field of childFields) {
+      const editor = childRefs.current[field.name];
+      if (editor && !editor.validate()) return;
+    }
+    const payload: FormValues = { ...values };
+    for (const field of childFields) {
+      const editor = childRefs.current[field.name];
+      if (editor) payload[field.name] = editor.getRows();
+    }
+    await onSubmit(clean(payload));
+  }
 
   useEffect(() => {
     let active = true;
@@ -100,7 +380,9 @@ export function EntityForm({
     <form
       className="space-y-4"
       noValidate
-      onSubmit={handleSubmit((values) => onSubmit(clean(values)))}
+      onSubmit={(event) => {
+        void handleSubmit(handleFormSubmit)(event);
+      }}
     >
       {entity.fields.map((field) => {
         const id = `${entity.key}-${field.name}`;
@@ -169,6 +451,26 @@ export function EntityForm({
               />
             );
             break;
+          case "schedule":
+          case "curriculum": {
+            const childKey = CHILD_ENTITY[field.type];
+            control = (
+              <RowEditor
+                field={field}
+                childEntity={ENTITY_CONFIG[childKey]}
+                initialRows={
+                  (initialValues?.[field.name] as
+                    | Record<string, unknown>[]
+                    | undefined) ?? []
+                }
+                ref={(handle) => {
+                  if (handle) childRefs.current[field.name] = handle;
+                  else delete childRefs.current[field.name];
+                }}
+              />
+            );
+            break;
+          }
           default:
             control = null;
         }

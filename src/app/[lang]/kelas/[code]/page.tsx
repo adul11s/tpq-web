@@ -8,6 +8,7 @@ import { fetchSiteSettings } from "@/lib/data/pages";
 import { isLang, localizedHref, pick, type Lang } from "@/lib/lang";
 import { waLink } from "@/lib/wa";
 import { buildMetadata } from "@/lib/seo";
+import { formatTime } from "@/lib/admin/time";
 import type { CurriculumAspect } from "@/lib/types/api";
 
 interface ClassDetailPageProps {
@@ -164,7 +165,7 @@ export default async function ClassDetailPage({
                     {item.dayName}
                   </td>
                   <td className="px-5 py-3 text-slate-600">
-                    {item.startTime}–{item.endTime}
+                    {formatTime(item.startTime)}–{formatTime(item.endTime)}
                   </td>
                   <td className="px-5 py-3 text-slate-600">{item.activity}</td>
                 </tr>

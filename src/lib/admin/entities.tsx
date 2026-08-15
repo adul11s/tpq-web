@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { ReactNode } from "react";
 import type { Role } from "@/lib/types/admin";
 import { getCategories } from "@/lib/api/resources";
+import { formatTime } from "@/lib/admin/time";
 
 export type FieldType =
   | "text"
@@ -27,6 +28,7 @@ export interface FieldSpec {
   required: boolean;
   helper?: string;
   mediaKind?: "pdf" | "image" | "all";
+  time?: boolean;
 }
 
 export interface ListColumn {
@@ -54,10 +56,10 @@ export const AGE_GROUP_OPTIONS: FieldOption[] = [
 ];
 
 export const CURRICULUM_ASPECT_OPTIONS: FieldOption[] = [
-  { value: "quran_targets", label: "Target Quran" },
+  { value: "quran_targets", label: "Target Qur'an" },
   { value: "adab", label: "Adab" },
   { value: "academics", label: "Akademik" },
-  { value: "life_skills", label: "Keterampilan Hidup" },
+  { value: "life_skills", label: "Kecakapan Hidup" },
 ];
 
 export const CATEGORY_OPTIONS: FieldOption[] = [
@@ -86,6 +88,11 @@ export const DAY_OPTIONS: string[] = [
   "Minggu",
 ];
 
+export const DAY_OPTION_LIST: FieldOption[] = DAY_OPTIONS.map((day) => ({
+  value: day,
+  label: day,
+}));
+
 const optionalDigits = z
   .union([z.string().regex(/^\d+(\.\d{1,2})?$/, "Format angka, contoh: 300000"), z.literal("")])
   .optional();
@@ -111,6 +118,32 @@ const classCreateSchema = z
     message: "Usia maksimal harus sama atau lebih besar dari usia minimal",
     path: ["age_max"],
   });
+
+const scheduleItemCreateSchema = z
+  .object({
+    class_id: z.number({ error: "Kelas wajib dipilih" }).int().positive("Kelas wajib dipilih"),
+    day_name: z.string().min(1, "Hari wajib diisi"),
+    start_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Waktu mulai format HH:MM"),
+    end_time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Waktu selesai format HH:MM"),
+    activity: z.string().min(1, "Kegiatan wajib diisi"),
+    sort_order: z.number().int().default(0),
+  })
+  .refine((data) => data.end_time > data.start_time, {
+    message: "Waktu selesai harus setelah waktu mulai",
+    path: ["end_time"],
+  });
+
+const curriculumItemCreateSchema = z.object({
+  class_id: z.number({ error: "Kelas wajib dipilih" }).int().positive("Kelas wajib dipilih"),
+  aspect: z.enum(["quran_targets", "adab", "academics", "life_skills"], {
+    error: "Aspek wajib dipilih",
+  }),
+  title: z.string().min(1, "Judul wajib diisi"),
+  title_en: z.string().optional(),
+  description: z.string().optional(),
+  description_en: z.string().optional(),
+  sort_order: z.number().int().default(0),
+});
 
 const resourceCreateSchema = z.object({
   title: z.string().min(1, "Judul wajib diisi"),
@@ -138,6 +171,13 @@ const ageGroupLabel = (row: Record<string, unknown>): string =>
 const classAgeLabel = (row: Record<string, unknown>): string =>
   `${row.age_min}\u2013${row.age_max} tahun`;
 
+const scheduleTimeLabel = (row: Record<string, unknown>): string =>
+  `${formatTime(String(row.start_time ?? ""))}\u2013${formatTime(String(row.end_time ?? ""))}`;
+
+const aspectLabel = (row: Record<string, unknown>): string =>
+  CURRICULUM_ASPECT_OPTIONS.find((option) => option.value === row.aspect)?.label ??
+  String(row.aspect ?? "");
+
 const classes: EntityConfig = {
   key: "classes",
   label: "Kelas",
@@ -153,6 +193,14 @@ const classes: EntityConfig = {
     { name: "capacity", label: "Kapasitas", type: "text", required: false },
     { name: "description", label: "Deskripsi", type: "textarea", required: false },
     { name: "description_en", label: "Deskripsi (EN)", type: "textarea", required: false },
+    {
+      name: "class_schedule_items",
+      label: "Jadwal Belajar",
+      type: "schedule",
+      required: false,
+      helper: "Jadwal tampil ke publik saat kelas sudah dipublikasikan",
+    },
+    { name: "curriculum_items", label: "Kurikulum", type: "curriculum", required: false },
   ],
   listColumns: [
     { key: "code", label: "Kode" },
@@ -189,7 +237,53 @@ const resources: EntityConfig = {
   archivable: true,
 };
 
+const classScheduleItems: EntityConfig = {
+  key: "class_schedule_items",
+  label: "Jadwal",
+  createSchema: scheduleItemCreateSchema,
+  fields: [
+    { name: "class_id", label: "Kelas ID", type: "number", required: true },
+    { name: "day_name", label: "Hari", type: "select", options: DAY_OPTION_LIST, required: true },
+    { name: "start_time", label: "Waktu mulai", type: "text", time: true, required: true },
+    { name: "end_time", label: "Waktu selesai", type: "text", time: true, required: true },
+    { name: "activity", label: "Kegiatan", type: "text", required: true },
+    { name: "sort_order", label: "Urutan", type: "number", required: false },
+  ],
+  listColumns: [
+    { key: "day_name", label: "Hari" },
+    { key: "time", label: "Waktu", render: scheduleTimeLabel },
+    { key: "activity", label: "Kegiatan" },
+  ],
+  roles: ["content_manager", "admin"],
+  publishable: false,
+  archivable: false,
+};
+
+const curriculumItems: EntityConfig = {
+  key: "curriculum_items",
+  label: "Kurikulum",
+  createSchema: curriculumItemCreateSchema,
+  fields: [
+    { name: "class_id", label: "Kelas ID", type: "number", required: true },
+    { name: "aspect", label: "Aspek", type: "select", options: CURRICULUM_ASPECT_OPTIONS, required: true },
+    { name: "title", label: "Judul", type: "text", required: true },
+    { name: "title_en", label: "Judul (EN)", type: "text", required: false },
+    { name: "description", label: "Deskripsi", type: "textarea", required: false },
+    { name: "description_en", label: "Deskripsi (EN)", type: "textarea", required: false },
+    { name: "sort_order", label: "Urutan", type: "number", required: false },
+  ],
+  listColumns: [
+    { key: "aspect", label: "Aspek", render: aspectLabel },
+    { key: "title", label: "Judul" },
+  ],
+  roles: ["content_manager", "admin"],
+  publishable: false,
+  archivable: false,
+};
+
 export const ENTITY_CONFIG: Record<string, EntityConfig> = {
   classes,
   resources,
+  class_schedule_items: classScheduleItems,
+  curriculum_items: curriculumItems,
 };
