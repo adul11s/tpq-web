@@ -124,8 +124,7 @@ describe("EntityForm", () => {
     expect(onSubmit.mock.calls[0][0].description).toBeUndefined();
   });
 
-  it("renders age group options and submits numeric select values", async () => {
-    server.use(mediaListHandler());
+  it("renders age group options and submits numeric select values", async () => {    server.use(mediaListHandler());
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<EntityForm entity={ENTITY_CONFIG.resources} onSubmit={onSubmit} />);
@@ -161,5 +160,16 @@ describe("EntityForm", () => {
         })
       )
     );
+  });
+
+  it("filters the File materi picker to PDF assets only", async () => {
+    server.use(mediaListHandler());
+    const user = userEvent.setup();
+    render(<EntityForm entity={ENTITY_CONFIG.resources} onSubmit={vi.fn()} />);
+
+    await user.click(screen.getByLabelText("File materi"));
+
+    expect(await screen.findByText("laporan-bulanan.pdf")).toBeInTheDocument();
+    expect(screen.queryByText("foto-kegiatan.jpg")).not.toBeInTheDocument();
   });
 });

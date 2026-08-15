@@ -15,17 +15,19 @@ import {
   contentArchiveHandler,
 } from "./msw-server";
 import { SessionProvider } from "../src/lib/admin/session";
+import KontenIndexPage from "../src/app/admin/konten/page";
 import KontenListPage from "../src/app/admin/konten/[entity]/page";
 import KontenEditorPage from "../src/app/admin/konten/[entity]/[id]/page";
 import KontenNewPage from "../src/app/admin/konten/[entity]/baru/page";
 
-const { mockPush, mockParams } = vi.hoisted(() => ({
+const { mockPush, mockReplace, mockParams } = vi.hoisted(() => ({
   mockPush: vi.fn(),
+  mockReplace: vi.fn(),
   mockParams: { current: { entity: "classes" } } as { current: Record<string, string> },
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
   useParams: () => mockParams.current,
   useSearchParams: () => new URLSearchParams(),
   usePathname: () => "/admin/konten/classes",
@@ -43,6 +45,104 @@ function renderList() {
     </SessionProvider>
   );
 }
+
+describe("Konten index page", () => {
+  beforeEach(() => {
+    document.cookie = "tpq_csrf=abc123; path=/";
+    mockPush.mockClear();
+    mockReplace.mockClear();
+  });
+
+  it("shows every entity tile with a Buka link for admin, including site settings", async () => {
+    render(
+      <SessionProvider>
+        <KontenIndexPage />
+      </SessionProvider>
+    );
+
+    expect(await screen.findByRole("link", { name: /Kelas/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Materi/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Guru/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Pengaturan Situs/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Kelas/ })).toHaveAttribute(
+      "href",
+      "/admin/konten/classes"
+    );
+    expect(screen.getByRole("link", { name: /Pengaturan Situs/ })).toHaveAttribute(
+      "href",
+      "/admin/konten/site_settings"
+    );
+    expect(screen.getAllByRole("link", { name: /Buka/ })).toHaveLength(10);
+  });
+
+  it("hides site_settings from content_manager (mirrors the menu gating)", async () => {
+    server.use(adminMeAs("content_manager"));
+    render(
+      <SessionProvider>
+        <KontenIndexPage />
+      </SessionProvider>
+    );
+
+    expect(await screen.findByRole("link", { name: /Kelas/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Guru/ })).toBeInTheDocument();
+    expect(screen.queryByText("Pengaturan Situs")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /site_settings/ })
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("Konten role gates", () => {
+  beforeEach(() => {
+    document.cookie = "tpq_csrf=abc123; path=/";
+    mockPush.mockClear();
+    mockReplace.mockClear();
+  });
+
+  it("blocks content_manager from the site_settings list page with a notice + redirect", async () => {
+    mockParams.current = { entity: "site_settings" };
+    server.use(adminMeAs("content_manager"));
+    renderList();
+
+    expect(
+      await screen.findByText("Halaman ini khusus untuk admin.")
+    ).toBeInTheDocument();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/admin"));
+    expect(
+      screen.queryByRole("button", { name: "Buat Baru" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("blocks content_manager from the site_settings editor page", async () => {
+    mockParams.current = { entity: "site_settings", id: "1" };
+    server.use(adminMeAs("content_manager"));
+    render(
+      <SessionProvider>
+        <KontenEditorPage />
+      </SessionProvider>
+    );
+
+    expect(
+      await screen.findByText("Halaman ini khusus untuk admin.")
+    ).toBeInTheDocument();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/admin"));
+  });
+
+  it("blocks content_manager from the site_settings create page", async () => {
+    mockParams.current = { entity: "site_settings" };
+    server.use(adminMeAs("content_manager"));
+    render(
+      <SessionProvider>
+        <KontenNewPage />
+      </SessionProvider>
+    );
+
+    expect(
+      await screen.findByText("Halaman ini khusus untuk admin.")
+    ).toBeInTheDocument();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/admin"));
+  });
+});
 
 describe("Konten list page", () => {
   beforeEach(() => {
@@ -164,9 +264,13 @@ describe("Konten create page", () => {
     const onRequest = vi.fn();
     server.use(contentCreateHandler("classes", onRequest));
     const user = userEvent.setup();
-    render(<KontenNewPage />);
+    render(
+      <SessionProvider>
+        <KontenNewPage />
+      </SessionProvider>
+    );
 
-    await user.type(screen.getByLabelText("Kode"), "TK");
+    await user.type(await screen.findByLabelText("Kode"), "TK");
     await user.type(screen.getByLabelText("Nama"), "TK Qur'ani Bintang");
     await user.type(screen.getByLabelText("Usia minimal"), "5");
     await user.type(screen.getByLabelText("Usia maksimal"), "6");
@@ -193,9 +297,13 @@ describe("Konten create page", () => {
       })
     );
     const user = userEvent.setup();
-    render(<KontenNewPage />);
+    render(
+      <SessionProvider>
+        <KontenNewPage />
+      </SessionProvider>
+    );
 
-    await user.type(screen.getByLabelText("Kode"), "TK");
+    await user.type(await screen.findByLabelText("Kode"), "TK");
     await user.type(screen.getByLabelText("Nama"), "TK Qur'ani Bintang");
     await user.type(screen.getByLabelText("Usia minimal"), "5");
     await user.type(screen.getByLabelText("Usia maksimal"), "6");
@@ -251,5 +359,38 @@ describe("Konten editor page", () => {
       code: "TK",
     });
     expect(mockPush).toHaveBeenCalledWith("/admin/konten/classes");
+  });
+
+  it("sends null for a cleared optional field and omits untouched empty fields", async () => {
+    const onPatch = vi.fn();
+    const row = {
+      ...CLASS_ROWS[0],
+      name_en: "TK Qur'ani Bintang (EN)",
+      hours: "08.00-10.00 WIB",
+      capacity: "24",
+    };
+    server.use(
+      contentPreviewHandler("classes", row),
+      contentListHandler("class_schedule_items", []),
+      contentListHandler("curriculum_items", []),
+      contentUpdateHandler("classes", onPatch)
+    );
+    const user = userEvent.setup();
+    render(
+      <SessionProvider>
+        <KontenEditorPage />
+      </SessionProvider>
+    );
+
+    const nameEnInput = await screen.findByLabelText("Nama (EN)");
+    await user.clear(nameEnInput);
+    await user.click(screen.getByRole("button", { name: "Simpan Draft" }));
+
+    await waitFor(() => expect(onPatch).toHaveBeenCalledTimes(1));
+    const body = onPatch.mock.calls[0][1] as Record<string, unknown>;
+    expect(body.name_en).toBeNull();
+    expect(body.code).toBe("TK");
+    expect(body.description).toBeUndefined();
+    expect(body.fees).toBeUndefined();
   });
 });

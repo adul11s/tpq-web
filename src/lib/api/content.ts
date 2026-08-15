@@ -38,6 +38,10 @@ export const contentApi = {
     return adminFetch<T>(`/admin/${entity}/${id}`, { method: "PATCH", body });
   },
 
+  del<T = Record<string, unknown>>(entity: string, id: number): Promise<T> {
+    return adminFetch<T>(`/admin/${entity}/${id}`, { method: "DELETE" });
+  },
+
   publish<T = Record<string, unknown>>(entity: string, id: number): Promise<T> {
     return adminFetch<T>(`/admin/${entity}/${id}/publish`, { method: "POST" });
   },

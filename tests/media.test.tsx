@@ -115,6 +115,28 @@ describe("Media library", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
+  it("rejects files with a non-allowed mime type inline without calling fetch", async () => {
+    fetchSpy = vi.spyOn(globalThis, "fetch");
+    server.use(mediaUploadHandler(), mediaListHandler());
+    render(<MediaPage />);
+
+    await screen.findByText("laporan-bulanan.pdf");
+    fetchSpy.mockClear();
+
+    const exe = new File(["MZ"], "virus.exe", { type: "application/x-msdownload" });
+    fireEvent.change(screen.getByLabelText("Pilih file untuk diunggah"), {
+      target: { files: [exe] },
+    });
+
+    expect(
+      await screen.findByText(/Format file tidak didukung/i)
+    ).toBeInTheDocument();
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(screen.getByText(/Format file tidak didukung/i)).toHaveTextContent(
+      "Format file tidak didukung \u2014 gunakan PDF, JPG, PNG, atau GIF."
+    );
+  });
+
   it("renders the API 413 message verbatim with compression guidance", async () => {
     server.use(
       mediaUploadError(413, { error: API_413_MESSAGE }),
@@ -193,5 +215,27 @@ describe("MediaPicker", () => {
     expect(
       await screen.findByRole("button", { name: "laporan-bulanan.pdf" })
     ).toBeInTheDocument();
+  });
+
+  it("clears the selected asset via Hapus pilihan and calls onChange(null)", async () => {
+    server.use(mediaListHandler());
+    const user = userEvent.setup();
+    render(<ControlledPicker kind="pdf" />);
+
+    await user.click(screen.getByRole("button", { name: "Pilih Media" }));
+    await user.click(await screen.findByText("laporan-bulanan.pdf"));
+
+    expect(
+      await screen.findByRole("button", { name: "laporan-bulanan.pdf" })
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Hapus pilihan" }));
+
+    expect(
+      await screen.findByRole("button", { name: "Pilih Media" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "laporan-bulanan.pdf" })
+    ).not.toBeInTheDocument();
   });
 });

@@ -39,17 +39,29 @@ function EnrollForm() {
   const [codesSaved, setCodesSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [qrError, setQrError] = useState(false);
   const startedRef = useRef(false);
+
+  async function generateQr(uri: string) {
+    setQrError(false);
+    try {
+      setQrSrc(await qrDataUrl(uri));
+    } catch {
+      setQrSrc(null);
+      setQrError(true);
+    }
+  }
 
   async function startEnroll(targetEmail: string) {
     setLoading(true);
     setFieldError(null);
     setServerError(null);
+    setQrError(false);
     try {
       const data = await adminApi.enroll(targetEmail);
       setEnroll(data);
       setStep("qr");
-      setQrSrc(await qrDataUrl(data.otpauth_uri));
+      await generateQr(data.otpauth_uri);
     } catch (error) {
       const apiError = error as ApiError;
       setServerError({ status: apiError.status, message: apiError.message });
@@ -92,8 +104,12 @@ function EnrollForm() {
 
   async function copyCodes() {
     if (!enroll) return;
-    await navigator.clipboard.writeText(enroll.backup_codes.join("\n"));
-    setCopied(true);
+    try {
+      await navigator.clipboard.writeText(enroll.backup_codes.join("\n"));
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
   }
 
   async function handleTotpSubmit(event: React.FormEvent) {
@@ -223,6 +239,26 @@ function EnrollForm() {
                   />
                 )}
               </div>
+
+              {qrError ? (
+                <div
+                  role="alert"
+                  className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700"
+                >
+                  Gagal membuat QR {"\u2014"} coba lagi
+                </div>
+              ) : null}
+
+              {qrError && enroll ? (
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void generateQr(enroll.otpauth_uri)}
+                  className="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-mint-600 px-6 py-3.5 text-sm font-extrabold text-white shadow-md shadow-mint-600/25 transition-colors hover:bg-mint-700 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Coba lagi
+                </button>
+              ) : null}
 
               {loading ? null : (
                 <button

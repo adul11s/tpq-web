@@ -79,6 +79,11 @@ export const contentListHandler = (
     return HttpResponse.json({ [entity]: rows });
   });
 
+export const contentListError = (entity: string, status = 500) =>
+  http.get(`${API_BASE}/admin/${entity}`, () =>
+    HttpResponse.json({ error: "Internal server error" }, { status })
+  );
+
 export const contentPreviewHandler = (
   entity: string,
   row: Record<string, unknown>
@@ -114,6 +119,15 @@ export const contentUpdateHandler = (
     const body = await request.json();
     onRequest?.(request, body);
     return HttpResponse.json({});
+  });
+
+export const contentDeleteHandler = (
+  entity: string,
+  onRequest?: (request: Request, params: Record<string, string>) => void
+) =>
+  http.delete(`${API_BASE}/admin/${entity}/:id`, ({ request, params }) => {
+    onRequest?.(request, params as Record<string, string>);
+    return HttpResponse.json(null, { status: 204 });
   });
 
 export const contentPublishHandler = (
@@ -193,10 +207,6 @@ export const adminEnrollOk = http.post(`${API_BASE}/admin/auth/enroll`, () =>
     otpauth_uri: ENROLL_OTPAUTH_URI,
     backup_codes: ENROLL_BACKUP_CODES,
   })
-);
-
-export const adminEnrollConflict = http.post(`${API_BASE}/admin/auth/enroll`, () =>
-  HttpResponse.json({ error: "2FA already configured" }, { status: 409 })
 );
 
 export const adminEnrollConfirmCapture = (onBody: (body: unknown) => void) =>

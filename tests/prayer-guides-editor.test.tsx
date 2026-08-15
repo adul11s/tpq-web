@@ -5,6 +5,7 @@ import userEvent from "@testing-library/user-event";
 import { server, contentCreateHandler, mediaListHandler } from "./msw-server";
 import { EntityForm } from "../src/components/admin/EntityForm";
 import { ENTITY_CONFIG } from "../src/lib/admin/entities";
+import { SessionProvider } from "../src/lib/admin/session";
 import KontenNewPage from "../src/app/admin/konten/[entity]/baru/page";
 
 const { mockPush, mockParams } = vi.hoisted(() => ({
@@ -39,9 +40,13 @@ describe("Prayer guide editor", () => {
     const onRequest = vi.fn();
     server.use(contentCreateHandler("prayer_guides", onRequest));
     const user = userEvent.setup();
-    render(<KontenNewPage />);
+    render(
+      <SessionProvider>
+        <KontenNewPage />
+      </SessionProvider>
+    );
 
-    const occasion = screen.getByLabelText("Kesempatan");
+    const occasion = await screen.findByLabelText("Kesempatan");
     await user.type(occasion, "Doa Sebelum Makan");
     fireEvent.blur(occasion);
 

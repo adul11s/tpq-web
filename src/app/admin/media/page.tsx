@@ -8,6 +8,12 @@ export const dynamic = "force-dynamic";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ".pdf,.jpg,.jpeg,.png,.gif";
+const ALLOWED_MIME = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+]);
 
 const KIND_LABEL: Record<string, string> = { pdf: "PDF", image: "Gambar" };
 
@@ -32,6 +38,7 @@ export default function MediaPage() {
   const [assets, setAssets] = useState<AdminMediaAsset[]>([]);
   const [error, setError] = useState<MediaApiError | null>(null);
   const [sizeWarning, setSizeWarning] = useState(false);
+  const [typeWarning, setTypeWarning] = useState(false);
   const [uploading, setUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -54,6 +61,11 @@ export default function MediaPage() {
   async function handleFile(file: File) {
     setError(null);
     setSizeWarning(false);
+    setTypeWarning(false);
+    if (file.type && !ALLOWED_MIME.has(file.type)) {
+      setTypeWarning(true);
+      return;
+    }
     if (file.size > MAX_FILE_BYTES) {
       setSizeWarning(true);
       return;
@@ -113,6 +125,15 @@ export default function MediaPage() {
         >
           File lebih dari 5 MB &mdash; maksimal 5 MB per file. Kompres file
           Anda lalu coba lagi.
+        </div>
+      ) : null}
+
+      {typeWarning ? (
+        <div
+          role="alert"
+          className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
+        >
+          Format file tidak didukung {"\u2014"} gunakan PDF, JPG, PNG, atau GIF.
         </div>
       ) : null}
 

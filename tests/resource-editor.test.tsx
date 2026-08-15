@@ -10,6 +10,7 @@ import {
 } from "./msw-server";
 import { EntityForm } from "../src/components/admin/EntityForm";
 import { ENTITY_CONFIG } from "../src/lib/admin/entities";
+import { SessionProvider } from "../src/lib/admin/session";
 import KontenNewPage from "../src/app/admin/konten/[entity]/baru/page";
 
 const { mockPush, mockParams } = vi.hoisted(() => ({
@@ -118,18 +119,22 @@ describe("Resource editor", () => {
       mediaListHandler()
     );
     const user = userEvent.setup();
-    render(<KontenNewPage />);
+    render(
+      <SessionProvider>
+        <KontenNewPage />
+      </SessionProvider>
+    );
 
-    await user.type(screen.getByLabelText("Judul"), "Doa Sebelum Makan");
+    await user.type(await screen.findByLabelText("Judul"), "Doa Sebelum Makan");
     fireEvent.blur(screen.getByLabelText("Judul"));
     await user.selectOptions(
       await screen.findByLabelText("Kategori"),
       "7"
     );
-    await user.selectOptions(screen.getByLabelText("Kelompok usia"), "tpa");
+    await user.selectOptions(await screen.findByLabelText("Kelompok usia"), "tpa");
     await user.click(screen.getByLabelText("Thumbnail"));
     await user.click(await screen.findByText("foto-kegiatan.jpg"));
-    await user.click(screen.getByRole("button", { name: "Simpan Draft" }));
+    await user.click(await screen.findByRole("button", { name: "Simpan Draft" }));
 
     await waitFor(() =>
       expect(screen.getByText("ID file wajib diisi")).toBeInTheDocument()

@@ -71,6 +71,19 @@ export default function KontenEditorPage() {
     );
   }
 
+  if (!user) return null;
+  if (!config.roles.includes(user.role)) {
+    router.replace("/admin");
+    return (
+      <p
+        role="alert"
+        className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+      >
+        Halaman ini khusus untuk admin.
+      </p>
+    );
+  }
+
   const initialValues = row
     ? {
         ...Object.fromEntries(

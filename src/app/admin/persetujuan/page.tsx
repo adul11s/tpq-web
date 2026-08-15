@@ -78,6 +78,7 @@ export default function PersetujuanPage() {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [failedGroups, setFailedGroups] = useState<string[]>([]);
   const [preview, setPreview] = useState<QueueItem | null>(null);
   const [previewData, setPreviewData] = useState<Record<string, unknown> | null>(
     null
@@ -87,25 +88,35 @@ export default function PersetujuanPage() {
 
   const load = useCallback(() => {
     const entities = filter === "all" ? QUEUE_ENTITIES : [filter];
-    Promise.all(
-      entities.map(async (entity) => {
-        const result = await contentApi.list<Record<string, unknown>>(entity, {
+    Promise.allSettled(
+      entities.map((entity) =>
+        contentApi.list<Record<string, unknown>>(entity, {
           status: "draft",
-        });
-        return (result[entity] ?? [])
-          .filter((row) => String(row.status ?? "draft") === "draft")
-          .map((row) => ({ entity, row }));
-      })
+        })
+      )
     )
-      .then((groups) => {
-        const merged = groups.flat().sort((a, b) => {
+      .then((results) => {
+        const merged: QueueItem[] = [];
+        const failed: string[] = [];
+        results.forEach((result, index) => {
+          const entity = entities[index];
+          if (result.status === "rejected") {
+            failed.push(ENTITY_CONFIG[entity].label);
+            return;
+          }
+          const rows = (result.value[entity] ?? [])
+            .filter((row) => String(row.status ?? "draft") === "draft")
+            .map((row) => ({ entity, row }));
+          merged.push(...rows);
+        });
+        merged.sort((a, b) => {
           const aTime = new Date(String(a.row.created_at ?? "")).getTime();
           const bTime = new Date(String(b.row.created_at ?? "")).getTime();
           return bTime - aTime;
         });
         setItems(merged);
+        setFailedGroups(failed);
       })
-      .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
   }, [filter]);
 
@@ -213,6 +224,15 @@ export default function PersetujuanPage() {
           className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
         >
           {error}
+        </p>
+      ) : null}
+
+      {failedGroups.length > 0 ? (
+        <p
+          role="alert"
+          className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
+        >
+          Sebagian data gagal dimuat: {failedGroups.join(", ")}
         </p>
       ) : null}
 

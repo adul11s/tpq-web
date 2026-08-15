@@ -43,6 +43,7 @@ export interface ListColumn {
 export interface EntityConfig {
   key: string;
   label: string;
+  description: string;
   createSchema: z.ZodType;
   fields: FieldSpec[];
   listColumns: ListColumn[];
@@ -193,9 +194,14 @@ const prayerGuideCreateSchema = z.object({
   sort_order: optionalNumber,
 });
 
+const optionalMediaId = z.preprocess(
+  (value) => (value === "" || value === null ? undefined : value),
+  z.number().int().positive().optional()
+);
+
 const teacherCreateSchema = z.object({
   name: z.string().min(1, "Nama wajib diisi"),
-  photo_media_id: z.number().int().positive().optional(),
+  photo_media_id: optionalMediaId,
   qualification: z.string().optional(),
   role: z.string().optional(),
   bio: z.string().optional(),
@@ -206,7 +212,7 @@ const testimonialCreateSchema = z.object({
   parent_name: z.string().min(1, "Nama orang tua wajib diisi"),
   role: z.string().optional(),
   message: z.string().min(1, "Pesan wajib diisi"),
-  photo_media_id: z.number().int().positive().optional(),
+  photo_media_id: optionalMediaId,
   sort_order: optionalNumber,
 });
 
@@ -226,7 +232,7 @@ const pageCreateSchema = z.object({
   seo_title_en: z.string().optional(),
   seo_description_id: z.string().optional(),
   seo_description_en: z.string().optional(),
-  hero_media_id: z.number().int().positive().optional(),
+  hero_media_id: optionalMediaId,
 });
 
 const categoryLabel = (row: Record<string, unknown>): string =>
@@ -248,6 +254,7 @@ const aspectLabel = (row: Record<string, unknown>): string =>
   String(row.aspect ?? "");
 
 const classes: EntityConfig = {
+  description: "Kelas, jenjang belajar, jadwal, dan kurikulum",
   key: "classes",
   label: "Kelas",
   createSchema: classCreateSchema,
@@ -283,6 +290,7 @@ const classes: EntityConfig = {
 };
 
 const resources: EntityConfig = {
+  description: "Materi unduhan (PDF dan thumbnail)",
   key: "resources",
   label: "Materi",
   createSchema: resourceCreateSchema,
@@ -292,7 +300,7 @@ const resources: EntityConfig = {
     { name: "category_id", label: "Kategori", type: "select", options: CATEGORY_OPTIONS, loadOptions: loadCategoryOptions, required: true },
     { name: "age_group", label: "Kelompok usia", type: "select", options: AGE_GROUP_OPTIONS, required: true },
     { name: "description", label: "Deskripsi", type: "textarea", required: false },
-    { name: "file_media_id", label: "File materi", type: "media", mediaKind: "all", required: true },
+    { name: "file_media_id", label: "File materi", type: "media", mediaKind: "pdf", required: true },
     { name: "thumbnail_media_id", label: "Thumbnail", type: "media", mediaKind: "image", required: true },
   ],
   listColumns: [
@@ -307,6 +315,7 @@ const resources: EntityConfig = {
 };
 
 const classScheduleItems: EntityConfig = {
+  description: "Item jadwal belajar per kelas",
   key: "class_schedule_items",
   label: "Jadwal",
   createSchema: scheduleItemCreateSchema,
@@ -329,6 +338,7 @@ const classScheduleItems: EntityConfig = {
 };
 
 const curriculumItems: EntityConfig = {
+  description: "Item kurikulum per kelas",
   key: "curriculum_items",
   label: "Kurikulum",
   createSchema: curriculumItemCreateSchema,
@@ -351,6 +361,7 @@ const curriculumItems: EntityConfig = {
 };
 
 const prayerGuides: EntityConfig = {
+  description: "Panduan doa harian",
   key: "prayer_guides",
   label: "Panduan Doa",
   createSchema: prayerGuideCreateSchema,
@@ -387,6 +398,7 @@ const prayerGuides: EntityConfig = {
 };
 
 const teachers: EntityConfig = {
+  description: "Profil guru",
   key: "teachers",
   label: "Guru",
   createSchema: teacherCreateSchema,
@@ -408,6 +420,7 @@ const teachers: EntityConfig = {
 };
 
 const testimonials: EntityConfig = {
+  description: "Testimoni orang tua",
   key: "testimonials",
   label: "Testimoni",
   createSchema: testimonialCreateSchema,
@@ -428,6 +441,7 @@ const testimonials: EntityConfig = {
 };
 
 const faqs: EntityConfig = {
+  description: "Pertanyaan yang sering diajukan",
   key: "faqs",
   label: "FAQ",
   createSchema: faqCreateSchema,
@@ -446,6 +460,7 @@ const faqs: EntityConfig = {
 };
 
 const pages: EntityConfig = {
+  description: "Halaman statis situs",
   key: "pages",
   label: "Halaman",
   createSchema: pageCreateSchema,
@@ -479,6 +494,7 @@ const pages: EntityConfig = {
 };
 
 const siteSettings: EntityConfig = {
+  description: "Pengaturan global situs",
   key: "site_settings",
   label: "Pengaturan Situs",
   createSchema: z.object({

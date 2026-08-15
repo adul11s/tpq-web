@@ -22,6 +22,7 @@ import {
   type FieldSpec,
 } from "@/lib/admin/entities";
 import { slugify } from "@/lib/admin/slug";
+import { contentApi } from "@/lib/api/content";
 import { Button } from "@/components/ui/Button";
 import { MediaPicker } from "@/components/admin/MediaPicker";
 
@@ -47,14 +48,21 @@ function isNumericField(entity: EntityConfig, field: FieldSpec): boolean {
   return field.type === "number" || field.type === "media";
 }
 
-function clean(values: FormValues): Record<string, unknown> {
+function clean(
+  values: FormValues,
+  initialValues?: Record<string, unknown>
+): Record<string, unknown> {
   const output: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(values)) {
-    if (
-      value === undefined ||
-      value === "" ||
-      (typeof value === "number" && Number.isNaN(value))
-    ) {
+    const initial = initialValues?.[key];
+    const hadInitialValue =
+      initial !== undefined && initial !== null && initial !== "";
+    if (value === undefined || value === "") {
+      if (hadInitialValue) output[key] = null;
+      continue;
+    }
+    if (typeof value === "number" && Number.isNaN(value)) {
+      if (hadInitialValue) output[key] = null;
       continue;
     }
     output[key] = value;
@@ -73,6 +81,7 @@ const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 interface RowState {
   id?: number;
+  class_id?: number;
   values: Record<string, unknown>;
   errors: Record<string, string>;
 }
@@ -153,10 +162,45 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
       .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
       .map((row) => ({
         id: row.id as number | undefined,
+        class_id: row.class_id as number | undefined,
         values: pickEditable(childEntity, row),
         errors: {},
       }))
   );
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  function mapRows(list: Record<string, unknown>[]): RowState[] {
+    return [...list]
+      .sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
+      .map((row) => ({
+        id: row.id as number | undefined,
+        class_id: row.class_id as number | undefined,
+        values: pickEditable(childEntity, row),
+        errors: {},
+      }));
+  }
+
+  async function removeRow(index: number) {
+    const row = rows[index];
+    if (!row) return;
+    setDeleteError(null);
+    if (row.id === undefined) {
+      setRows((prev) => prev.filter((_, i) => i !== index));
+      return;
+    }
+    try {
+      await contentApi.del(childEntity.key, row.id);
+      const result = await contentApi.list<Record<string, unknown>>(
+        childEntity.key
+      );
+      const sameClass = (result[childEntity.key] ?? []).filter(
+        (item) => Number(item.class_id) === Number(row.class_id)
+      );
+      setRows(mapRows(sameClass));
+    } catch {
+      setDeleteError("Gagal menghapus baris \u2014 coba lagi");
+    }
+  }
 
   useImperativeHandle(
     ref,
@@ -301,7 +345,23 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
               >
                 Turun
               </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => void removeRow(index)}
+              >
+                Hapus
+              </Button>
             </div>
+            {deleteError ? (
+              <p
+                role="alert"
+                className="mt-2 text-xs font-semibold text-red-600"
+              >
+                {deleteError}
+              </p>
+            ) : null}
           </div>
         ))
       )}
@@ -365,7 +425,7 @@ export function EntityForm({
       const editor = childRefs.current[field.name];
       if (editor) payload[field.name] = editor.getRows();
     }
-    await onSubmit(clean(payload));
+    await onSubmit(clean(payload, initialValues));
   }
 
   useEffect(() => {
@@ -467,16 +527,24 @@ export function EntityForm({
               </select>
             );
             break;
-          case "media":
+          case "media": {
+            const mediaValue = getValues(field.name);
+            const normalized =
+              mediaValue === "" || mediaValue === null || mediaValue === undefined
+                ? null
+                : Number(mediaValue);
             fieldControl = (
               <MediaPicker
                 triggerId={id}
                 kind={field.mediaKind ?? "all"}
-                value={(getValues(field.name) as number | null) ?? null}
-                onChange={(mediaId) => setValue(field.name, mediaId)}
+                value={normalized}
+                onChange={(mediaId) =>
+                  setValue(field.name, mediaId === null ? "" : mediaId)
+                }
               />
             );
             break;
+          }
           case "schedule":
           case "curriculum": {
             const childKey = CHILD_ENTITY[field.type];

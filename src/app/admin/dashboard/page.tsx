@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { contentApi } from "@/lib/api/content";
 import { inquiryAdminApi } from "@/lib/api/inquiries";
+import { ENTITY_CONFIG } from "@/lib/admin/entities";
 import type { AdminResource } from "@/lib/types/admin";
 
 export const dynamic = "force-dynamic";
@@ -49,21 +50,34 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [failedGroups, setFailedGroups] = useState<string[]>([]);
 
   const load = useCallback(() => {
-    Promise.all([
+    Promise.allSettled([
       contentApi.list<AdminResource>("resources"),
       inquiryAdminApi.list("new"),
-      Promise.all(
-        QUEUE_ENTITIES.map((entity) =>
-          contentApi
-            .list<Record<string, unknown>>(entity, { status: "draft" })
-            .then((result) => result[entity] ?? [])
-        )
+      ...QUEUE_ENTITIES.map((entity) =>
+        contentApi.list<Record<string, unknown>>(entity, { status: "draft" })
       ),
     ])
-      .then(([resourcesResult, inquiriesResult, draftGroups]) => {
-        const resources = resourcesResult.resources ?? [];
+      .then((settled) => {
+        const [resourcesResult, inquiriesResult, ...draftResults] = settled;
+        const failed: string[] = [];
+        const resources =
+          resourcesResult.status === "fulfilled"
+            ? resourcesResult.value.resources ?? []
+            : (failed.push("Materi"), []);
+        const inquiries =
+          inquiriesResult.status === "fulfilled"
+            ? inquiriesResult.value.inquiries ?? []
+            : (failed.push("Inquiry"), []);
+        const draftGroups = draftResults.map((result, index) => {
+          if (result.status === "rejected") {
+            failed.push(ENTITY_CONFIG[QUEUE_ENTITIES[index]].label);
+            return [] as Record<string, unknown>[];
+          }
+          return result.value[QUEUE_ENTITIES[index]] ?? [];
+        });
         const sorted = [...resources].sort(
           (a, b) => b.download_count - a.download_count
         );
@@ -73,7 +87,7 @@ export default function DashboardPage() {
             0
           ),
           topResources: sorted.slice(0, 5),
-          newInquiries: (inquiriesResult.inquiries ?? []).length,
+          newInquiries: inquiries.length,
           pendingDrafts: draftGroups.reduce(
             (sum, rows) => sum + rows.length,
             0
@@ -82,6 +96,7 @@ export default function DashboardPage() {
             countForMonth(row.published_at)
           ).length,
         });
+        setFailedGroups(failed);
       })
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
@@ -114,6 +129,15 @@ export default function DashboardPage() {
           className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
         >
           {error}
+        </p>
+      ) : null}
+
+      {failedGroups.length > 0 ? (
+        <p
+          role="alert"
+          className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
+        >
+          Sebagian data gagal dimuat: {failedGroups.join(", ")}
         </p>
       ) : null}
 

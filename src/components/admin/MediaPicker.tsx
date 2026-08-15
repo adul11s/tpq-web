@@ -10,7 +10,7 @@ export type MediaPickerKind = "pdf" | "image" | "all";
 export interface MediaPickerProps {
   kind: MediaPickerKind;
   value: number | null;
-  onChange: (id: number) => void;
+  onChange: (id: number | null) => void;
   triggerId?: string;
 }
 
@@ -84,20 +84,31 @@ export function MediaPicker({
 
   return (
     <>
-      <Button
-        type="button"
-        id={triggerId}
-        variant="outline"
-        className="w-full justify-between"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={openPicker}
-      >
-        <span className="truncate">
-          {selected ? selected.original_name : "Pilih Media"}
-        </span>
-        <span aria-hidden="true">&hellip;</span>
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          id={triggerId}
+          variant="outline"
+          className="w-full justify-between"
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={openPicker}
+        >
+          <span className="truncate">
+            {selected ? selected.original_name : "Pilih Media"}
+          </span>
+          <span aria-hidden="true">&hellip;</span>
+        </Button>
+        {selected ? (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="shrink-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+          >
+            Hapus pilihan
+          </button>
+        ) : null}
+      </div>
 
       {open ? (
         <div

@@ -175,6 +175,24 @@ describe("Admin 2FA enrollment wizard", () => {
     expect(revokeObjectURL).toHaveBeenCalledWith("blob:mock");
   });
 
+  it("shows a friendly QR error with retry when QR generation fails, not a raw error", async () => {
+    server.use(adminEnrollOk);
+    vi.mocked(QRCode.toDataURL).mockRejectedValueOnce(new Error("boom"));
+    const user = userEvent.setup();
+    render(<EnrollPage />);
+
+    expect(
+      await screen.findByText("Gagal membuat QR \u2014 coba lagi")
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).toHaveTextContent(
+      "Gagal membuat QR \u2014 coba lagi"
+    );
+    expect(screen.queryByText("boom")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /coba lagi/i }));
+    expect(await screen.findByAltText(QR_ALT)).toBeInTheDocument();
+  });
+
   it("copies all backup codes to the clipboard", async () => {
     server.use(adminEnrollOk);
     const user = userEvent.setup();
@@ -188,6 +206,29 @@ describe("Admin 2FA enrollment wizard", () => {
         ENROLL_BACKUP_CODES.join("\n")
       );
     });
+  });
+
+  it("does not claim success or leak an unhandled rejection when the clipboard write fails", async () => {
+    server.use(adminEnrollOk);
+    const user = userEvent.setup();
+    const writeText = vi
+      .spyOn(navigator.clipboard, "writeText")
+      .mockRejectedValueOnce(new Error("denied"));
+    const unhandled: unknown[] = [];
+    const onRejection = (reason: unknown) => {
+      unhandled.push(reason);
+    };
+    process.on("unhandledRejection", onRejection);
+    render(<EnrollPage />);
+
+    await scanThroughQr(user);
+    await user.click(screen.getByRole("button", { name: /salin semua/i }));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    process.off("unhandledRejection", onRejection);
+    expect(unhandled).toHaveLength(0);
+    expect(screen.queryByText("Tersalin!")).not.toBeInTheDocument();
   });
 
   it("asks for the email when the email param is missing and enrolls with it", async () => {

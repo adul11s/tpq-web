@@ -6,6 +6,7 @@ import {
   server,
   adminMeAs,
   contentListHandler,
+  contentListError,
   contentPreviewHandler,
   contentPublishHandler,
   contentArchiveHandler,
@@ -246,6 +247,25 @@ describe("Persetujuan approval queue", () => {
     expect(screen.queryByText("Materi Baca Iqro")).not.toBeInTheDocument();
     expect(screen.queryByText("Halaman Profil")).not.toBeInTheDocument();
     expect(screen.getByText("TK")).toBeInTheDocument();
+  });
+
+  it("still renders available rows with a warning when one entity fails to load", async () => {
+    server.use(
+      contentListHandler("classes", [CLASS_DRAFT]),
+      contentListHandler("resources", [RESOURCE_DRAFT]),
+      contentListHandler("prayer_guides", []),
+      contentListHandler("pages", []),
+      contentListError("teachers"),
+      contentListHandler("testimonials", []),
+      contentListHandler("faqs", [])
+    );
+    renderPage();
+
+    await screen.findByText("TK");
+    expect(screen.getByText("Materi Baca Iqro")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Sebagian data gagal dimuat: Guru/i)
+    ).toBeInTheDocument();
   });
 
   it("redirects content_manager away from the page and hides actions", async () => {

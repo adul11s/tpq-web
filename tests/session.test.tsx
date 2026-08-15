@@ -3,9 +3,11 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { server } from "./msw-server";
 import { adminMeUnauthorized } from "./msw-server";
 import { SessionProvider, useSession, AuthGate } from "../src/lib/admin/session";
+import React from "react";
 
-const { mockRedirectToLogin } = vi.hoisted(() => ({
+const { mockRedirectToLogin, mockPathname } = vi.hoisted(() => ({
   mockRedirectToLogin: vi.fn(),
+  mockPathname: { current: "/admin/login" },
 }));
 
 vi.mock("../src/lib/admin/redirect", () => ({
@@ -13,7 +15,12 @@ vi.mock("../src/lib/admin/redirect", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/admin/login",
+  usePathname: () => mockPathname.current,
+}));
+
+vi.mock("next/link", () => ({
+  default: (props: { href: string; children?: React.ReactNode }) =>
+    React.createElement("a", { href: props.href }, props.children),
 }));
 
 function StatusProbe() {
@@ -75,5 +82,27 @@ describe("SessionProvider", () => {
       expect(screen.getByTestId("login-form")).toBeInTheDocument()
     );
     expect(mockRedirectToLogin).toHaveBeenCalledWith("expired");
+  });
+
+  it("renders the session-expired fallback on non-login routes when unauthenticated", async () => {
+    mockPathname.current = "/admin/pengguna";
+    server.use(adminMeUnauthorized);
+
+    render(
+      <SessionProvider>
+        <AuthGate>
+          <div data-testid="secret">protected</div>
+        </AuthGate>
+      </SessionProvider>
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Sesi berakhir. Silakan masuk kembali.")
+      ).toBeInTheDocument()
+    );
+    expect(screen.queryByTestId("secret")).not.toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /Masuk ke Panel Admin/i });
+    expect(link).toHaveAttribute("href", "/admin/login");
   });
 });

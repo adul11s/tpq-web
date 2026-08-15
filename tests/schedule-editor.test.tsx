@@ -6,6 +6,7 @@ import {
   server,
   CLASS_ROWS,
   contentCreateHandler,
+  contentDeleteHandler,
   contentListHandler,
   contentPreviewHandler,
   contentUpdateHandler,
@@ -216,6 +217,66 @@ describe("Schedule editor", () => {
       activity: "Tahsin",
       sort_order: 1,
     });
+  });
+
+  it("deletes an existing schedule row via DELETE and refetches the remaining rows", async () => {
+    const onDelete = vi.fn();
+    const store: Record<string, unknown>[] = [...SCHEDULE_ROWS];
+    let listCalls = 0;
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      contentListHandler("class_schedule_items", store, () => {
+        listCalls += 1;
+      }),
+      contentListHandler("curriculum_items", []),
+      contentDeleteHandler("class_schedule_items", (request, params) => {
+        onDelete(request, params);
+        const index = store.findIndex((row) => row.id === Number(params.id));
+        if (index >= 0) store.splice(index, 1);
+      })
+    );
+    const user = userEvent.setup();
+    renderEditor();
+
+    const firstGroup = await screen.findByRole("group", {
+      name: "Jadwal baris 1",
+    });
+    await user.click(within(firstGroup).getByRole("button", { name: "Hapus" }));
+
+    await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1));
+    const request = onDelete.mock.calls[0][0] as Request;
+    expect(request.method).toBe("DELETE");
+    expect(new URL(request.url).pathname).toBe(
+      "/api/v1/admin/class_schedule_items/11"
+    );
+    expect(request.headers.get("x-csrf-token")).toBe("abc123");
+
+    await waitFor(() => expect(listCalls).toBe(2));
+    expect(screen.getAllByRole("group")).toHaveLength(1);
+    const remaining = screen.getByRole("group", { name: "Jadwal baris 1" });
+    expect(within(remaining).getByLabelText("Kegiatan")).toHaveValue("Tahfizh");
+  });
+
+  it("drops an unsaved schedule row without calling DELETE", async () => {
+    const onDelete = vi.fn();
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      ...EMPTY_CHILDREN,
+      contentDeleteHandler("class_schedule_items", onDelete)
+    );
+    const user = userEvent.setup();
+    renderEditor();
+
+    await user.click(
+      await screen.findByRole("button", { name: "Tambah Jadwal" })
+    );
+    const group = screen.getByRole("group", { name: "Jadwal baris 1" });
+    await user.click(within(group).getByRole("button", { name: "Hapus" }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole("group", { name: "Jadwal baris 1" })).not.toBeInTheDocument()
+    );
+    expect(onDelete).not.toHaveBeenCalled();
   });
 
   it("maps curriculum aspect options to their Indonesian labels", async () => {

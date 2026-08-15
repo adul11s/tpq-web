@@ -8,6 +8,7 @@ import {
   adminMeOk,
   API_BASE,
   contentListHandler,
+  contentListError,
   contentUpdateHandler,
   inquiriesListHandler,
 } from "./msw-server";
@@ -199,6 +200,25 @@ describe("Dashboard", () => {
     await waitFor(() => {
       expect(within(inquiryLink).queryByText("2")).not.toBeInTheDocument();
     });
+  });
+
+  it("still renders stats with a warning when one draft entity fails to load", async () => {
+    mockDashboardData();
+    server.use(contentListError("teachers"));
+    renderDashboard();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "Total Unduhan" })
+      ).toBeInTheDocument();
+    });
+    const pendingCard = cardOf(
+      screen.getByRole("heading", { name: "Menunggu Persetujuan" })
+    );
+    expect(pendingCard).toHaveTextContent("2");
+    expect(
+      screen.getByText(/Sebagian data gagal dimuat: Guru/i)
+    ).toBeInTheDocument();
   });
 
   it("adds Pengaturan to the admin menu only", () => {

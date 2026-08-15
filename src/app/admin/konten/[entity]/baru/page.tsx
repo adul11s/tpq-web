@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { contentApi, saveChildRows, toApiError } from "@/lib/api/content";
 import { ENTITY_CONFIG } from "@/lib/admin/entities";
 import { EntityForm } from "@/components/admin/EntityForm";
+import { useSession } from "@/lib/admin/session";
 import type { ContentApiError } from "@/lib/api/content";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export default function KontenNewPage() {
   const { entity } = useParams<{ entity: string }>();
   const config = ENTITY_CONFIG[entity];
   const router = useRouter();
+  const { user } = useSession();
 
   const [serverError, setServerError] = useState<ContentApiError | null>(null);
   const [busy, setBusy] = useState(false);
@@ -22,6 +24,19 @@ export default function KontenNewPage() {
     return (
       <p className="text-sm font-semibold text-slate-600">
         Konten tidak ditemukan.
+      </p>
+    );
+  }
+
+  if (!user) return null;
+  if (!config.roles.includes(user.role)) {
+    router.replace("/admin");
+    return (
+      <p
+        role="alert"
+        className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
+      >
+        Halaman ini khusus untuk admin.
       </p>
     );
   }
