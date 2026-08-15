@@ -30,7 +30,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       .catch(() => setNewInquiryCount(null));
   }, [user]);
 
-  if (!user) return null;
+  if (!user) {
+    return <main className="flex-1">{children}</main>;
+  }
 
   const items = menuForRole(user.role);
   const activeItem = items.find(

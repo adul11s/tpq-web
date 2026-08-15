@@ -1,8 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useQueryParams } from "@/lib/admin/useQueryParams";
 import { z } from "zod";
 import { adminApi } from "@/lib/api/auth";
 import type { EnrollResponse } from "@/lib/api/auth";
@@ -22,8 +23,7 @@ const labelClasses = "mb-1.5 block text-sm font-extrabold text-mint-900";
 
 function EnrollForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const emailParam = searchParams.get("email");
+    const emailParam = useQueryParams().get("email");
 
   const [step, setStep] = useState<Step>(emailParam ? "qr" : "email");
   const [email, setEmail] = useState(emailParam ?? "");
@@ -457,8 +457,6 @@ function EnrollForm() {
 
 export default function AdminEnrollPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-cream" />}>
       <EnrollForm />
-    </Suspense>
   );
 }

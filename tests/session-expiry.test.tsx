@@ -175,3 +175,21 @@ describe("CSRF 403 UX", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+it("renders the page (children) even without a session on login routes (AppShell must not return null)", async () => {
+  server.use(
+    http.get(`${API_BASE}/admin/me`, () =>
+      HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
+    )
+  );
+  render(
+    <SessionProvider>
+      <AppShell>
+        <div data-testid="login-page">login form</div>
+      </AppShell>
+    </SessionProvider>
+  );
+  await waitFor(() =>
+    expect(screen.getByTestId("login-page")).toBeInTheDocument()
+  );
+});
