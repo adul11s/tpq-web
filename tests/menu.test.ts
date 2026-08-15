@@ -11,7 +11,7 @@ describe("menuForRole", () => {
     ]);
   });
 
-  it("gives admin all seven menu entries", () => {
+  it("gives admin all eight menu entries", () => {
     expect(menuForRole("admin").map((item) => item.href)).toEqual([
       "/admin",
       "/admin/konten",
@@ -20,6 +20,7 @@ describe("menuForRole", () => {
       "/admin/inquiry",
       "/admin/pengguna",
       "/admin/aktivitas",
+      "/admin/pengaturan",
     ]);
   });
 });

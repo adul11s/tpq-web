@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminApi } from "@/lib/api/auth";
+import { inquiryAdminApi } from "@/lib/api/inquiries";
 import { menuForRole } from "@/lib/admin/menu";
 import { redirectToLogin, useSession } from "@/lib/admin/session";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +13,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { user } = useSession();
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [newInquiryCount, setNewInquiryCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    inquiryAdminApi
+      .list("new")
+      .then((result) => setNewInquiryCount(result.inquiries.length))
+      .catch(() => setNewInquiryCount(null));
+  }, [user]);
 
   if (!user) return null;
 
@@ -81,7 +91,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     : "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-mint-300 transition-colors hover:bg-mint-900 hover:text-white"
                 }
               >
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.href === "/admin/inquiry" &&
+                newInquiryCount !== null &&
+                newInquiryCount > 0 ? (
+                  <span
+                    aria-label={`${newInquiryCount} inquiry baru`}
+                    className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[11px] font-bold text-white"
+                  >
+                    {newInquiryCount}
+                  </span>
+                ) : null}
               </Link>
             );
           })}

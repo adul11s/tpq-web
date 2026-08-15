@@ -478,6 +478,42 @@ const pages: EntityConfig = {
   archivable: true,
 };
 
+const siteSettings: EntityConfig = {
+  key: "site_settings",
+  label: "Pengaturan Situs",
+  createSchema: z.object({
+    key: z.string().min(1, "Key wajib diisi"),
+    value: z.unknown(),
+    description: z.string().optional(),
+  }),
+  fields: [
+    { name: "key", label: "Key", type: "text", required: true },
+    {
+      name: "value",
+      label: "Nilai (JSON)",
+      type: "textarea",
+      required: true,
+      helper: "Nilai JSON bebas: string, angka, objek, atau array",
+    },
+    { name: "description", label: "Deskripsi", type: "textarea", required: false },
+  ],
+  listColumns: [
+    { key: "key", label: "Key" },
+    {
+      key: "value",
+      label: "Nilai",
+      render: (row) => (
+        <pre className="whitespace-pre-wrap font-mono text-xs">
+          {JSON.stringify(row.value)}
+        </pre>
+      ),
+    },
+  ],
+  roles: ["admin"],
+  publishable: false,
+  archivable: false,
+};
+
 export const ENTITY_CONFIG: Record<string, EntityConfig> = {
   classes,
   resources,
@@ -488,4 +524,5 @@ export const ENTITY_CONFIG: Record<string, EntityConfig> = {
   testimonials,
   faqs,
   pages,
+  site_settings: siteSettings,
 };
