@@ -1,0 +1,27 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { adminFetch, setOnUnauthorized } from "../src/lib/api/admin-client";
+
+describe("adminFetch", () => {
+  beforeEach(() => {
+    document.cookie = "tpq_csrf=abc123; path=/";
+    vi.stubGlobal("fetch", vi.fn());
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("sends credentials and CSRF header on POST", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await adminFetch("/api/v1/admin/auth/logout", { method: "POST" });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(init.credentials).toBe("include");
+    expect(init.headers["x-csrf-token"]).toBe("abc123");
+  });
+
+  it("calls the 401 handler and rethrows", async () => {
+    const handler = vi.fn();
+    setOnUnauthorized(handler);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response('{"error":"Unauthorized"}', { status: 401 })));
+    await expect(adminFetch("/api/v1/admin/users")).rejects.toThrow();
+    expect(handler).toHaveBeenCalled();
+  });
+});
