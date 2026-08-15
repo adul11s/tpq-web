@@ -11,6 +11,8 @@ export interface EntityFormProps {
   entity: EntityConfig;
   initialValues?: Record<string, unknown>;
   onSubmit: (values: Record<string, unknown>) => void | Promise<void>;
+  submitLabel?: string;
+  submitting?: boolean;
 }
 
 type FormValues = Record<string, unknown>;
@@ -46,6 +48,8 @@ export function EntityForm({
   entity,
   initialValues,
   onSubmit,
+  submitLabel,
+  submitting = false,
 }: EntityFormProps) {
   const {
     register,
@@ -154,7 +158,9 @@ export function EntityForm({
         );
       })}
       <div className="pt-2">
-        <Button type="submit">Simpan</Button>
+        <Button type="submit" loading={submitting}>
+          {submitLabel ?? "Simpan"}
+        </Button>
       </div>
     </form>
   );

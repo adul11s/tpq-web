@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import type { AdminMe } from "../src/lib/types/admin";
+import type { AdminMe, Role } from "../src/lib/types/admin";
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -19,6 +19,109 @@ export const adminMeOk = http.get(`${API_BASE}/admin/me`, () =>
 export const adminMeUnauthorized = http.get(`${API_BASE}/admin/me`, () =>
   HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
 );
+
+export const adminMeAs = (role: Role) =>
+  http.get(`${API_BASE}/admin/me`, () => HttpResponse.json({ ...ME, role }));
+
+export const CLASS_ROWS: Record<string, unknown>[] = [
+  {
+    id: 1,
+    code: "TK",
+    name: "TK Qur'ani Bintang",
+    name_en: null,
+    age_min: 5,
+    age_max: 6,
+    description: null,
+    description_en: null,
+    hours: "08.00-10.00 WIB",
+    fees: null,
+    capacity: "24",
+    status: "draft",
+    created_at: "2026-08-01T08:00:00Z",
+    updated_at: "2026-08-01T08:00:00Z",
+  },
+  {
+    id: 2,
+    code: "TPA",
+    name: "TPA Qur'ani Bintang",
+    name_en: null,
+    age_min: 7,
+    age_max: 12,
+    description: null,
+    description_en: null,
+    hours: "16.00-18.00 WIB",
+    fees: null,
+    capacity: "30",
+    status: "published",
+    created_at: "2026-08-01T08:00:00Z",
+    updated_at: "2026-08-01T08:00:00Z",
+  },
+];
+
+export const contentListHandler = (
+  entity: string,
+  rows: Record<string, unknown>[],
+  onQuery?: (params: URLSearchParams) => void
+) =>
+  http.get(`${API_BASE}/admin/${entity}`, ({ request }) => {
+    onQuery?.(new URL(request.url).searchParams);
+    return HttpResponse.json({ [entity]: rows });
+  });
+
+export const contentPreviewHandler = (
+  entity: string,
+  row: Record<string, unknown>
+) =>
+  http.get(`${API_BASE}/admin/${entity}/${String(row.id)}/preview`, () =>
+    HttpResponse.json(row)
+  );
+
+export const contentCreateHandler = (
+  entity: string,
+  onRequest?: (request: Request, body: unknown) => void
+) =>
+  http.post(`${API_BASE}/admin/${entity}`, async ({ request }) => {
+    const body = await request.json();
+    onRequest?.(request, body);
+    return HttpResponse.json({ id: 99 }, { status: 201 });
+  });
+
+export const contentCreateError = (
+  entity: string,
+  status: number,
+  body: Record<string, unknown>
+) =>
+  http.post(`${API_BASE}/admin/${entity}`, () =>
+    HttpResponse.json(body, { status })
+  );
+
+export const contentUpdateHandler = (
+  entity: string,
+  onRequest?: (request: Request, body: unknown) => void
+) =>
+  http.patch(`${API_BASE}/admin/${entity}/:id`, async ({ request }) => {
+    const body = await request.json();
+    onRequest?.(request, body);
+    return HttpResponse.json({});
+  });
+
+export const contentPublishHandler = (
+  entity: string,
+  onRequest?: (request: Request) => void
+) =>
+  http.post(`${API_BASE}/admin/${entity}/:id/publish`, ({ request }) => {
+    onRequest?.(request);
+    return HttpResponse.json({});
+  });
+
+export const contentArchiveHandler = (
+  entity: string,
+  onRequest?: (request: Request) => void
+) =>
+  http.post(`${API_BASE}/admin/${entity}/:id/archive`, ({ request }) => {
+    onRequest?.(request);
+    return HttpResponse.json({});
+  });
 
 export const adminLoginChallenge = (challenge: "totp" | "enroll") =>
   http.post(`${API_BASE}/admin/auth/login`, () =>

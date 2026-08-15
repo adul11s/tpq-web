@@ -36,8 +36,16 @@ export async function adminFetch<T>(
     if (res.status === 401) onUnauthorized?.();
     const bodyText = await res.text().catch(() => "");
     let message = "Terjadi kesalahan";
-    try { message = JSON.parse(bodyText).error ?? message; } catch { /* non-JSON */ }
-    throw new ApiError(res.status, message);
+    let fields: Record<string, string> | undefined;
+    try {
+      const parsed = JSON.parse(bodyText) as {
+        error?: string;
+        fields?: Record<string, string>;
+      };
+      message = parsed.error ?? message;
+      if (parsed.fields && typeof parsed.fields === "object") fields = parsed.fields;
+    } catch { /* non-JSON */ }
+    throw new ApiError(res.status, message, fields);
   }
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;

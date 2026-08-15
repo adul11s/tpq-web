@@ -4,11 +4,13 @@ export const USE_MOCK_DATA = !API_BASE_URL;
 
 export class ApiError extends Error {
   status: number;
+  fields?: Record<string, string>;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, fields?: Record<string, string>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    if (fields) this.fields = fields;
   }
 }
 
