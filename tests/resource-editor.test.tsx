@@ -6,6 +6,7 @@ import {
   server,
   categoriesHandler,
   contentCreateHandler,
+  mediaListHandler,
 } from "./msw-server";
 import { EntityForm } from "../src/components/admin/EntityForm";
 import { ENTITY_CONFIG } from "../src/lib/admin/entities";
@@ -63,7 +64,7 @@ describe("Resource editor", () => {
   });
 
   it("populates the category select from GET /categories", async () => {
-    server.use(categoriesHandler(CATEGORIES));
+    server.use(categoriesHandler(CATEGORIES), mediaListHandler());
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<EntityForm entity={ENTITY_CONFIG.resources} onSubmit={onSubmit} />);
@@ -76,13 +77,20 @@ describe("Resource editor", () => {
     fireEvent.blur(screen.getByLabelText("Judul"));
     await user.selectOptions(screen.getByLabelText("Kategori"), "7");
     await user.selectOptions(screen.getByLabelText("Kelompok usia"), "tpa");
-    await user.type(screen.getByLabelText("File materi"), "10");
-    await user.type(screen.getByLabelText("Thumbnail"), "11");
+    await user.click(screen.getByLabelText("File materi"));
+    await user.click(await screen.findByText("laporan-bulanan.pdf"));
+    await user.click(screen.getByLabelText("Thumbnail"));
+    await user.click(await screen.findByText("foto-kegiatan.jpg"));
     await user.click(screen.getByRole("button", { name: "Simpan" }));
 
     await waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({ category_id: 7, title: "Doa Sebelum Makan" })
+        expect.objectContaining({
+          category_id: 7,
+          title: "Doa Sebelum Makan",
+          file_media_id: 1,
+          thumbnail_media_id: 2,
+        })
       )
     );
   });
@@ -104,7 +112,11 @@ describe("Resource editor", () => {
 
   it("shows an inline error when file_media_id is missing and does not POST", async () => {
     const onRequest = vi.fn();
-    server.use(categoriesHandler(CATEGORIES), contentCreateHandler("resources", onRequest));
+    server.use(
+      categoriesHandler(CATEGORIES),
+      contentCreateHandler("resources", onRequest),
+      mediaListHandler()
+    );
     const user = userEvent.setup();
     render(<KontenNewPage />);
 
@@ -115,7 +127,8 @@ describe("Resource editor", () => {
       "7"
     );
     await user.selectOptions(screen.getByLabelText("Kelompok usia"), "tpa");
-    await user.type(screen.getByLabelText("Thumbnail"), "11");
+    await user.click(screen.getByLabelText("Thumbnail"));
+    await user.click(await screen.findByText("foto-kegiatan.jpg"));
     await user.click(screen.getByRole("button", { name: "Simpan Draft" }));
 
     await waitFor(() =>

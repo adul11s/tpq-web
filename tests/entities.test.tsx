@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { StatusBadge } from "../src/components/admin/StatusBadge";
 import { EntityTable } from "../src/components/admin/EntityTable";
 import { EntityForm } from "../src/components/admin/EntityForm";
+import { mediaListHandler, server } from "./msw-server";
 import {
   ENTITY_CONFIG,
   AGE_GROUP_OPTIONS,
@@ -124,6 +125,7 @@ describe("EntityForm", () => {
   });
 
   it("renders age group options and submits numeric select values", async () => {
+    server.use(mediaListHandler());
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<EntityForm entity={ENTITY_CONFIG.resources} onSubmit={onSubmit} />);
@@ -142,8 +144,10 @@ describe("EntityForm", () => {
     await user.type(screen.getByLabelText("Judul"), "Kaligrafi Level 1");
     await user.selectOptions(screen.getByLabelText("Kelompok usia"), "tpa");
     await user.selectOptions(screen.getByLabelText("Kategori"), "4");
-    await user.type(screen.getByLabelText("File materi"), "10");
-    await user.type(screen.getByLabelText("Thumbnail"), "11");
+    await user.click(screen.getByLabelText("File materi"));
+    await user.click(await screen.findByText("laporan-bulanan.pdf"));
+    await user.click(screen.getByLabelText("Thumbnail"));
+    await user.click(await screen.findByText("foto-kegiatan.jpg"));
     await user.click(screen.getByRole("button", { name: "Simpan" }));
 
     await waitFor(() =>
@@ -152,8 +156,8 @@ describe("EntityForm", () => {
           title: "Kaligrafi Level 1",
           age_group: "tpa",
           category_id: 4,
-          file_media_id: 10,
-          thumbnail_media_id: 11,
+          file_media_id: 1,
+          thumbnail_media_id: 2,
         })
       )
     );

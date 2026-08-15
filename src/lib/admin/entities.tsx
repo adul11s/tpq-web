@@ -26,6 +26,7 @@ export interface FieldSpec {
   slugFrom?: string;
   required: boolean;
   helper?: string;
+  mediaKind?: "pdf" | "image" | "all";
 }
 
 export interface ListColumn {
@@ -174,8 +175,8 @@ const resources: EntityConfig = {
     { name: "category_id", label: "Kategori", type: "select", options: CATEGORY_OPTIONS, loadOptions: loadCategoryOptions, required: true },
     { name: "age_group", label: "Kelompok usia", type: "select", options: AGE_GROUP_OPTIONS, required: true },
     { name: "description", label: "Deskripsi", type: "textarea", required: false },
-    { name: "file_media_id", label: "File materi", type: "media", required: true },
-    { name: "thumbnail_media_id", label: "Thumbnail", type: "media", required: true },
+    { name: "file_media_id", label: "File materi", type: "media", mediaKind: "all", required: true },
+    { name: "thumbnail_media_id", label: "Thumbnail", type: "media", mediaKind: "image", required: true },
   ],
   listColumns: [
     { key: "title", label: "Judul" },

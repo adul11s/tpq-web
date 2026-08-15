@@ -7,6 +7,7 @@ import { z } from "zod";
 import type { EntityConfig, FieldOption, FieldSpec } from "@/lib/admin/entities";
 import { slugify } from "@/lib/admin/slug";
 import { Button } from "@/components/ui/Button";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 
 export interface EntityFormProps {
   entity: EntityConfig;
@@ -160,18 +161,12 @@ export function EntityForm({
             break;
           case "media":
             control = (
-              <div className="flex items-center gap-2">
-                <input
-                  id={id}
-                  type="number"
-                  className={inputClasses}
-                  placeholder="ID media"
-                  {...register(field.name, { valueAsNumber: true })}
-                />
-                <Button type="button" variant="outline" disabled>
-                  Pilih Media
-                </Button>
-              </div>
+              <MediaPicker
+                triggerId={id}
+                kind={field.mediaKind ?? "all"}
+                value={(getValues(field.name) as number | null) ?? null}
+                onChange={(mediaId) => setValue(field.name, mediaId)}
+              />
             );
             break;
           default:

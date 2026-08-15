@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import type { AdminMe, Role } from "../src/lib/types/admin";
+import type { AdminMe, AdminMediaAsset, Role } from "../src/lib/types/admin";
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -201,5 +201,50 @@ export const adminEnrollConfirmUnauthorized = http.post(
   `${API_BASE}/admin/auth/enroll-confirm`,
   () => HttpResponse.json({ error: "Invalid credentials" }, { status: 401 })
 );
+
+export const MEDIA_ROWS: AdminMediaAsset[] = [
+  {
+    id: 1,
+    original_name: "laporan-bulanan.pdf",
+    storage_key: "media/2026/08/laporan.pdf",
+    mime_type: "application/pdf",
+    file_size: 2_400_000,
+    kind: "pdf",
+    created_at: "2026-08-10T08:00:00Z",
+  },
+  {
+    id: 2,
+    original_name: "foto-kegiatan.jpg",
+    storage_key: "media/2026/08/foto.jpg",
+    mime_type: "image/jpeg",
+    file_size: 1_100_000,
+    kind: "image",
+    created_at: "2026-08-11T08:00:00Z",
+  },
+];
+
+export const mediaListHandler = (onRequest?: () => void) =>
+  http.get(`${API_BASE}/admin/media`, () => {
+    onRequest?.();
+    return HttpResponse.json({ media: MEDIA_ROWS });
+  });
+
+export const mediaUploadHandler = (onRequest?: (request: Request) => void) =>
+  http.post(`${API_BASE}/admin/media`, ({ request }) => {
+    onRequest?.(request);
+    return HttpResponse.json(
+      {
+        id: 99,
+        storage_key: "media/2026/08/new.pdf",
+        mime_type: "application/pdf",
+        file_size: 512_000,
+        kind: "pdf",
+      },
+      { status: 201 }
+    );
+  });
+
+export const mediaUploadError = (status: number, body: Record<string, unknown>) =>
+  http.post(`${API_BASE}/admin/media`, () => HttpResponse.json(body, { status }));
 
 export const server = setupServer(adminMeOk);
