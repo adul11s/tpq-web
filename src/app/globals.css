@@ -1,32 +1,226 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0f172a;
-}
+/* ==========================================================================
+   tokens.css — A4 Design Tokens (Tailwind v4 format, paste-ready) — UX-N06
+   Theme: "Mint, Gold & Happy" (approved direction, mockups/ folder)
+   Source: ui-ux-deliverables/tokens.css (2026-08-15, UI/UX)
+   ========================================================================== */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-arabic: var(--font-amiri);
-  --color-mint-50: #f2fbf6;
+:root {
+  /* ---- Brand: mint (primary) ------------------------------------------- */
+  --color-mint-50:  #f2fbf6;
   --color-mint-100: #e0f5e9;
   --color-mint-200: #c0e9d4;
   --color-mint-300: #93d8b4;
   --color-mint-400: #5cbf8e;
   --color-mint-500: #3aa476;
-  --color-mint-600: #2b8a63;
-  --color-mint-700: #246f53;
+  --color-mint-600: #2b8a63; /* large text / UI fills only (4.27:1) */
+  --color-mint-700: #246f53; /* small-text-safe primary (6.05:1) */
   --color-mint-800: #205844;
-  --color-mint-900: #1c483a;
-  --color-mint-950: #0d2b22;
-  --color-cream: #fbfdf8;
+  --color-mint-900: #1c483a; /* ink */
+  --color-mint-950: #0d2b22; /* footer / admin sidebar */
+
+  /* ---- Brand: gold (accent) -------------------------------------------- */
+  --color-gold-50:  #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24; /* decorative only */
+  --color-gold-500: #f59e0b; /* pair with dark text (4.80:1) */
+  --color-gold-600: #d97706; /* large text only (3.19:1) */
+  --color-gold-700: #b45309; /* small-text-safe accent (5.02:1) */
+
+  /* ---- Base surfaces ---------------------------------------------------- */
+  --color-cream: #fbfdf8; /* page background */
+  --color-surface: #ffffff; /* cards */
+  --color-background: var(--color-cream);
+  --color-foreground: var(--color-mint-900);
+
+  /* ---- Semantic (map in @theme below) ---------------------------------- */
+  --color-primary: var(--color-mint-700);
+  --color-primary-hover: var(--color-mint-800);
+  --color-primary-active: var(--color-mint-900);
+  --color-primary-soft: var(--color-mint-100);
+  --color-on-primary: #ffffff;
+  --color-accent: var(--color-gold-500);
+  --color-accent-strong: var(--color-gold-700);
+  --color-on-accent: var(--color-mint-950); /* dark text on gold — 4.80:1 */
+  --color-success: var(--color-mint-700);
+  --color-success-soft: var(--color-mint-100);
+  --color-error: #be123c;      /* rose-700 — 6.29:1 on white */
+  --color-error-soft: #ffe4e6; /* rose-100 */
+  --color-warning: var(--color-gold-700);
+  --color-warning-soft: var(--color-gold-100);
+  --color-info: #1d4ed8;       /* blue-700 — 6.70:1 on white */
+  --color-info-soft: #dbeafe;  /* blue-100 */
+  --color-border: var(--color-mint-200);
+  --color-muted: #64748b;      /* slate-500 — 4.76:1 on white */
+
+  /* ---- Typography ------------------------------------------------------- */
+  --font-display: "Baloo 2", cursive;                 /* headings, playful */
+  --font-body: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: "Amiri", serif;                      /* existing, keep */
+  --font-mono: ui-monospace, SFMono-Regular, monospace;
+  --text-display-3xl: 1.875rem;   /* 30 px mobile h1 */
+  --text-display-5xl: 3rem;       /* 48 px desktop h1 */
+  --text-body-sm: 0.875rem;
+  --text-body-base: 1rem;
+  --leading-display: 1.15;       /* headings */
+  --leading-body: 1.6;
+  --leading-arabic: 2.0;         /* Amiri needs extra line-height (G9) */
+
+  /* ---- Spacing scale (4 px base) ---------------------------------------- */
+  --space-1: 0.25rem;  --space-2: 0.5rem;  --space-3: 0.75rem;
+  --space-4: 1rem;     --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem;     --space-10: 2.5rem; --space-12: 3rem;
+  --space-16: 4rem;    --space-20: 5rem;
+
+  /* ---- Radius ----------------------------------------------------------- */
+  --radius-sm: 0.5rem;    /* 8 — inputs, small buttons */
+  --radius-md: 0.75rem;   /* 12 — buttons */
+  --radius-lg: 1rem;      /* 16 — chips */
+  --radius-xl: 1.25rem;   /* 20 — cards */
+  --radius-2xl: 1.5rem;   /* 24 — hero panels */
+  --radius-full: 9999px;  /* pills */
+
+  /* ---- Shadows ---------------------------------------------------------- */
+  --shadow-soft: 0 1px 2px rgba(13, 43, 34, 0.05), 0 4px 12px rgba(13, 43, 34, 0.06);
+  --shadow-card: 0 1px 2px rgba(13, 43, 34, 0.05), 0 8px 24px -8px rgba(13, 43, 34, 0.12);
+  --shadow-lift: 0 12px 32px -12px rgba(13, 43, 34, 0.22);
+
+  /* ---- Touch target (G2) ------------------------------------------------ */
+  --touch-target: 44px;
+
+  /* ---- Breakpoints (G1/G3) ---------------------------------------------- */
+  --breakpoint-xs: 320px;
+  --breakpoint-sm: 480px;   /* 1→2 cols */
+  --breakpoint-md: 768px;   /* 2→3 cols (iPad portrait) */
+  --breakpoint-lg: 1024px;  /* 3→4 cols */
+
+  /* ---- Arabic / rtl-safe spacing (G9) ----------------------------------- */
+  --space-arabic-block: 0.5em;
+  --arabic-line-height: var(--leading-arabic);
+  --font-amiri: var(--font-amiri);
+  --font-arabic: var(--font-amiri); /* self-hosted Amiri from next/font (A4) */
+}
+
+/* ---- Tailwind v4 theme mappings (utility classes) ---------------------- */
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-cream: var(--color-cream);
+  --color-surface: var(--color-surface);
+
+  --color-mint-50: var(--color-mint-50);
+  --color-mint-100: var(--color-mint-100);
+  --color-mint-200: var(--color-mint-200);
+  --color-mint-300: var(--color-mint-300);
+  --color-mint-400: var(--color-mint-400);
+  --color-mint-500: var(--color-mint-500);
+  --color-mint-600: var(--color-mint-600);
+  --color-mint-700: var(--color-mint-700);
+  --color-mint-800: var(--color-mint-800);
+  --color-mint-900: var(--color-mint-900);
+  --color-mint-950: var(--color-mint-950);
+
+  --color-gold-50: var(--color-gold-50);
+  --color-gold-100: var(--color-gold-100);
+  --color-gold-200: var(--color-gold-200);
+  --color-gold-300: var(--color-gold-300);
+  --color-gold-400: var(--color-gold-400);
+  --color-gold-500: var(--color-gold-500);
+  --color-gold-600: var(--color-gold-600);
+  --color-gold-700: var(--color-gold-700);
+
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-active: var(--color-primary-active);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-on-primary: var(--color-on-primary);
+  --color-accent: var(--color-accent);
+  --color-accent-strong: var(--color-accent-strong);
+  --color-on-accent: var(--color-on-accent);
+  --color-success: var(--color-success);
+  --color-success-soft: var(--color-success-soft);
+  --color-error: var(--color-error);
+  --color-error-soft: var(--color-error-soft);
+  --color-warning: var(--color-warning);
+  --color-warning-soft: var(--color-warning-soft);
+  --color-info: var(--color-info);
+  --color-info-soft: var(--color-info-soft);
+  --color-border: var(--color-border);
+  --color-muted: var(--color-muted);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-arabic: var(--font-arabic);
+  --font-mono: var(--font-mono);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-full: var(--radius-full);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+
+  --breakpoint-sm: var(--breakpoint-sm);
+  --breakpoint-md: var(--breakpoint-md);
+  --breakpoint-lg: var(--breakpoint-lg);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  line-height: var(--leading-body);
 }
+
+/* Utility building blocks (plain CSS classes the Figma library maps to) */
+.font-arabic { font-family: var(--font-arabic); line-height: var(--leading-arabic); }
+.touch-target { min-height: var(--touch-target); min-width: var(--touch-target); }
+
+/* ---- Focus visibility (11-a11y-audit) ----------------------------------- */
+:focus-visible {
+  outline: 2px solid #2b8a63;
+  outline-offset: 2px;
+}
+
+/* ---- Decorative: star pattern / orbs / floaty (mockup-01) --------------- */
+.star-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg fill='none' stroke='%23246f53' stroke-opacity='0.14'%3E%3Cpath d='M44 12 L51 37 L76 44 L51 51 L44 76 L37 51 L12 44 L37 37 Z'/%3E%3Ccircle cx='44' cy='44' r='7'/%3E%3C/g%3E%3C/svg%3E");
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(64px);
+  pointer-events: none;
+  opacity: 0.5;
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-9px); }
+}
+.animate-floaty { animation: floaty 6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media print {
+  header, footer, .no-print { display: none !important; }
+  body { background: #fff !important; }
+  article { break-inside: avoid; }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Honeypot field (G14): invisible to humans, real CSS (09-inquiry-form) */
+.honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }

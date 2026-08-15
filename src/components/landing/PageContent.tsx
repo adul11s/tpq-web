@@ -30,17 +30,7 @@ export function PageContent({
       {visible.map((block) => {
         switch (block.type) {
           case "hero":
-            return (
-              <Hero
-                key={block.id}
-                heading={block.heading ?? ""}
-                text={block.text ?? ""}
-                ctaLabel={block.ctaLabel}
-                ctaHref={localizeHref(lang, block.ctaHref)}
-                ctaSecondaryLabel={block.ctaSecondaryLabel}
-                ctaSecondaryHref={localizeHref(lang, block.ctaSecondaryHref)}
-              />
-            );
+            return <Hero key={block.id} lang={lang} />;
           case "heading":
             return (
               <h2

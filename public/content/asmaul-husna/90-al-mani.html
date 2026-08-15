@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>90 · Al-Mani' — Asmaul Husna</title>
+  <meta name="description" content="90/99 Asmaul Husna: الْمَانِعُ — The Preventer. Lembar latihan menebalkan huruf." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --c1: #8a8a7a;
+      --c2: #f1f1ec;
+      --c1-soft: rgba(138, 138, 122, 0.5);
+      --c1-faint: rgba(138, 138, 122, 0.28);
+      --c2-faint: rgba(241, 241, 236, 0.65);
+      --ink: #2c3e35;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(12px, 3vw, 36px);
+      font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 600px at 85% -10%, var(--c2-faint), transparent 60%),
+        radial-gradient(800px 550px at -10% 110%, var(--c2-faint), transparent 55%),
+        linear-gradient(160deg, #fdfefb 0%, #f6faf5 55%, #f1f8f2 100%);
+      overflow-x: hidden;
+    }
+
+    .motif-bg {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: clamp(280px, 52vmin, 620px);
+      height: clamp(280px, 52vmin, 620px);
+      transform: translate(-50%, -50%);
+      color: var(--c1);
+      opacity: 0.09;
+      pointer-events: none;
+      z-index: 0;
+      animation: breathe 14s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.05); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 860px;
+      text-align: center;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: clamp(0.8rem, 2vw, 1.4rem);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--c1);
+    }
+
+    .badge .n {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--c1);
+      color: #fff;
+      font-size: 0.85rem;
+    }
+
+    .link-home {
+      font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+      font-weight: 700;
+      color: var(--c1);
+      text-decoration: none;
+      border-bottom: 1.5px dashed var(--c1-soft);
+      padding-bottom: 2px;
+    }
+
+    .name {
+      font-family: "Amiri", serif;
+      font-weight: 700;
+      font-size: clamp(2.4rem, 8.5vw, 5.2rem);
+      line-height: 1.35;
+      color: var(--c1);
+      text-shadow: 0 2px 26px var(--c1-faint);
+      direction: rtl;
+      margin-bottom: clamp(0.6rem, 2vw, 1.1rem);
+    }
+
+    .trace-label {
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--c1);
+      opacity: 0.75;
+      margin-bottom: 0.6rem;
+    }
+
+    .trace {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-end;
+      gap: clamp(4px, 1.2vw, 12px);
+      direction: rtl;
+      margin-bottom: clamp(0.9rem, 2.5vw, 1.5rem);
+    }
+
+    .letter {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: clamp(1.9rem, 9vw, 3.4rem);
+      max-width: clamp(3.2rem, 16vw, 5.4rem);
+      height: clamp(3rem, 13vh, 5.6rem);
+      display: grid;
+      place-items: center;
+      container-type: inline-size;
+      border: 1px solid var(--c1-faint);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.55);
+    }
+
+    .letter.gap {
+      border: none;
+      background: none;
+      min-width: clamp(0.5rem, 2vw, 1rem);
+      max-width: clamp(0.5rem, 2vw, 1rem);
+    }
+
+    .letter .gl {
+      font-family: "Amiri", serif;
+      font-weight: 700;
+      font-size: 56cqi;
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: clamp(1px, 0.12cqi, 2.5px) var(--c1-soft);
+      user-select: none;
+    }
+
+    @supports not (-webkit-text-stroke: 1px) {
+      .letter .gl { color: var(--c1-faint); }
+    }
+
+    .letter::after {
+      content: "";
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      bottom: 10%;
+      border-bottom: 2px dotted var(--c1-soft);
+    }
+
+    .meaning {
+      display: flex;
+      align-items: center;
+      gap: clamp(12px, 3vw, 20px);
+      text-align: left;
+      padding: clamp(14px, 3vw, 22px) clamp(16px, 4vw, 28px);
+      border-radius: 20px;
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5));
+      -webkit-backdrop-filter: blur(14px) saturate(1.2);
+      backdrop-filter: blur(14px) saturate(1.2);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 16px 44px -24px var(--c1-faint);
+    }
+
+    .meaning .icon {
+      flex: 0 0 auto;
+      width: clamp(40px, 8vw, 54px);
+      height: clamp(40px, 8vw, 54px);
+      color: var(--c1);
+      opacity: 0.85;
+    }
+
+    .meaning .tr {
+      font-weight: 800;
+      font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+      color: var(--c1);
+    }
+
+    .meaning .en {
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(0.85rem, 2.4vw, 1rem);
+      color: #3d5c4a;
+      margin-top: 2px;
+    }
+
+    .meaning .id {
+      font-size: clamp(0.8rem, 2.3vw, 0.95rem);
+      color: #5c7266;
+      margin-top: 2px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: clamp(0.9rem, 2.5vw, 1.4rem);
+    }
+
+    .nav a {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: clamp(0.75rem, 2vw, 0.88rem);
+      font-weight: 800;
+      color: #fff;
+      background: var(--c1);
+      text-decoration: none;
+      padding: 7px 16px;
+      border-radius: 999px;
+      box-shadow: 0 8px 20px -10px var(--c1);
+      opacity: 0.95;
+      transition: opacity 0.2s;
+    }
+
+    .nav a:hover { opacity: 1; }
+    .nav a.disabled { opacity: 0.35; pointer-events: none; }
+
+    @media (max-height: 640px) {
+      .name { font-size: clamp(1.8rem, 7vw, 3.4rem); margin-bottom: 0.4rem; }
+      .letter { height: clamp(2.4rem, 18vh, 4rem); }
+      .trace { margin-bottom: 0.5rem; }
+      .topbar { margin-bottom: 0.4rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <svg class="motif-bg" viewBox="0 0 100 100" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 78h76"/><path d="M12 56l26-22 22 18 28-24v50H12z"/><path d="M34 78V44M58 78V50"/>
+    </g>
+  </svg>
+
+  <main class="page">
+    <header class="topbar">
+      <span class="badge"><span class="n">90</span> Asmaul Husna</span>
+      <a class="link-home" href="index.html">99 Nama &rarr;</a>
+    </header>
+
+    <h1 class="name" lang="ar" dir="rtl">الْمَانِعُ</h1>
+
+    <p class="trace-label">Tebalkan huruf-huruf berikut</p>
+    <div class="trace" dir="rtl" aria-label="Tracing letters">
+      <div class="letter"><span class="gl">ا</span></div>
+<div class="letter"><span class="gl">لْ</span></div>
+<div class="letter"><span class="gl">مَ</span></div>
+<div class="letter"><span class="gl">ا</span></div>
+<div class="letter"><span class="gl">نِ</span></div>
+<div class="letter"><span class="gl">عُ</span></div>
+    </div>
+
+    <section class="meaning">
+      <svg class="icon" viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 78h76"/><path d="M12 56l26-22 22 18 28-24v50H12z"/><path d="M34 78V44M58 78V50"/>
+        </g>
+      </svg>
+      <div>
+        <div class="tr">Al-Mani'</div>
+        <div class="en">The Preventer</div>
+        <div class="id">Yang Maha Mencegah</div>
+      </div>
+    </section>
+
+    <nav class="nav">
+      <a href="89-al-mughni.html" title="Al-Mughni">&#8592; Sebelumnya</a>
+      <a href="index.html">Semua Nama</a>
+      <a href="91-ad-darr.html" title="Ad-Darr">Berikutnya &#8594;</a>
+    </nav>
+  </main>
+</body>
+</html>

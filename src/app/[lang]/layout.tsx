@@ -1,6 +1,7 @@
 import { AnalyticsTracker } from "@/components/AnalyticsTracker";
 import { Footer } from "@/components/landing/Footer";
 import { Navbar } from "@/components/landing/Navbar";
+import { SkipLink } from "@/components/landing/SkipLink";
 import { isLang, type Lang } from "@/lib/lang";
 
 export function generateStaticParams(): { lang: Lang }[] {
@@ -18,8 +19,11 @@ export default async function LangLayout({ params, children }: LangLayoutProps) 
 
   return (
     <div className="flex min-h-full flex-col">
+      <SkipLink lang={lang} />
       <Navbar lang={lang} />
-      <main className="flex-1">{children}</main>
+      <main id="main" className="flex-1">
+        {children}
+      </main>
       <Footer lang={lang} />
       <AnalyticsTracker lang={lang} />
     </div>
