@@ -24,6 +24,7 @@ export interface SessionValue {
   status: SessionStatus;
   user: AdminMe | null;
   refresh: () => void;
+  logout: () => void;
 }
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -45,13 +46,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       });
   }, []);
 
+  const logout = useCallback(() => {
+    setUser(null);
+    setStatus("unauthenticated");
+  }, []);
+
   useEffect(() => {
     setOnUnauthorized(() => redirectToLogin("expired"));
     probe();
   }, [probe]);
 
   return (
-    <SessionContext.Provider value={{ status, user, refresh: probe }}>
+    <SessionContext.Provider value={{ status, user, refresh: probe, logout }}>
       {children}
     </SessionContext.Provider>
   );

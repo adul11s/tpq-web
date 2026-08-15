@@ -12,6 +12,7 @@ function stubLocation(pathname: string) {
     set href(value: string) {
       hrefSetter(value);
     },
+    replace: (value: string) => hrefSetter(value),
   };
   Object.defineProperty(window, "location", {
     value: fakeLocation,

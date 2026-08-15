@@ -1,8 +1,11 @@
 import { ApiError } from "./client";
 
 let onUnauthorized: (() => void) | undefined;
+let onForbidden: (() => void) | undefined;
 
 export function setOnUnauthorized(fn: () => void) { onUnauthorized = fn; }
+
+export function setOnForbidden(fn: () => void) { onForbidden = fn; }
 
 function csrfToken(): string {
   const match = document.cookie.split("; ").find((c) => c.startsWith("tpq_csrf="));
@@ -34,6 +37,7 @@ export async function adminFetch<T>(
   });
   if (!res.ok) {
     if (res.status === 401) onUnauthorized?.();
+    if (res.status === 403) onForbidden?.();
     const bodyText = await res.text().catch(() => "");
     let message = "Terjadi kesalahan";
     let fields: Record<string, string> | undefined;

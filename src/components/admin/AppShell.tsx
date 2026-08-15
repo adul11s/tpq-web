@@ -4,16 +4,23 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminApi } from "@/lib/api/auth";
+import { setOnForbidden } from "@/lib/api/admin-client";
 import { inquiryAdminApi } from "@/lib/api/inquiries";
 import { menuForRole } from "@/lib/admin/menu";
 import { redirectToLogin, useSession } from "@/lib/admin/session";
 import { Button } from "@/components/ui/Button";
+import { ForbiddenNotice } from "./ForbiddenNotice";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { user } = useSession();
+  const { user, logout } = useSession();
   const pathname = usePathname();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
   const [newInquiryCount, setNewInquiryCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    setOnForbidden(() => setForbidden(true));
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -38,12 +45,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     .toUpperCase();
 
   async function handleLogout() {
+    if (!window.confirm("Yakin ingin keluar dari panel admin?")) return;
     setLoggingOut(true);
+    logout();
     try {
       await adminApi.logout();
     } catch {
-      redirectToLogin();
-      return;
+      // best-effort: server-side revocation may already be complete
     }
     redirectToLogin();
   }
@@ -109,6 +117,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {forbidden ? (
+          <div className="px-4 pt-4 lg:px-8">
+            <ForbiddenNotice onDismiss={() => setForbidden(false)} />
+          </div>
+        ) : null}
         <header className="sticky top-0 z-20 border-b border-mint-200 bg-white/90 backdrop-blur">
           <div className="flex items-center gap-3 px-4 py-3 lg:px-8">
             <h1 className="text-lg font-bold text-mint-900">
