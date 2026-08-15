@@ -207,7 +207,13 @@
         transition: none !important;
       }
     }
-  </style>
+  
+    @media print {
+      body { padding: 0; background: #fff !important; }
+      @page { size: A4 portrait; margin: 14mm; }
+      *, *::before, *::after { animation: none !important; transition: none !important; box-shadow: none !important; }
+    }
+</style>
 </head>
 <body>
   <div class="orb orb--one" aria-hidden="true"></div>

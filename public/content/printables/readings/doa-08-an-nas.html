@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bacaan Surat An-Nas — TPQ Qur'ani</title>
+  <meta name="description" content="Bacaan Surat An-Nas — lembar cetak A4, TPQ Qur'ani." />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+      color: #334155;
+      background: #f2f7f4;
+    }
+    .sheet {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      padding: 12mm 14mm;
+      background: linear-gradient(165deg, #ffffff 0%, #fdfefb 60%, #ccfbf166 100%);
+      overflow: hidden;
+    }
+    .head { display: flex; align-items: center; gap: 8px; }
+    .head .brand {
+      font-family: "Baloo 2", cursive; font-weight: 800; color: #134e4a;
+      font-size: 11pt; letter-spacing: 0.02em;
+    }
+    .head .chip {
+      margin-left: auto; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #134e4a; background: #ccfbf1;
+      padding: 4px 12px; border-radius: 999px;
+    }
+    .title {
+      font-family: "Baloo 2", cursive; font-weight: 800; text-align: center;
+      font-size: 21pt; line-height: 1.15; color: #134e4a; margin-top: 6mm;
+    }
+    .subtitle {
+      text-align: center; font-size: 10pt; font-weight: 700; font-style: italic;
+      color: #64748b; margin-top: 2mm;
+    }
+    .art { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; margin: 6mm 0; }
+    .art svg { width: 100%; height: auto; max-height: 190mm; }
+    .foot {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 8.5pt; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #134e4a;
+    }
+    .foot .l { height: 1.2px; width: 24mm; background: linear-gradient(90deg, transparent, #134e4a88); }
+    .foot .l:last-child { transform: scaleX(-1); }
+    .ar { font-family: "Amiri", serif; direction: rtl; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      body { padding: 0; background: #fff; }
+      .sheet { min-height: auto; height: 297mm; box-shadow: none; background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="head">
+      <span class="brand">TPQ Qur&rsquo;ani</span>
+      <span class="chip">Doa &amp; Bacaan</span>
+    </header>
+    <h1 class="title">Bacaan Surat An-Nas</h1>
+    <p class="subtitle">Surah An-Nas</p>
+    
+    <div class="art" style="flex-direction: column; gap: 6mm; width: 100%;">
+      <div style="width: 100%; text-align: center; padding: 9mm 6mm; border-radius: 8mm;
+                  background: rgba(255,255,255,0.75); border: 2px solid #ccfbf1;">
+        <p class="ar" lang="ar" dir="rtl" style="font-weight: 700; font-size: 26pt; line-height: 1.9; color: #134e4a;">قُلْ أَعُوذُ بِرَبِّ النَّاسِ ۝ مَلِكِ النَّاسِ ۝ إِلَٰهِ النَّاسِ ۝ مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ ۝ الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ ۝ مِنَ الْجِنَّةِ وَالنَّاسِ</p>
+      </div>
+      <p style="font-size: 12.5pt; font-weight: 700; font-style: italic; text-align: center; color: #134e4a;">Qul a'uudzu birabbin-naas · Malikin-naas · Ilaahin-naas · Min syarril-waswaasil-khannaas · Alladzii yuwaswisu fii shuduurin-naas · Minal-jinnati wan-naas</p>
+      <p style="font-size: 11.5pt; font-weight: 700; text-align: center; color: #475569; line-height: 1.7;">“Katakanlah: Aku berlindung kepada Tuhan manusia; Raja manusia; Sembahan manusia; dari kejahatan bisikan setan yang bersembunyi; yang membisikkan ke dalam dada manusia; dari jin dan manusia.”</p>
+      <p style="font-size: 10.5pt; font-weight: 600; font-style: italic; text-align: center; color: #64748b; line-height: 1.6;">“Say: I seek refuge in the Lord of mankind; the King of mankind; the God of mankind; from the evil of the sneaking whisperer; who whispers in the breasts of mankind; from jinn and men.”</p>
+      <div style="width: 100%; margin-top: 2mm;">
+        <p style="font-size: 9pt; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: #64748b; margin-bottom: 3mm;">LATIHAN MEMBACA</p>
+        <div style="border-bottom: 1.3pt solid #134e4a44; height: 13mm;"></div>
+      </div>
+    </div>
+    <footer class="foot">
+      <span class="l"></span><span>Doa &amp; Bacaan &middot; TPQ Qur&rsquo;ani</span><span class="l"></span>
+    </footer>
+  </main>
+</body>
+</html>

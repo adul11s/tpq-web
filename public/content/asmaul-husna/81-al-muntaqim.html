@@ -257,7 +257,13 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
     }
-  </style>
+  
+    @media print {
+      body { padding: 0; background: #fff !important; }
+      @page { size: A4 portrait; margin: 14mm; }
+      *, *::before, *::after { animation: none !important; transition: none !important; box-shadow: none !important; }
+    }
+</style>
 </head>
 <body>
   <svg class="motif-bg" viewBox="0 0 100 100" aria-hidden="true">

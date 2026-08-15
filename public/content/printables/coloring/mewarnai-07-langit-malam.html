@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mewarnai Langit Malam — TPQ Qur'ani</title>
+  <meta name="description" content="Mewarnai Langit Malam — lembar cetak A4, TPQ Qur'ani." />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+      color: #334155;
+      background: #f2f7f4;
+    }
+    .sheet {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      padding: 12mm 14mm;
+      background: linear-gradient(165deg, #ffffff 0%, #fdfefb 60%, #ede9fe66 100%);
+      overflow: hidden;
+    }
+    .head { display: flex; align-items: center; gap: 8px; }
+    .head .brand {
+      font-family: "Baloo 2", cursive; font-weight: 800; color: #4c1d95;
+      font-size: 11pt; letter-spacing: 0.02em;
+    }
+    .head .chip {
+      margin-left: auto; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #4c1d95; background: #ede9fe;
+      padding: 4px 12px; border-radius: 999px;
+    }
+    .title {
+      font-family: "Baloo 2", cursive; font-weight: 800; text-align: center;
+      font-size: 21pt; line-height: 1.15; color: #4c1d95; margin-top: 6mm;
+    }
+    .subtitle {
+      text-align: center; font-size: 10pt; font-weight: 700; font-style: italic;
+      color: #64748b; margin-top: 2mm;
+    }
+    .art { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; margin: 6mm 0; }
+    .art svg { width: 100%; height: auto; max-height: 190mm; }
+    .foot {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 8.5pt; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #4c1d95;
+    }
+    .foot .l { height: 1.2px; width: 24mm; background: linear-gradient(90deg, transparent, #4c1d9588); }
+    .foot .l:last-child { transform: scaleX(-1); }
+    .ar { font-family: "Amiri", serif; direction: rtl; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      body { padding: 0; background: #fff; }
+      .sheet { min-height: auto; height: 297mm; box-shadow: none; background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="head">
+      <span class="brand">TPQ Qur&rsquo;ani</span>
+      <span class="chip">Mewarnai</span>
+    </header>
+    <h1 class="title">Mewarnai Langit Malam</h1>
+    <p class="subtitle">Coloring · Night Sky</p>
+    <div class="art"><svg viewBox="0 0 400 380" fill="none" stroke="#334155" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="292" cy="100" r="54"/><circle cx="314" cy="82" r="42" fill="#ffffff"/><path d="M60 120 L 68 138 L 88 142 L 74 155 L 79 175 L 60 164 L 41 175 L 46 155 L 32 142 L 52 138 Z"/><path d="M150 60 L 156 76 L 174 80 L 162 90 L 166 108 L 150 98 L 134 108 L 138 90 L 126 80 L 144 76 Z"/><path d="M40 320 Q 80 284 120 320 M 240 340 Q 280 306 320 340"/><path d="M120 320 Q 160 288 200 320"/><path d="M60 260 Q 88 234 116 260 Q 88 270 60 260 Z"/></svg></div>
+    <footer class="foot">
+      <span class="l"></span><span>Mewarnai &middot; TPQ Qur&rsquo;ani</span><span class="l"></span>
+    </footer>
+  </main>
+</body>
+</html>

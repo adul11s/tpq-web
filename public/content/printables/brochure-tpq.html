@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brochure — TPQ Qur'ani | PAUD · TK · TPA</title>
+  <meta name="description" content="Brosur program TPQ Qur'ani — PAUD, TK, TPA Qur'ani. A4 siap cetak." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100vh; display: grid; place-items: center; padding: 16px;
+      font-family: "Nunito", ui-sans-serif, system-ui, sans-serif; color: #334155;
+      background: #eef4f0;
+    }
+    .sheet {
+      width: 210mm; min-height: 297mm; padding: 13mm 15mm; position: relative; overflow: hidden;
+      background: linear-gradient(170deg, #ffffff 0%, #fbfdf8 55%, #e0f5e9 100%);
+      display: flex; flex-direction: column;
+    }
+    .star-band {
+      position: absolute; inset: 0; opacity: 0.5; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88' viewBox='0 0 88 88'%3E%3Cg fill='none' stroke='%232b8a63' stroke-opacity='0.10'%3E%3Cpath d='M44 12 L51 37 L76 44 L51 51 L44 76 L37 51 L12 44 L37 37 Z'/%3E%3Ccircle cx='44' cy='44' r='7'/%3E%3C/g%3E%3C/svg%3E");
+    }
+    .head { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 15mm; height: 15mm; border-radius: 5mm; background: #2b8a63; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-size: 9pt; font-weight: 800;
+    }
+    .brand { font-family: "Baloo 2", cursive; font-size: 16pt; font-weight: 800; color: #1c483a; }
+    .brand small { display: block; font-family: "Nunito", sans-serif; font-size: 8pt; font-weight: 800; letter-spacing: 0.18em; color: #246f53; }
+    .hero { text-align: center; margin-top: 7mm; }
+    .hero .ar { font-family: "Amiri", serif; font-size: 15pt; font-weight: 700; color: #205844; }
+    .hero h1 { font-family: "Baloo 2", cursive; font-size: 26pt; font-weight: 800; color: #1c483a; margin-top: 2mm; line-height: 1.15; }
+    .hero p { font-size: 10.5pt; font-weight: 600; color: #475569; margin-top: 3mm; line-height: 1.6; max-width: 150mm; margin-inline: auto; }
+    .cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; margin-top: 8mm; }
+    .prog {
+      border: 1.5pt solid #c0e9d4; border-radius: 6mm; padding: 5mm; background: rgba(255,255,255,0.8);
+    }
+    .prog .tag {
+      display: inline-block; font-size: 8pt; font-weight: 800; letter-spacing: 0.1em;
+      text-transform: uppercase; color: #fff; border-radius: 999px; padding: 2px 10px;
+    }
+    .t-paud { background: #0ea5e9; } .t-tk { background: #f59e0b; } .t-tpa { background: #8b5cf6; }
+    .prog h2 { font-family: "Baloo 2", cursive; font-size: 13pt; color: #1c483a; margin-top: 2.5mm; }
+    .prog .age { font-size: 8.5pt; font-weight: 800; color: #64748b; }
+    .prog ul { margin-top: 2.5mm; list-style: none; }
+    .prog li { font-size: 8.5pt; font-weight: 600; color: #475569; line-height: 1.7; padding-left: 4mm; position: relative; }
+    .prog li::before { content: "✦"; position: absolute; left: 0; color: #f59e0b; }
+    .info { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; margin-top: 7mm; }
+    .box { border: 1.5pt solid #e0f5e9; border-radius: 5mm; padding: 4.5mm 5mm; background: rgba(255,255,255,0.75); }
+    .box h3 { font-family: "Baloo 2", cursive; font-size: 11pt; color: #205844; }
+    .box p, .box li { font-size: 8.5pt; font-weight: 600; color: #475569; line-height: 1.6; }
+    .box ul { list-style: none; margin-top: 1.5mm; }
+    .box li { padding-left: 4mm; position: relative; }
+    .box li::before { content: "—"; position: absolute; left: 0; color: #2b8a63; }
+    .sched { margin-top: 1.5mm; }
+    .sched td { font-size: 8.5pt; font-weight: 600; color: #475569; padding: 1.2mm 2mm; border-bottom: 0.5pt solid #e0f5e9; }
+    .sched td:first-child { font-weight: 800; color: #1c483a; }
+    .cta {
+      margin-top: auto; text-align: center; background: #2b8a63; color: #fff;
+      border-radius: 6mm; padding: 5mm; margin-top: 8mm;
+    }
+    .cta p { font-family: "Baloo 2", cursive; font-size: 12pt; font-weight: 800; }
+    .cta small { font-size: 8.5pt; font-weight: 700; opacity: 0.9; }
+    .foot { text-align: center; margin-top: 4mm; font-size: 8pt; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: #246f53; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      body { padding: 0; background: #fff; }
+      .sheet { min-height: auto; height: 297mm; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <div class="star-band" aria-hidden="true"></div>
+    <header class="head">
+      <span class="logo">TPQ</span>
+      <span class="brand">TPQ Qur&rsquo;ani<small>PAUD &middot; TK &middot; TPA</small></span>
+    </header>
+
+    <section class="hero">
+      <p class="ar" lang="ar" dir="rtl">اَللّٰهُمَّ بَارِكْ لَنَا فِيْمَا رَزَقْتَنَا</p>
+      <h1>Mendidik Anak Mencintai Al-Qur&rsquo;an<br />dan Berakhlak Mulia</h1>
+      <p>
+        Pendidikan berbasis Al-Qur&rsquo;an untuk usia 3&ndash;12 tahun dengan metode belajar
+        yang menyenangkan, penuh warna, dan kasih sayang. Didampingi ustadz/ustadzah yang sabar dan tersertifikasi.
+      </p>
+    </section>
+
+    <section class="cols">
+      <article class="prog">
+        <span class="tag t-paud">PAUD</span>
+        <h2>PAUD Qur&rsquo;ani</h2>
+        <p class="age">Usia 3&ndash;4 tahun</p>
+        <ul>
+          <li>Mengenal huruf hijaiyah</li>
+          <li>Doa harian sederhana</li>
+          <li>Motorik halus &amp; fun play</li>
+          <li>Adab dan kemandirian</li>
+        </ul>
+      </article>
+      <article class="prog">
+        <span class="tag t-tk">TK</span>
+        <h2>TK Qur&rsquo;ani</h2>
+        <p class="age">Usia 5&ndash;6 tahun</p>
+        <ul>
+          <li>Tahsin &amp; baca Al-Qur&rsquo;an awal</li>
+          <li>Hafalan surat pendek</li>
+          <li>Doa harian &amp; praktik ibadah</li>
+          <li>Calistung, adab, kisah nabi</li>
+        </ul>
+      </article>
+      <article class="prog">
+        <span class="tag t-tpa">TPA</span>
+        <h2>TPA Qur&rsquo;ani</h2>
+        <p class="age">Usia 7&ndash;12 tahun</p>
+        <ul>
+          <li>Tahsin &amp; tajwid</li>
+          <li>Hafalan Juz 30</li>
+          <li>Fiqih ibadah &amp; sirah</li>
+          <li>Latihan dakwah cilik</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="info">
+      <div class="box">
+        <h3>Jadwal Belajar</h3>
+        <table class="sched">
+          <tr><td>PAUD &amp; TK</td><td>Senin&ndash;Jumat, 08.00&ndash;10.00 WIB</td></tr>
+          <tr><td>TPA</td><td>Senin&ndash;Jumat, 14.00&ndash;16.00 WIB</td></tr>
+          <tr><td>Jumat TK</td><td>Senam &amp; Shalat Dhuha, 08.00&ndash;09.30 WIB</td></tr>
+        </table>
+      </div>
+      <div class="box">
+        <h3>Biaya &amp; Pendaftaran</h3>
+        <ul>
+          <li>PAUD: pendaftaran Rp 150.000 &middot; SPP Rp 120.000/bulan</li>
+          <li>TK: pendaftaran Rp 200.000 &middot; SPP Rp 150.000/bulan</li>
+          <li>TPA: pendaftaran Rp 200.000 &middot; SPP Rp 100.000/bulan</li>
+          <li>Beasiswa tersedia untuk anak yatim &amp; dhuafa</li>
+          <li>Buku &amp; media belajar gratis</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="cta">
+      <p>Yuk, Daftarkan Ananda Sekarang!</p>
+      <small>Jl. Masjid Agung No. 12, Yogyakarta &middot; 0812-3456-7890 (WhatsApp) &middot; halo@tpqqurani.sch.id</small>
+    </section>
+
+    <footer class="foot">Brochure Program &middot; TPQ Qur&rsquo;ani</footer>
+  </main>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mewarnai Huruf Alif (ا) — TPQ Qur'ani</title>
+  <meta name="description" content="Mewarnai Huruf Alif (ا) — lembar cetak A4, TPQ Qur'ani." />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+      color: #334155;
+      background: #f2f7f4;
+    }
+    .sheet {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      padding: 12mm 14mm;
+      background: linear-gradient(165deg, #ffffff 0%, #fdfefb 60%, #e0f2fe66 100%);
+      overflow: hidden;
+    }
+    .head { display: flex; align-items: center; gap: 8px; }
+    .head .brand {
+      font-family: "Baloo 2", cursive; font-weight: 800; color: #0c4a6e;
+      font-size: 11pt; letter-spacing: 0.02em;
+    }
+    .head .chip {
+      margin-left: auto; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #0c4a6e; background: #e0f2fe;
+      padding: 4px 12px; border-radius: 999px;
+    }
+    .title {
+      font-family: "Baloo 2", cursive; font-weight: 800; text-align: center;
+      font-size: 21pt; line-height: 1.15; color: #0c4a6e; margin-top: 6mm;
+    }
+    .subtitle {
+      text-align: center; font-size: 10pt; font-weight: 700; font-style: italic;
+      color: #64748b; margin-top: 2mm;
+    }
+    .art { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; margin: 6mm 0; }
+    .art svg { width: 100%; height: auto; max-height: 190mm; }
+    .foot {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 8.5pt; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #0c4a6e;
+    }
+    .foot .l { height: 1.2px; width: 24mm; background: linear-gradient(90deg, transparent, #0c4a6e88); }
+    .foot .l:last-child { transform: scaleX(-1); }
+    .ar { font-family: "Amiri", serif; direction: rtl; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      body { padding: 0; background: #fff; }
+      .sheet { min-height: auto; height: 297mm; box-shadow: none; background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="head">
+      <span class="brand">TPQ Qur&rsquo;ani</span>
+      <span class="chip">Mewarnai</span>
+    </header>
+    <h1 class="title">Mewarnai Huruf Alif (ا)</h1>
+    <p class="subtitle">Coloring · Letter Alif</p>
+    <div class="art"><svg viewBox="0 0 400 380" fill="none" stroke="#334155" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><text x="200" y="250" text-anchor="middle" class="ar" style="font-family: Amiri, serif; font-size: 240px; fill: none; stroke: #334155; stroke-width: 7; font-weight: 700;" lang="ar" dir="rtl">ا</text><path d="M80 330 L 320 330 M 80 350 L 320 350"/><path d="M60 120 L 72 138 L 92 142 L 78 155 L 83 175 L 60 164 L 37 175 L 42 155 L 28 142 L 48 138 Z"/><path d="M320 250 L 330 268 L 350 272 L 336 285 L 341 305 L 320 294 L 299 305 L 304 285 L 290 272 L 310 268 Z"/></svg></div>
+    <footer class="foot">
+      <span class="l"></span><span>Mewarnai &middot; TPQ Qur&rsquo;ani</span><span class="l"></span>
+    </footer>
+  </main>
+</body>
+</html>

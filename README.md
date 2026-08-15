@@ -28,6 +28,15 @@ Point it at the real API by copying `.env.example` to `.env.local` and setting
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
 | `npm run lint` | ESLint |
+| `npm test` | Vitest suite (jsdom + msw) |
+| `npm run check:content` | Poster-script policy check (release checklist 1.12) |
+
+### Content script policy (1.12)
+
+Static HTML in `public/content/` (posters, asmaul-husna sheets) must be
+**script-free**: no `<script>` blocks, no inline event handlers (`on*`),
+no `javascript:` URLs. Run `npm run check:content` before committing content
+changes — CI enforces it. Print behavior uses `@media print` CSS only.
 
 ## Folder structure
 

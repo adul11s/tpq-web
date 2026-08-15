@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mewarnai Masjid Raya — TPQ Qur'ani</title>
+  <meta name="description" content="Mewarnai Masjid Raya — lembar cetak A4, TPQ Qur'ani." />
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Baloo+2:wght@600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      font-family: "Nunito", ui-sans-serif, system-ui, sans-serif;
+      color: #334155;
+      background: #f2f7f4;
+    }
+    .sheet {
+      position: relative;
+      width: 210mm;
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      padding: 12mm 14mm;
+      background: linear-gradient(165deg, #ffffff 0%, #fdfefb 60%, #fef3c766 100%);
+      overflow: hidden;
+    }
+    .head { display: flex; align-items: center; gap: 8px; }
+    .head .brand {
+      font-family: "Baloo 2", cursive; font-weight: 800; color: #78350f;
+      font-size: 11pt; letter-spacing: 0.02em;
+    }
+    .head .chip {
+      margin-left: auto; font-size: 8.5pt; font-weight: 800; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #78350f; background: #fef3c7;
+      padding: 4px 12px; border-radius: 999px;
+    }
+    .title {
+      font-family: "Baloo 2", cursive; font-weight: 800; text-align: center;
+      font-size: 21pt; line-height: 1.15; color: #78350f; margin-top: 6mm;
+    }
+    .subtitle {
+      text-align: center; font-size: 10pt; font-weight: 700; font-style: italic;
+      color: #64748b; margin-top: 2mm;
+    }
+    .art { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; margin: 6mm 0; }
+    .art svg { width: 100%; height: auto; max-height: 190mm; }
+    .foot {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      font-size: 8.5pt; font-weight: 800; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #78350f;
+    }
+    .foot .l { height: 1.2px; width: 24mm; background: linear-gradient(90deg, transparent, #78350f88); }
+    .foot .l:last-child { transform: scaleX(-1); }
+    .ar { font-family: "Amiri", serif; direction: rtl; }
+    @page { size: A4 portrait; margin: 0; }
+    @media print {
+      body { padding: 0; background: #fff; }
+      .sheet { min-height: auto; height: 297mm; box-shadow: none; background: #fff !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet">
+    <header class="head">
+      <span class="brand">TPQ Qur&rsquo;ani</span>
+      <span class="chip">Mewarnai</span>
+    </header>
+    <h1 class="title">Mewarnai Masjid Raya</h1>
+    <p class="subtitle">Coloring · Grand Mosque</p>
+    <div class="art"><svg viewBox="0 0 400 380" fill="none" stroke="#334155" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="30" y="330" width="340" height="30" rx="10"/><path d="M200 100 Q 96 200 100 330 L 300 330 Q 304 200 200 100 Z"/><path d="M200 130 Q 128 200 132 322 L 268 322 Q 272 200 200 130 Z"/><circle cx="200" cy="84" r="14"/><rect x="130" y="330" width="140" height="34" rx="8"/><rect x="182" y="300" width="36" height="30" rx="6"/><rect x="76" y="262" width="16" height="76" rx="6"/><rect x="308" y="262" width="16" height="76" rx="6"/><path d="M120 296 L 160 296 M 240 296 L 280 296"/></svg></div>
+    <footer class="foot">
+      <span class="l"></span><span>Mewarnai &middot; TPQ Qur&rsquo;ani</span><span class="l"></span>
+    </footer>
+  </main>
+</body>
+</html>
