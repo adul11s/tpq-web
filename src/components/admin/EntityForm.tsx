@@ -8,7 +8,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useForm } from "react-hook-form";
+import {
+  useForm,
+  useWatch,
+  type Control,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -308,6 +312,21 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
   );
 });
 
+interface EmptyHelperProps {
+  control: Control<FormValues>;
+  name: string;
+  text: string;
+}
+
+function EmptyHelper({ control, name, text }: EmptyHelperProps) {
+  const value = useWatch({ control, name });
+  const empty =
+    value === undefined || value === null || String(value).trim() === "";
+  return empty ? (
+    <p className="mt-1 text-xs text-slate-500">{text}</p>
+  ) : null;
+}
+
 export function EntityForm({
   entity,
   initialValues,
@@ -320,6 +339,7 @@ export function EntityForm({
     handleSubmit,
     getValues,
     setValue,
+    control,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(entity.createSchema as z.ZodType<FormValues, FormValues>),
@@ -389,13 +409,14 @@ export function EntityForm({
         const error = errors[field.name];
         const numeric = isNumericField(entity, field);
         const slugTarget = entity.fields.find((f) => f.slugFrom === field.name);
-        let control: ReactNode;
+        let fieldControl: ReactNode;
         switch (field.type) {
           case "text":
-            control = (
+            fieldControl = (
               <input
                 id={id}
                 type="text"
+                readOnly={Boolean(field.readonlyAfterCreate && initialValues)}
                 className={inputClasses}
                 {...register(field.name, {
                   onBlur: slugTarget
@@ -406,17 +427,22 @@ export function EntityForm({
             );
             break;
           case "textarea":
-            control = (
+            fieldControl = (
               <textarea
                 id={id}
                 rows={4}
-                className={inputClasses}
+                dir={field.arabic ? "rtl" : undefined}
+                className={
+                  field.arabic
+                    ? `${inputClasses} text-right font-arabic text-lg leading-loose`
+                    : inputClasses
+                }
                 {...register(field.name)}
               />
             );
             break;
           case "number":
-            control = (
+            fieldControl = (
               <input
                 id={id}
                 type="number"
@@ -426,7 +452,7 @@ export function EntityForm({
             );
             break;
           case "select":
-            control = (
+            fieldControl = (
               <select
                 id={id}
                 className={inputClasses}
@@ -442,7 +468,7 @@ export function EntityForm({
             );
             break;
           case "media":
-            control = (
+            fieldControl = (
               <MediaPicker
                 triggerId={id}
                 kind={field.mediaKind ?? "all"}
@@ -454,7 +480,7 @@ export function EntityForm({
           case "schedule":
           case "curriculum": {
             const childKey = CHILD_ENTITY[field.type];
-            control = (
+            fieldControl = (
               <RowEditor
                 field={field}
                 childEntity={ENTITY_CONFIG[childKey]}
@@ -472,7 +498,7 @@ export function EntityForm({
             break;
           }
           default:
-            control = null;
+            fieldControl = null;
         }
         return (
           <div key={field.name}>
@@ -482,9 +508,16 @@ export function EntityForm({
             >
               {field.label}
             </label>
-            {control}
+            {fieldControl}
             {field.helper ? (
               <p className="mt-1 text-xs text-slate-500">{field.helper}</p>
+            ) : null}
+            {field.helperWhenEmpty ? (
+              <EmptyHelper
+                control={control}
+                name={field.name}
+                text={field.helperWhenEmpty}
+              />
             ) : null}
             {error ? (
               <p className="mt-1 text-xs font-semibold text-red-600">
