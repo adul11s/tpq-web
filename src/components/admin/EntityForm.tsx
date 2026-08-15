@@ -22,6 +22,7 @@ import {
   type FieldSpec,
 } from "@/lib/admin/entities";
 import { slugify } from "@/lib/admin/slug";
+import { formatTime } from "@/lib/admin/time";
 import { contentApi } from "@/lib/api/content";
 import { Button } from "@/components/ui/Button";
 import { MediaPicker } from "@/components/admin/MediaPicker";
@@ -152,6 +153,34 @@ function pickEditable(
   return values;
 }
 
+function scheduleOverlaps(
+  rows: RowState[]
+): Map<number, string[]> {
+  const overlaps = new Map<number, string[]>();
+  for (let i = 0; i < rows.length; i++) {
+    for (let j = i + 1; j < rows.length; j++) {
+      const a = rows[i].values;
+      const b = rows[j].values;
+      const dayA = String(a.day_name ?? "");
+      const dayB = String(b.day_name ?? "");
+      const startA = String(a.start_time ?? "");
+      const endA = String(a.end_time ?? "");
+      const startB = String(b.start_time ?? "");
+      const endB = String(b.end_time ?? "");
+      if (!dayA || dayA !== dayB) continue;
+      if (!TIME_RE.test(startA) || !TIME_RE.test(endA)) continue;
+      if (!TIME_RE.test(startB) || !TIME_RE.test(endB)) continue;
+      if (startA < endB && startB < endA) {
+        const labelForA = `${String(b.activity ?? "")} (${formatTime(startB)}\u2013${formatTime(endB)} WIB)`;
+        const labelForB = `${String(a.activity ?? "")} (${formatTime(startA)}\u2013${formatTime(endA)} WIB)`;
+        overlaps.set(i, [...(overlaps.get(i) ?? []), labelForA]);
+        overlaps.set(j, [...(overlaps.get(j) ?? []), labelForB]);
+      }
+    }
+  }
+  return overlaps;
+}
+
 const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor(
   { field, childEntity, initialRows },
   ref
@@ -168,6 +197,7 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
       }))
   );
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [refreshNote, setRefreshNote] = useState<string | null>(null);
 
   function mapRows(list: Record<string, unknown>[]): RowState[] {
     return [...list]
@@ -184,12 +214,19 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
     const row = rows[index];
     if (!row) return;
     setDeleteError(null);
+    setRefreshNote(null);
     if (row.id === undefined) {
       setRows((prev) => prev.filter((_, i) => i !== index));
       return;
     }
     try {
       await contentApi.del(childEntity.key, row.id);
+    } catch {
+      setDeleteError("Gagal menghapus baris \u2014 coba lagi");
+      return;
+    }
+    setRows((prev) => prev.filter((_, i) => i !== index));
+    try {
       const result = await contentApi.list<Record<string, unknown>>(
         childEntity.key
       );
@@ -198,7 +235,7 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
       );
       setRows(mapRows(sameClass));
     } catch {
-      setDeleteError("Gagal menghapus baris \u2014 coba lagi");
+      setRefreshNote("Baris dihapus, daftar belum dimuat ulang");
     }
   }
 
@@ -257,9 +294,32 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
     : "Belum ada kurikulum \u2014 tambah item pertama.";
   const addLabel = isSchedule ? "Tambah Jadwal" : "Tambah Kurikulum";
   const groupLabel = isSchedule ? "Jadwal" : "Kurikulum";
+  const overlaps = isSchedule
+    ? scheduleOverlaps(rows)
+    : new Map<number, string[]>();
+
+  function rowSummary(row: RowState): string | null {
+    const start = String(row.values.start_time ?? "");
+    const end = String(row.values.end_time ?? "");
+    if (!start || !end) return null;
+    const day = String(row.values.day_name ?? "");
+    const time = `${formatTime(start)}\u2013${formatTime(end)} WIB`;
+    return day ? `${day} \u00b7 ${time}` : time;
+  }
 
   return (
     <div className="space-y-3">
+      {deleteError ? (
+        <p
+          role="alert"
+          className="text-xs font-semibold text-red-600"
+        >
+          {deleteError}
+        </p>
+      ) : null}
+      {refreshNote ? (
+        <p className="text-xs font-medium text-amber-600">{refreshNote}</p>
+      ) : null}
       {rows.length === 0 ? (
         <p className="text-sm text-slate-500">{emptyText}</p>
       ) : (
@@ -270,6 +330,11 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
             aria-label={`${groupLabel} baris ${index + 1}`}
             className="rounded-lg border border-slate-200 bg-slate-50 p-3"
           >
+            {isSchedule && rowSummary(row) ? (
+              <p className="mb-2 text-sm font-semibold text-slate-800">
+                {rowSummary(row)}
+              </p>
+            ) : null}
             <div className="grid gap-3 sm:grid-cols-2">
               {editableFields(childEntity).map((item) => (
                 <div key={item.name}>
@@ -326,6 +391,18 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
                 </div>
               ))}
             </div>
+            {overlaps.get(index)?.length ? (
+              <div className="mt-2 space-y-1 rounded bg-amber-50 px-2 py-1.5">
+                {overlaps.get(index)?.map((label) => (
+                  <p
+                    key={label}
+                    className="text-xs font-medium text-amber-700"
+                  >
+                    Berpotensi bentrok dengan: {label}
+                  </p>
+                ))}
+              </div>
+            ) : null}
             <div className="mt-2 flex gap-2">
               <Button
                 type="button"
@@ -354,14 +431,6 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
                 Hapus
               </Button>
             </div>
-            {deleteError ? (
-              <p
-                role="alert"
-                className="mt-2 text-xs font-semibold text-red-600"
-              >
-                {deleteError}
-              </p>
-            ) : null}
           </div>
         ))
       )}

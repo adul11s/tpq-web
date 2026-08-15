@@ -2,8 +2,10 @@ import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { http, HttpResponse } from "msw";
 import {
   server,
+  API_BASE,
   CLASS_ROWS,
   contentCreateHandler,
   contentDeleteHandler,
@@ -62,6 +64,31 @@ const SCHEDULE_ROWS: Record<string, unknown>[] = [
 const EMPTY_CHILDREN = [
   contentListHandler("class_schedule_items", []),
   contentListHandler("curriculum_items", []),
+];
+
+const OVERLAP_ROWS: Record<string, unknown>[] = [
+  {
+    id: 21,
+    class_id: 1,
+    day_name: "Senin",
+    start_time: "08:00",
+    end_time: "10:00",
+    activity: "Tahsin",
+    sort_order: 0,
+    created_at: "2026-08-01T08:00:00Z",
+    updated_at: "2026-08-01T08:00:00Z",
+  },
+  {
+    id: 22,
+    class_id: 1,
+    day_name: "Senin",
+    start_time: "09:00",
+    end_time: "11:00",
+    activity: "Tahfizh",
+    sort_order: 1,
+    created_at: "2026-08-01T08:00:00Z",
+    updated_at: "2026-08-01T08:00:00Z",
+  },
 ];
 
 function renderEditor() {
@@ -277,6 +304,132 @@ describe("Schedule editor", () => {
       expect(screen.queryByRole("group", { name: "Jadwal baris 1" })).not.toBeInTheDocument()
     );
     expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it("shows the row summary in dot format with a WIB suffix (D-SC-09)", async () => {
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      contentListHandler("class_schedule_items", SCHEDULE_ROWS),
+      contentListHandler("curriculum_items", [])
+    );
+    renderEditor();
+
+    await screen.findByRole("group", { name: "Jadwal baris 1" });
+    expect(
+      screen.getByText("Senin \u00b7 08.00\u201310.00 WIB")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Rabu \u00b7 16.00\u201318.00 WIB")
+    ).toBeInTheDocument();
+  });
+
+  it("flags overlapping same-day schedule rows with an inline warning (D-SC-07)", async () => {
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      contentListHandler("class_schedule_items", OVERLAP_ROWS),
+      contentListHandler("curriculum_items", [])
+    );
+    renderEditor();
+
+    const firstGroup = await screen.findByRole("group", {
+      name: "Jadwal baris 1",
+    });
+    const secondGroup = screen.getByRole("group", { name: "Jadwal baris 2" });
+    expect(
+      within(firstGroup).getByText(
+        "Berpotensi bentrok dengan: Tahfizh (09.00\u201311.00 WIB)"
+      )
+    ).toBeInTheDocument();
+    expect(
+      within(secondGroup).getByText(
+        "Berpotensi bentrok dengan: Tahsin (08.00\u201310.00 WIB)"
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("shows no overlap warning for non-overlapping rows", async () => {
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      contentListHandler("class_schedule_items", SCHEDULE_ROWS),
+      contentListHandler("curriculum_items", [])
+    );
+    renderEditor();
+
+    await screen.findByRole("group", { name: "Jadwal baris 1" });
+    expect(
+      screen.queryByText(/Berpotensi bentrok dengan:/)
+    ).not.toBeInTheDocument();
+  });
+
+  it("removes the row locally and shows a soft note when the refetch fails after a successful DELETE", async () => {
+    const onDelete = vi.fn();
+    const store: Record<string, unknown>[] = [...SCHEDULE_ROWS];
+    let failRefetch = false;
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      http.get(`${API_BASE}/admin/class_schedule_items`, () => {
+        if (failRefetch) {
+          return HttpResponse.json(
+            { error: "Internal server error" },
+            { status: 500 }
+          );
+        }
+        return HttpResponse.json({ class_schedule_items: store });
+      }),
+      contentListHandler("curriculum_items", []),
+      contentDeleteHandler("class_schedule_items", (request, params) => {
+        onDelete(request, params);
+        const index = store.findIndex((row) => row.id === Number(params.id));
+        if (index >= 0) store.splice(index, 1);
+        failRefetch = true;
+      })
+    );
+    const user = userEvent.setup();
+    renderEditor();
+
+    const firstGroup = await screen.findByRole("group", {
+      name: "Jadwal baris 1",
+    });
+    await user.click(within(firstGroup).getByRole("button", { name: "Hapus" }));
+
+    await waitFor(() => expect(onDelete).toHaveBeenCalledTimes(1));
+    expect(
+      screen.getByText("Baris dihapus, daftar belum dimuat ulang")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("Gagal menghapus baris \u2014 coba lagi")
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole("group")).toHaveLength(1);
+    const remaining = screen.getByRole("group", { name: "Jadwal baris 1" });
+    expect(within(remaining).getByLabelText("Kegiatan")).toHaveValue("Tahfizh");
+  });
+
+  it("keeps the row and shows the hard error when the DELETE itself fails", async () => {
+    server.use(
+      contentPreviewHandler("classes", CLASS_ROWS[0]),
+      contentListHandler("class_schedule_items", SCHEDULE_ROWS),
+      contentListHandler("curriculum_items", []),
+      http.delete(
+        `${API_BASE}/admin/class_schedule_items/:id`,
+        () =>
+          HttpResponse.json({ error: "Internal server error" }, { status: 500 })
+      )
+    );
+    const user = userEvent.setup();
+    renderEditor();
+
+    const firstGroup = await screen.findByRole("group", {
+      name: "Jadwal baris 1",
+    });
+    await user.click(within(firstGroup).getByRole("button", { name: "Hapus" }));
+
+    expect(
+      await screen.findByText("Gagal menghapus baris \u2014 coba lagi")
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole("group")).toHaveLength(2);
+    expect(
+      screen.queryByText("Baris dihapus, daftar belum dimuat ulang")
+    ).not.toBeInTheDocument();
   });
 
   it("maps curriculum aspect options to their Indonesian labels", async () => {
