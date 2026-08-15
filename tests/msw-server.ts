@@ -58,6 +58,9 @@ export const CLASS_ROWS: Record<string, unknown>[] = [
   },
 ];
 
+export const categoriesHandler = (rows: Record<string, unknown>[]) =>
+  http.get(`${API_BASE}/categories`, () => HttpResponse.json(rows));
+
 export const contentListHandler = (
   entity: string,
   rows: Record<string, unknown>[],

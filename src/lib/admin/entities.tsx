@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { ReactNode } from "react";
 import type { Role } from "@/lib/types/admin";
+import { getCategories } from "@/lib/api/resources";
 
 export type FieldType =
   | "text"
@@ -21,6 +22,8 @@ export interface FieldSpec {
   label: string;
   type: FieldType;
   options?: FieldOption[];
+  loadOptions?: () => Promise<FieldOption[]>;
+  slugFrom?: string;
   required: boolean;
   helper?: string;
 }
@@ -63,6 +66,14 @@ export const CATEGORY_OPTIONS: FieldOption[] = [
   { value: "4", label: "Kaligrafi" },
   { value: "5", label: "Dokumen" },
 ];
+
+export async function loadCategoryOptions(): Promise<FieldOption[]> {
+  const categories = await getCategories();
+  return categories.map((category) => ({
+    value: String(category.id),
+    label: category.name,
+  }));
+}
 
 export const DAY_OPTIONS: string[] = [
   "Senin",
@@ -108,11 +119,11 @@ const resourceCreateSchema = z.object({
       z.literal(""),
     ])
     .optional(),
-  category_id: z.number().int().positive("Kategori wajib dipilih"),
+  category_id: z.number({ error: "Kategori wajib dipilih" }).int().positive("Kategori wajib dipilih"),
   age_group: z.enum(["paud", "tk", "tpa", "all"]).default("all"),
   description: z.string().optional(),
-  file_media_id: z.number().int().positive("ID file wajib diisi"),
-  thumbnail_media_id: z.number().int().positive("ID thumbnail wajib diisi"),
+  file_media_id: z.number({ error: "ID file wajib diisi" }).int().positive("ID file wajib diisi"),
+  thumbnail_media_id: z.number({ error: "ID thumbnail wajib diisi" }).int().positive("ID thumbnail wajib diisi"),
 });
 
 const categoryLabel = (row: Record<string, unknown>): string =>
@@ -159,8 +170,8 @@ const resources: EntityConfig = {
   createSchema: resourceCreateSchema,
   fields: [
     { name: "title", label: "Judul", type: "text", required: true },
-    { name: "slug", label: "Slug", type: "text", required: false, helper: "Kosongkan untuk otomatis" },
-    { name: "category_id", label: "Kategori", type: "select", options: CATEGORY_OPTIONS, required: true },
+    { name: "slug", label: "Slug", type: "text", required: false, slugFrom: "title", helper: "Kosongkan untuk otomatis" },
+    { name: "category_id", label: "Kategori", type: "select", options: CATEGORY_OPTIONS, loadOptions: loadCategoryOptions, required: true },
     { name: "age_group", label: "Kelompok usia", type: "select", options: AGE_GROUP_OPTIONS, required: true },
     { name: "description", label: "Deskripsi", type: "textarea", required: false },
     { name: "file_media_id", label: "File materi", type: "media", required: true },

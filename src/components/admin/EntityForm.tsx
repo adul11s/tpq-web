@@ -1,10 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import type { EntityConfig, FieldSpec } from "@/lib/admin/entities";
+import type { EntityConfig, FieldOption, FieldSpec } from "@/lib/admin/entities";
+import { slugify } from "@/lib/admin/slug";
 import { Button } from "@/components/ui/Button";
 
 export interface EntityFormProps {
@@ -54,11 +55,45 @@ export function EntityForm({
   const {
     register,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(entity.createSchema as z.ZodType<FormValues, FormValues>),
     defaultValues: (initialValues ?? {}) as FormValues,
   });
+
+  const [loadedOptions, setLoadedOptions] = useState<
+    Record<string, FieldOption[]>
+  >({});
+
+  useEffect(() => {
+    let active = true;
+    for (const field of entity.fields) {
+      if (!field.loadOptions) continue;
+      field
+        .loadOptions()
+        .then((options) => {
+          if (active) {
+            setLoadedOptions((prev) => ({ ...prev, [field.name]: options }));
+          }
+        })
+        .catch(() => {
+          // keep the static fallback options when the endpoint is unavailable
+        });
+    }
+    return () => {
+      active = false;
+    };
+  }, [entity]);
+
+  function handleSlugSourceBlur(source: string, target: string) {
+    const currentSlug = getValues(target) as string | undefined;
+    if (currentSlug?.trim()) return;
+    const sourceValue = getValues(source) as string | undefined;
+    if (!sourceValue?.trim()) return;
+    setValue(target, slugify(sourceValue));
+  }
 
   return (
     <form
@@ -70,6 +105,7 @@ export function EntityForm({
         const id = `${entity.key}-${field.name}`;
         const error = errors[field.name];
         const numeric = isNumericField(entity, field);
+        const slugTarget = entity.fields.find((f) => f.slugFrom === field.name);
         let control: ReactNode;
         switch (field.type) {
           case "text":
@@ -78,7 +114,11 @@ export function EntityForm({
                 id={id}
                 type="text"
                 className={inputClasses}
-                {...register(field.name)}
+                {...register(field.name, {
+                  onBlur: slugTarget
+                    ? () => handleSlugSourceBlur(field.name, slugTarget.name)
+                    : undefined,
+                })}
               />
             );
             break;
@@ -110,7 +150,7 @@ export function EntityForm({
                 {...register(field.name, { valueAsNumber: numeric })}
               >
                 <option value="">Pilih\u2026</option>
-                {field.options?.map((option) => (
+                {(loadedOptions[field.name] ?? field.options)?.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
