@@ -71,6 +71,9 @@ See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
 | `NEXT_PUBLIC_API_BASE_URL` | REST API base; unset = mock-data mode |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO/sitemap (default `https://tpq-qurani.example.id`) |
 | `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | GA4 tag; enables `page_view` tracking when set |
+| `REVALIDATE_SECRET` | Shared secret for `POST /api/revalidate` (backend A4 notifications); unset = route rejects all calls |
+
+> **CI/build note:** static (SSG) pages fetch live API data at build time. `npm run build` therefore requires a **reachable API** at `NEXT_PUBLIC_API_BASE_URL` (run it locally, or point the env at a staging API; omit the env var for a mock-data build). The admin area (`/admin/*`) never falls back to mock mode.
 
 ## SA-Dev-Handoff v1.2 status
 
