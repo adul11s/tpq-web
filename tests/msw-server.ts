@@ -1,6 +1,12 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import type { AdminMe, AdminMediaAsset, Role } from "../src/lib/types/admin";
+import type {
+  AdminInquiry,
+  AdminMe,
+  AdminMediaAsset,
+  InquiryStatus,
+  Role,
+} from "../src/lib/types/admin";
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -246,5 +252,49 @@ export const mediaUploadHandler = (onRequest?: (request: Request) => void) =>
 
 export const mediaUploadError = (status: number, body: Record<string, unknown>) =>
   http.post(`${API_BASE}/admin/media`, () => HttpResponse.json(body, { status }));
+
+export const classesPublicHandler = (rows: Record<string, unknown>[] = CLASS_ROWS) =>
+  http.get(`${API_BASE}/classes`, () => HttpResponse.json(rows));
+
+export const inquiriesListHandler = (
+  rows: AdminInquiry[],
+  onQuery?: (params: URLSearchParams) => void
+) =>
+  http.get(`${API_BASE}/admin/inquiries`, ({ request }) => {
+    onQuery?.(new URL(request.url).searchParams);
+    return HttpResponse.json({ inquiries: rows });
+  });
+
+export const inquiryUpdateHandler = (
+  rows: AdminInquiry[],
+  onRequest?: (request: Request, body: unknown) => void
+) =>
+  http.patch(`${API_BASE}/admin/inquiries/:id`, async ({ request, params }) => {
+    const body = (await request.json()) as {
+      status?: InquiryStatus;
+      admin_note?: string;
+    };
+    onRequest?.(request, body);
+    const row = rows.find((r) => r.id === Number(params.id));
+    if (!row) {
+      return HttpResponse.json({ error: "Inquiry not found" }, { status: 404 });
+    }
+    return HttpResponse.json({
+      inquiry: {
+        ...row,
+        status: body.status ?? row.status,
+        admin_note: body.admin_note ?? row.admin_note,
+      },
+    });
+  });
+
+export const inquiriesCsvHandler = (onRequest?: (request: Request) => void) =>
+  http.get(`${API_BASE}/admin/inquiries/export.csv`, ({ request }) => {
+    onRequest?.(request);
+    return HttpResponse.text(
+      'id,parent_name,phone\n1,"Ibu Siti Rahma",081234567801\n',
+      { headers: { "Content-Type": "text/csv; charset=utf-8" } }
+    );
+  });
 
 export const server = setupServer(adminMeOk);

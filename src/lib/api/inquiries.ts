@@ -1,7 +1,9 @@
 import { apiFetch } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/client";
+import { adminFetch } from "@/lib/api/admin-client";
 import type { InquiryRequest, InquiryResponse } from "@/lib/types/inquiry";
 import { PHONE_REGEX } from "@/lib/types/inquiry";
+import type { AdminInquiry, InquiryStatus } from "@/lib/types/admin";
 
 export async function postInquiry(
   payload: InquiryRequest,
@@ -55,3 +57,29 @@ export function inquiryErrorToApiError(problem: {
   (error as ApiError & { fields?: Record<string, string> }).fields = problem.fields;
   return error;
 }
+
+export interface AdminInquiryUpdateBody {
+  status?: InquiryStatus;
+  admin_note?: string;
+}
+
+export const inquiryAdminApi = {
+  list(status?: InquiryStatus): Promise<{ inquiries: AdminInquiry[] }> {
+    const query = status !== undefined ? `?status=${status}` : "";
+    return adminFetch<{ inquiries: AdminInquiry[] }>(`/admin/inquiries${query}`);
+  },
+
+  update(
+    id: number,
+    body: AdminInquiryUpdateBody
+  ): Promise<{ inquiry: AdminInquiry }> {
+    return adminFetch<{ inquiry: AdminInquiry }>(`/admin/inquiries/${id}`, {
+      method: "PATCH",
+      body,
+    });
+  },
+
+  adminExportUrl(): string {
+    return "/admin/inquiries/export.csv";
+  },
+};
