@@ -68,12 +68,85 @@ See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
 
 | Variable | Purpose |
 |---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | REST API base; unset = mock-data mode |
+| `NEXT_PUBLIC_API_BASE_URL` | REST API base; unset = mock-data mode (public pages only — admin requires it) |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO/sitemap (default `https://tpq-qurani.example.id`) |
 | `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | GA4 tag; enables `page_view` tracking when set |
 | `REVALIDATE_SECRET` | Shared secret for `POST /api/revalidate` (backend A4 notifications); unset = route rejects all calls |
 
 > **CI/build note:** static (SSG) pages fetch live API data at build time. `npm run build` therefore requires a **reachable API** at `NEXT_PUBLIC_API_BASE_URL` (run it locally, or point the env at a staging API; omit the env var for a mock-data build). The admin area (`/admin/*`) never falls back to mock mode.
+
+## Admin CMS
+
+Password-protected CMS at `/admin/*` (admin UI is in Indonesian; the public site stays bilingual).
+Admin requires a **real backend** — there is **no mock fallback** for any admin route, so
+`NEXT_PUBLIC_API_BASE_URL` must point at a running API. Sessions are HttpOnly server-managed cookies;
+the client only reacts to 401 by redirecting to `/admin/login`.
+
+### Routes & role matrix
+
+`content_manager` (CM) can edit content but cannot publish, approve, or reach the system pages.
+`admin` has full access.
+
+| Route | Page | admin | CM |
+|---|---|---|---|
+| `/admin` | Dashboard (stats) | ✓ | ✓ |
+| `/admin/konten` | Content lists (classes, resources, schedule, curriculum, prayer guides, teachers, testimonials, FAQs, pages, site settings) | ✓ | ✓ |
+| `/admin/konten/[entity]` | Entity list | ✓ | ✓ |
+| `/admin/konten/[entity]/baru` | Create form | ✓ | ✓ |
+| `/admin/konten/[entity]/[id]` | Edit form | ✓ | ✓ |
+| `/admin/media` | Media library (upload + reuse) | ✓ | ✓ |
+| `/admin/inquiry` | Inquiry inbox (pipeline, WhatsApp reply, CSV export) | ✓ | ✓ |
+| `/admin/persetujuan` | Approval queue (publish/archive) | ✓ | – |
+| `/admin/pengguna` | Users (2FA reset, deactivate) | ✓ | – |
+| `/admin/aktivitas` | Audit log + CSV export | ✓ | – |
+| `/admin/pengaturan` | Site settings editor | ✓ | – |
+| `/admin/login` | Login | – | – |
+| `/admin/login/enroll` | 2FA enrollment | – | – |
+| `/admin/login/verify` | TOTP / backup-code verification | – | – |
+
+Content role rules: only `admin` can publish/archive publishable entities (submission goes to the
+approval queue); `content_manager` can create and edit drafts.
+
+### First-login 2FA flow
+
+1. **Login** (`/admin/login`) — email + password; the API answers with a challenge (`totp` or `enroll`).
+2. **Enroll** (`/admin/login/enroll`) — first login with 2FA off: enter email → scan the **QR code**
+   (TOTP secret) → **backup codes shown once** (copy or download, never shown again) → enter the
+   current TOTP to confirm.
+3. **Verify** (`/admin/login/verify`) — subsequent logins: TOTP from your authenticator, or a backup
+   code in `ABCD-EF12` format.
+4. Lost your authenticator? An admin resets your 2FA from `/admin/pengguna`; your next login
+   re-enrolls.
+
+### Test commands
+
+The admin suite is **Vitest + jsdom + msw** (`tests/`); the API is mocked at the network layer via
+`tests/msw-server.ts`, so tests run without a backend.
+
+| Command | Description |
+|---|---|
+| `npm test` | Vitest run (admin + public tests) |
+| `npm run lint` | ESLint |
+| `npm run build` | Production build (needs the API reachable for SSG pages) |
+
+### QA mapping (UI-UX Phase C, C1–C11)
+
+| QA item | Task(s) | Test file(s) |
+|---|---|---|
+| C1 IA & role-aware admin menu | T2, T16 | `tests/menu.test.ts`, `tests/redirect.test.ts` |
+| C2 Login + 2FA (challenge, verify, enroll) | T3–T5 | `tests/login.test.tsx`, `tests/enroll.test.tsx`, `tests/verify.test.tsx`, `tests/session.test.tsx` |
+| C3 Dashboard | T16 | `tests/dashboard.test.tsx` |
+| C4 Content editors (classes, resources) | T7 | `tests/content-crud.test.tsx`, `tests/resource-editor.test.tsx` |
+| C5 Media library | T9 | `tests/media.test.tsx` |
+| C6 Editorial editors (prayer guides, schedules, curriculum) | T8, T10, T11 | `tests/prayer-guides-editor.test.tsx`, `tests/schedule-editor.test.tsx` |
+| C7 Approval queue | T12 | `tests/approval.test.tsx` |
+| C8 Inquiry inbox | T13 | `tests/inquiry-inbox.test.tsx` |
+| C9 Schedule editor | T10 | `tests/schedule-editor.test.tsx` |
+| C10 Aktivitas (audit log) | T15 | `tests/audit.test.tsx` |
+| C11 Users (2FA reset, deactivate) | T14 | `tests/users.test.tsx` |
+
+Also covered: session-expiry UX (401 → login) in `tests/session-expiry.test.tsx` and content
+revalidation hookup in `tests/revalidate.test.tsx`.
 
 ## SA-Dev-Handoff v1.2 status
 
