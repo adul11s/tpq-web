@@ -79,9 +79,7 @@ export interface AdabRating {
   student_id: number;
   criterion_id: number;
   rapor_period_id: number;
-  scale: number;
-  created_at: string;
-  updated_at: string;
+  score: number;
 }
 
 export interface RaporPeriod {
@@ -157,6 +155,18 @@ export interface GenerateRaporInput {
   };
   teacher_comment?: string;
   school_name?: string;
+  narrative?: string;
+}
+
+export interface RaporPeriodInput {
+  academic_year_id: number;
+  semester: Semester;
+}
+
+export interface AdabRatingInput {
+  student_id: number;
+  rapor_period_id: number;
+  ratings: Array<{ criterion_id: number; scale: number }>;
 }
 
 export interface ProvisionParentInput {
@@ -267,11 +277,33 @@ export const smsApi = {
   listAdabCriteria: (): Promise<{ criteria: AdabCriterion[] }> =>
     adminFetch<{ criteria: AdabCriterion[] }>("/admin/adab-criteria"),
 
-  listAdabRatings: (): Promise<{ ratings: AdabRating[] }> =>
-    adminFetch<{ ratings: AdabRating[] }>("/admin/adab-ratings"),
+  listAdabRatings: (opts?: {
+    student_id?: number;
+    rapor_period_id?: number;
+  }): Promise<{ ratings: AdabRating[] }> => {
+    const params = new URLSearchParams();
+    if (opts?.student_id !== undefined) params.set("student_id", String(opts.student_id));
+    if (opts?.rapor_period_id !== undefined) params.set("rapor_period_id", String(opts.rapor_period_id));
+    const query = params.toString();
+    return adminFetch<{ ratings: AdabRating[] }>(
+      `/admin/adab-ratings${query ? `?${query}` : ""}`,
+    );
+  },
+
+  updateAdabRatings: (input: AdabRatingInput): Promise<{ ok: true }> =>
+    adminFetch<{ ok: true }>("/admin/adab-ratings", {
+      method: "PUT",
+      body: input,
+    }),
 
   listRaporPeriods: (): Promise<{ periods: RaporPeriod[] }> =>
     adminFetch<{ periods: RaporPeriod[] }>("/admin/rapor-periods"),
+
+  createRaporPeriod: (input: RaporPeriodInput): Promise<{ id: number; status: RaporPeriodStatus }> =>
+    adminFetch<{ id: number; status: RaporPeriodStatus }>("/admin/rapor-periods", {
+      method: "POST",
+      body: input,
+    }),
 
   lockPeriod: (id: number): Promise<{ id: number; status: RaporPeriodStatus }> =>
     adminFetch<{ id: number; status: RaporPeriodStatus }>(`/admin/rapor-periods/${id}/lock`, {
@@ -289,8 +321,17 @@ export const smsApi = {
       body: input,
     }),
 
-  listRaporDocuments: (): Promise<{ documents: RaporDocument[] }> =>
-    adminFetch<{ documents: RaporDocument[] }>("/admin/rapor/documents"),
+  listRaporDocuments: (opts?: { rapor_period_id?: number }): Promise<{ documents: RaporDocument[] }> => {
+    const params = new URLSearchParams();
+    if (opts?.rapor_period_id !== undefined) params.set("rapor_period_id", String(opts.rapor_period_id));
+    const query = params.toString();
+    return adminFetch<{ documents: RaporDocument[] }>(
+      `/admin/rapor/documents${query ? `?${query}` : ""}`,
+    );
+  },
+
+  raporDocumentDownload: (id: number): Promise<{ download_url: string }> =>
+    adminFetch<{ download_url: string }>(`/admin/rapor/documents/${id}/download`),
 
   provisionParent: (input: ProvisionParentInput): Promise<ProvisionedParent> =>
     adminFetch<ProvisionedParent>("/admin/users/parents", {

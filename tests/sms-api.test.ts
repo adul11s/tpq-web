@@ -288,11 +288,11 @@ describe("smsApi", () => {
   it("lists adab ratings", async () => {
     server.use(
       http.get("*/api/v1/admin/adab-ratings", () =>
-        HttpResponse.json({ ratings: [{ id: 1, student_id: 1, criterion_id: 1, rapor_period_id: 2, scale: 4 }] }),
+        HttpResponse.json({ ratings: [{ id: 1, student_id: 1, criterion_id: 1, rapor_period_id: 2, score: 4 }] }),
       ),
     );
     const res = await smsApi.listAdabRatings();
-    expect(res.ratings[0]).toMatchObject({ scale: 4, criterion_id: 1 });
+    expect(res.ratings[0]).toMatchObject({ score: 4, criterion_id: 1 });
   });
 
   it("lists rapor periods", async () => {
