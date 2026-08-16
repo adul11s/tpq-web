@@ -6,6 +6,12 @@ export interface AdminMenuItem {
   href: string;
   label: string;
   roles: Role[];
+  group?: string;
+}
+
+export interface AdminMenuSection {
+  label: string;
+  items: AdminMenuItem[];
 }
 
 export const ADMIN_MENU: AdminMenuItem[] = [
@@ -17,13 +23,27 @@ export const ADMIN_MENU: AdminMenuItem[] = [
   { href: "/admin/pengguna", label: "Pengguna", roles: ["admin"] },
   { href: "/admin/aktivitas", label: "Aktivitas", roles: ["admin"] },
   { href: "/admin/pengaturan", label: "Pengaturan", roles: ["admin"] },
-  { href: "/admin/sms/students", label: "Santri", roles: ["admin"] },
-  { href: "/admin/sms/enrollments", label: "Pendaftaran Kelas", roles: ["admin"] },
-  { href: "/admin/sms/hafalan", label: "Hafalan", roles: ["admin", "teacher"] },
-  { href: "/admin/sms/absensi", label: "Absensi", roles: ["admin", "teacher"] },
-  { href: "/admin/sms/rapor", label: "Rapor", roles: ["admin"] },
+  { href: "/admin/sms/students", label: "Santri", roles: ["admin"], group: "SMS" },
+  { href: "/admin/sms/enrollments", label: "Pendaftaran Kelas", roles: ["admin"], group: "SMS" },
+  { href: "/admin/sms/hafalan", label: "Hafalan", roles: ["admin", "teacher"], group: "SMS" },
+  { href: "/admin/sms/absensi", label: "Absensi", roles: ["admin", "teacher"], group: "SMS" },
+  { href: "/admin/sms/rapor", label: "Rapor", roles: ["admin"], group: "SMS" },
 ];
 
 export function menuForRole(role: Role): AdminMenuItem[] {
   return ADMIN_MENU.filter((item) => item.roles.includes(role));
+}
+
+export function menuSectionsForRole(role: Role): AdminMenuSection[] {
+  const sections: AdminMenuSection[] = [];
+  for (const item of menuForRole(role)) {
+    const label = item.group ?? "Menu";
+    const last = sections[sections.length - 1];
+    if (last && last.label === label) {
+      last.items.push(item);
+    } else {
+      sections.push({ label, items: [item] });
+    }
+  }
+  return sections;
 }

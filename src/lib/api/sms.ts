@@ -169,19 +169,6 @@ export interface AdabRatingInput {
   ratings: Array<{ criterion_id: number; scale: number }>;
 }
 
-export interface ProvisionParentInput {
-  email: string;
-  full_name: string;
-  initial_password: string;
-}
-
-export interface ProvisionedParent {
-  id: number;
-  email: string;
-  initial_password: string;
-  must_change_password: boolean;
-}
-
 export interface HafalanUpsertResult {
   id: number;
   student_id: number;
@@ -332,16 +319,4 @@ export const smsApi = {
 
   raporDocumentDownload: (id: number): Promise<{ download_url: string }> =>
     adminFetch<{ download_url: string }>(`/admin/rapor/documents/${id}/download`),
-
-  provisionParent: (input: ProvisionParentInput): Promise<ProvisionedParent> =>
-    adminFetch<ProvisionedParent>("/admin/users/parents", {
-      method: "POST",
-      body: input,
-    }),
-
-  resetParentPassword: (id: number, newPassword: string): Promise<{ ok: true; must_change_password: boolean }> =>
-    adminFetch<{ ok: true; must_change_password: boolean }>(`/admin/users/${id}/reset-password`, {
-      method: "POST",
-      body: { new_password: newPassword },
-    }),
 };

@@ -39,9 +39,11 @@ const inputClasses =
 function generateInitialPassword(): string {
   const chars =
     "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#";
+  const randomIndexes = new Uint32Array(12);
+  crypto.getRandomValues(randomIndexes);
   let password = "";
   for (let i = 0; i < 12; i += 1) {
-    password += chars[Math.floor(Math.random() * chars.length)];
+    password += chars[randomIndexes[i] % chars.length];
   }
   return password;
 }
@@ -585,7 +587,7 @@ function ProvisionParentDialog({
               target="_blank"
               rel="noreferrer"
             >
-              Salin &amp; kirim via WhatsApp
+              Buka WhatsApp
             </Button>
           </div>
         </div>

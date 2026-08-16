@@ -367,47 +367,4 @@ describe("smsApi", () => {
     const res = await smsApi.listRaporDocuments();
     expect(res.documents[0]).toMatchObject({ file_size: 4096, semester: "ganjil" });
   });
-
-  it("provisions a parent and returns the flat 201 body", async () => {
-    let captured: unknown;
-    server.use(
-      http.post("*/api/v1/admin/users/parents", async ({ request }) => {
-        captured = await request.json();
-        return HttpResponse.json(
-          {
-            id: 9,
-            email: "ibu@example.com",
-            initial_password: "Sandi12345",
-            must_change_password: true,
-          },
-          { status: 201 },
-        );
-      }),
-    );
-    const res = await smsApi.provisionParent({
-      email: "ibu@example.com",
-      full_name: "Ibu Siti",
-      initial_password: "Sandi12345",
-    });
-    expect(captured).toEqual({ email: "ibu@example.com", full_name: "Ibu Siti", initial_password: "Sandi12345" });
-    expect(res).toEqual({
-      id: 9,
-      email: "ibu@example.com",
-      initial_password: "Sandi12345",
-      must_change_password: true,
-    });
-  });
-
-  it("resets a parent password with a new_password body", async () => {
-    let captured: unknown;
-    server.use(
-      http.post("*/api/v1/admin/users/:id/reset-password", async ({ request }) => {
-        captured = await request.json();
-        return HttpResponse.json({ ok: true, must_change_password: true });
-      }),
-    );
-    const res = await smsApi.resetParentPassword(4, "Baru12345");
-    expect(captured).toEqual({ new_password: "Baru12345" });
-    expect(res).toEqual({ ok: true, must_change_password: true });
-  });
 });
