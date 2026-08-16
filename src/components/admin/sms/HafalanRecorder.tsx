@@ -146,7 +146,9 @@ export function HafalanRecorder({
         student_id: studentId,
         surah_name: surahName,
         status,
-        ...(status === "tuntas" && fluency ? { fluency } : {}),
+        ...(status === "tuntas"
+          ? { fluency: fluency ?? "lancar" }
+          : {}),
       })
       .then((result) => {
         setRecords((prev) =>

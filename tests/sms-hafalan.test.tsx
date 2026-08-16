@@ -201,7 +201,12 @@ describe("HafalanRecorder", () => {
     await waitFor(() =>
       expect(putBodies).toEqual([
         { student_id: 1, surah_name: "Al-Fatihah", status: "sedang" },
-        { student_id: 1, surah_name: "Al-Fatihah", status: "tuntas" },
+        {
+          student_id: 1,
+          surah_name: "Al-Fatihah",
+          status: "tuntas",
+          fluency: "lancar",
+        },
         {
           student_id: 1,
           surah_name: "Al-Fatihah",
