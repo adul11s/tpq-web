@@ -29,6 +29,21 @@ export default defineConfig({
       testDir: "./e2e/admin",
       use: { ...devices["Desktop Chrome"], storageState: "test-results/.e2e-state.json" },
     },
+    {
+      name: "matrix-chromium",
+      testDir: "./e2e/matrix",
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "matrix-webkit",
+      testDir: "./e2e/matrix",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "matrix-mobile",
+      testDir: "./e2e/matrix-mobile",
+      use: { ...devices["Pixel 5"] },
+    },
   ],
   webServer: {
     command: "npm run dev",

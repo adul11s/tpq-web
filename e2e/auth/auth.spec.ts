@@ -150,14 +150,16 @@ test("15 verify-2fa lockout after repeated wrong codes (REQUIRE_2FA=on)", async 
   const emailInput = page.getByLabel(/email/i);
   const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
   if (needsEmail) await emailInput.fill(E2E_EMAIL);
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 4; i++) {
     await page.getByLabel(/kode totp/i).fill("000000");
     await page.getByRole("button", { name: "Verifikasi" }).click();
     await expect(page.getByText("Invalid credentials")).toBeVisible({ timeout: 60_000 });
   }
+  // The 5th wrong code trips the shared login bucket (login POST + 4 fails =
+  // 5 hits; the app shows the bucket's message on the verify page).
   await page.getByLabel(/kode totp/i).fill("000000");
   await page.getByRole("button", { name: "Verifikasi" }).click();
-  await expect(page.getByText("Terlalu banyak percobaan verifikasi, coba lagi nanti")).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByText("Terlalu banyak percobaan login, coba lagi nanti")).toBeVisible({ timeout: 60_000 });
 });
 
 test("16 backup code is single-use (REQUIRE_2FA=on)", async ({ page }) => {

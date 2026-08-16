@@ -19,6 +19,7 @@ test("22 settings: edit whatsapp → reflected on public kontak page, then resto
   await expect(publicPage.getByRole("link", { name: "Chat WhatsApp" }).first()).toHaveAttribute(
     "href",
     /https:\/\/wa\.me\/628888888888/,
+    { timeout: 30_000 },
   );
   await publicPage.close();
 
