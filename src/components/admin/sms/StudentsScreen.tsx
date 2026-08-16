@@ -241,6 +241,7 @@ export function StudentsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [warning, setWarning] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<SmsStudent | null>(null);
   const [saving, setSaving] = useState(false);
@@ -261,29 +262,32 @@ export function StudentsScreen() {
       })
       .catch((err: unknown) => setError(errorMessage(err)))
       .finally(() => setLoading(false));
+    smsApi
+      .listAcademicYears()
+      .then((result) => setYears(result.academic_years))
+      .catch(() => setYears([]));
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const ensureYears = useCallback(async (): Promise<AcademicYear[]> => {
-    if (years.length > 0) return years;
-    const loaded = await smsApi.listAcademicYears();
-    setYears(loaded.academic_years);
-    return loaded.academic_years;
-  }, [years]);
+  function clearNotices() {
+    setError(null);
+    setSuccess(null);
+    setWarning(null);
+  }
 
   function openCreateForm() {
     setEditing(null);
     setFormOpen(true);
-    setError(null);
+    clearNotices();
   }
 
   function openEditForm(student: SmsStudent) {
     setEditing(student);
     setFormOpen(true);
-    setError(null);
+    clearNotices();
   }
 
   function closeForm() {
@@ -293,7 +297,7 @@ export function StudentsScreen() {
 
   async function handleSave(values: StudentFormValues) {
     setSaving(true);
-    setError(null);
+    clearNotices();
     try {
       if (editing) {
         await smsApi.updateStudent(editing.id, {
@@ -309,18 +313,20 @@ export function StudentsScreen() {
           ...(values.birth_date ? { birth_date: values.birth_date } : {}),
         });
         if (values.class_id) {
-          const activeYear = (await ensureYears()).find(
-            (year) => year.is_active
-          );
+          const activeYear = years.find((year) => year.is_active);
           if (activeYear) {
-            await smsApi.createEnrollment({
-              student_id: created.id,
-              class_id: values.class_id,
-              academic_year_id: activeYear.id,
-            });
-            setSuccess("Santri disimpan dan didaftarkan ke kelas");
+            try {
+              await smsApi.createEnrollment({
+                student_id: created.id,
+                class_id: values.class_id,
+                academic_year_id: activeYear.id,
+              });
+              setSuccess("Santri disimpan dan didaftarkan ke kelas");
+            } catch {
+              setWarning("Santri disimpan, gagal mendaftarkan kelas");
+            }
           } else {
-            setSuccess(
+            setWarning(
               "Santri disimpan (belum didaftarkan ke kelas \u2014 belum ada tahun ajaran aktif)"
             );
           }
@@ -340,7 +346,7 @@ export function StudentsScreen() {
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
     setDeleting(true);
-    setError(null);
+    clearNotices();
     try {
       await smsApi.deleteStudent(pendingDelete.id);
       setSuccess("Santri dihapus");
@@ -376,6 +382,15 @@ export function StudentsScreen() {
           className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700"
         >
           {success}
+        </p>
+      ) : null}
+
+      {warning ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700"
+        >
+          {warning}
         </p>
       ) : null}
 

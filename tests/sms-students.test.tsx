@@ -128,6 +128,52 @@ describe("StudentsScreen", () => {
     ).toBeInTheDocument();
   });
 
+  it("keeps the student on enrollment failure: form closes, list refetches, partial-failure notice shown", async () => {
+    const students: SmsStudent[] = [AISYAH];
+    const studentPosts = vi.fn();
+    server.use(
+      ...screenHandlers(students, []),
+      http.post(`${API_BASE}/admin/students`, async ({ request }) => {
+        studentPosts();
+        const body = (await request.json()) as { full_name: string };
+        students.push({
+          id: 3,
+          nis: null,
+          full_name: body.full_name,
+          birth_date: null,
+          gender: null,
+          class: null,
+        });
+        return HttpResponse.json(
+          { id: 3, full_name: body.full_name },
+          { status: 201 }
+        );
+      }),
+      http.post(`${API_BASE}/admin/enrollments`, () =>
+        HttpResponse.json({ error: "Internal server error" }, { status: 500 })
+      )
+    );
+    const user = userEvent.setup();
+    render(<StudentsScreen />);
+
+    await screen.findByText("Aisyah");
+    await user.click(screen.getByRole("button", { name: "Tambah Santri" }));
+    await user.type(screen.getByLabelText(/nama lengkap/i), "Bilal Ahmad");
+    await user.selectOptions(screen.getByLabelText(/^kelas$/i), "2");
+    await user.click(screen.getByRole("button", { name: /simpan/i }));
+
+    expect(
+      await screen.findByText(/santri disimpan, gagal mendaftarkan kelas/i)
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /simpan/i })
+      ).not.toBeInTheDocument()
+    );
+    expect(await screen.findByText("Bilal Ahmad")).toBeInTheDocument();
+    expect(studentPosts).toHaveBeenCalledTimes(1);
+  });
+
   it("blocks submit when full_name is missing without calling the API", async () => {
     const onRequest = vi.fn();
     server.use(
