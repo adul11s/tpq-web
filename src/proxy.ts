@@ -6,7 +6,7 @@ const LANG_PATTERN = /^\/(en|id)(\/|$)/;
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin")) {
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api")) {
     return NextResponse.next();
   }
 

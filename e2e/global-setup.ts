@@ -12,16 +12,6 @@ export default async function globalSetup(): Promise<void> {
 
   const browser = await chromium.launch();
   const page = await browser.newPage({ baseURL: "http://localhost:3000" });
-  page.on("response", (r) => {
-    if (r.url().includes("/api/v1/")) {
-      console.log("[gs] RESP:", r.request().method(), r.url().replace("http://localhost:3100", ""), r.status());
-    }
-  });
-  page.on("pageerror", (e) => console.log("[gs] PAGEERROR:", e.message));
-  page.on("console", (m) => {
-    if (m.type() === "error") console.log("[gs] CONSOLE ERR:", m.text().slice(0, 200));
-  });
-  page.on("framenavigated", (f) => console.log("[gs] NAV:", f.url()));
   await adminLogin(page, E2E2_EMAIL, E2E_PASSWORD);
   await page.context().storageState({ path: STORAGE_STATE_PATH });
   await browser.close();

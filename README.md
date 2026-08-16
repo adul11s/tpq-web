@@ -20,6 +20,25 @@ Without a backend, the app runs in **mock-data mode** (`src/lib/mock/`).
 Point it at the real API by copying `.env.example` to `.env.local` and setting
 `NEXT_PUBLIC_API_BASE_URL`.
 
+### Full dev stack (recommended)
+
+The repo root has `../dev.sh` — one command boots Postgres + Redis + MinIO +
+API (:3100) + web (:3000), seeds/creates config, and prints URLs + demo
+credentials. Otherwise: start the API repo (`../api`) on :3100 first (it must
+be reachable at build time), then:
+
+```bash
+cp .env.example .env.local   # then set NEXT_PUBLIC_API_BASE_URL=http://localhost:3100/api/v1
+npm run build && npm run start   # or npm run dev
+```
+
+**Gotchas**
+- Stale `next start` processes on :3000 serve memory-cached OLD builds — kill
+  them (`lsof -ti :3000 | xargs kill -9`) before starting a fresh one.
+- Admin demo login: `admin@tpq.id` / `admin123` (2FA is OFF by default —
+  `REQUIRE_2FA=0`; the login page has a one-click demo fill when
+  `NEXT_PUBLIC_DEV_CREDENTIALS=true`).
+
 ## Scripts
 
 | Command | Description |
