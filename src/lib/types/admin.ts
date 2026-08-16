@@ -9,7 +9,7 @@ export interface AdminResource { id: number; title: string; slug: string; catego
 export interface AdminMediaAsset { id: number; original_name: string; storage_key: string; mime_type: string; file_size: number; kind: "pdf" | "image" | "audio"; created_at: string; }
 export interface AdminInquiry { id: number; parent_name: string | null; phone: string | null; whatsapp: string | null; child_age: string | null; program_class_id: number | null; message: string | null; status: InquiryStatus; admin_note: string | null; handled_by: number | null; created_at: string; }
 export interface AdminAuditRow { id: number; user_id: number; action: string; entity_type: string | null; entity_id: number | null; ip: string | null; user_agent: string | null; created_at: string; }
-export interface AdminUser { id: number; email: string; full_name: string; role: "admin" | "content_manager"; is_active: boolean; has_2fa: boolean; }
+export interface AdminUser { id: number; email: string; full_name: string; role: "admin" | "content_manager" | "parent"; is_active: boolean; has_2fa: boolean; }
 
 export interface AdminMe { id: number; email: string; full_name: string; role: Role; has_2fa: boolean; }
 export interface AdminPage { id: number; slug: string; title_id: string; title_en: string | null; status: ContentStatus; published_at: string | null; updated_at: string | null; }
