@@ -52,6 +52,7 @@ export function AttendanceGrid({
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [date, setDate] = useState(todayLocal);
   const [drafts, setDrafts] = useState<Record<number, AttendanceStatus>>({});
+  const [draftsKey, setDraftsKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -83,6 +84,7 @@ export function AttendanceGrid({
       .listAttendance({ class_id: classId, date: dateValue })
       .then((res) => {
         if (seq !== attendanceSeq.current) return;
+        setDraftsKey(`${classId}|${dateValue}`);
         setDrafts(
           Object.fromEntries(
             res.attendance.map((row) => [row.enrollment_id, row.status ?? "hadir"])
@@ -108,6 +110,11 @@ export function AttendanceGrid({
       enrollment.class_id === effectiveClassId && enrollment.status === "active"
   );
 
+  const currentKey =
+    effectiveClassId !== undefined ? `${effectiveClassId}|${date}` : null;
+  const draftsStale = currentKey !== draftsKey;
+  const activeDrafts = draftsStale ? {} : drafts;
+
   const counts: Record<AttendanceStatus, number> = {
     hadir: 0,
     izin: 0,
@@ -115,7 +122,7 @@ export function AttendanceGrid({
     alpha: 0,
   };
   for (const enrollment of roster) {
-    counts[drafts[enrollment.id] ?? "hadir"] += 1;
+    counts[activeDrafts[enrollment.id] ?? "hadir"] += 1;
   }
 
   const selectedClass = classes.find(
@@ -123,17 +130,19 @@ export function AttendanceGrid({
   );
 
   function handleSave() {
-    if (effectiveClassId === undefined || roster.length === 0) return;
+    if (currentKey === null || currentKey !== draftsKey || roster.length === 0) {
+      return;
+    }
     setSaving(true);
     setError(null);
     setSaved(null);
     smsApi
       .postAttendance({
-        class_id: effectiveClassId,
+        class_id: effectiveClassId as number,
         date,
         records: roster.map((enrollment) => ({
           enrollment_id: enrollment.id,
-          status: drafts[enrollment.id] ?? "hadir",
+          status: activeDrafts[enrollment.id] ?? "hadir",
         })),
       })
       .then(() => setSaved("Absensi tersimpan"))
@@ -271,8 +280,9 @@ export function AttendanceGrid({
                   <td className="px-4 py-3">
                     <select
                       aria-label={`Status ${enrollment.student_name}`}
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
-                      value={drafts[enrollment.id] ?? "hadir"}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200 disabled:opacity-60"
+                      value={activeDrafts[enrollment.id] ?? "hadir"}
+                      disabled={draftsStale}
                       onChange={(event) =>
                         setDrafts((prev) => ({
                           ...prev,
@@ -298,7 +308,7 @@ export function AttendanceGrid({
         <div>
           <Button
             loading={saving}
-            disabled={saving}
+            disabled={saving || draftsStale}
             onClick={handleSave}
           >
             Simpan Absensi
