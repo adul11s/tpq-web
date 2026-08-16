@@ -261,6 +261,77 @@ describe("RaporBuilder", () => {
     expect(screen.queryByLabelText("Kejujuran")).not.toBeInTheDocument();
   });
 
+  it("switching from a PAUD student to a TK student clears narrative+comment; generate on TK omits narrative", async () => {
+    const generateBodies: unknown[] = [];
+    server.use(
+      ...screenHandlers({ periods: freshPeriods() }),
+      http.post(`${API_BASE}/admin/rapor/generate`, async ({ request }) => {
+        generateBodies.push(await request.json());
+        return HttpResponse.json(
+          { id: 31, storage_key: "rapor/2025-2026/ganjil/1-9.pdf", file_size: 5120 },
+          { status: 201 }
+        );
+      })
+    );
+    const user = userEvent.setup();
+    render(<RaporBuilder />);
+
+    await screen.findByLabelText(/Santri/);
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: "Bilal" })).toBeInTheDocument()
+    );
+    await user.selectOptions(screen.getByLabelText(/Santri/), "2");
+    await user.type(
+      await screen.findByLabelText(/Narasi Perkembangan/),
+      "Narasi PAUD yang tidak boleh bocor ke TK."
+    );
+    await user.type(screen.getByLabelText(/Catatan Guru/), "Komentar PAUD.");
+
+    await user.selectOptions(screen.getByLabelText(/Santri/), "1");
+
+    expect(screen.queryByLabelText(/Narasi Perkembangan/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Kedisiplinan")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Catatan Guru/)).toHaveValue("")
+    );
+
+    await user.click(screen.getByRole("button", { name: /\bGenerate\b/ }));
+
+    await waitFor(() =>
+      expect(generateBodies).toEqual([
+        { student_id: 1, rapor_period_id: 1, teacher_comment: "" },
+      ])
+    );
+    expect(JSON.stringify(generateBodies[0])).not.toContain("narrative");
+  });
+
+  it("switching the period clears comment and narrative for the new selection", async () => {
+    server.use(...screenHandlers({ periods: freshPeriods() }));
+    const user = userEvent.setup();
+    render(<RaporBuilder />);
+
+    await screen.findByLabelText(/Periode/);
+    await waitFor(() =>
+      expect(screen.getByRole("option", { name: /Bilal/ })).toBeInTheDocument()
+    );
+    await user.selectOptions(screen.getByLabelText(/Santri/), "2");
+    await user.type(
+      await screen.findByLabelText(/Narasi Perkembangan/),
+      "Narasi ganjil."
+    );
+    await user.type(screen.getByLabelText(/Catatan Guru/), "Komentar ganjil.");
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Catatan Guru/)).toHaveValue("Komentar ganjil.")
+    );
+
+    await user.selectOptions(screen.getByLabelText(/Periode/), "2");
+
+    await waitFor(() =>
+      expect(screen.getByLabelText(/Catatan Guru/)).toHaveValue("")
+    );
+    expect(screen.getByLabelText(/Narasi Perkembangan/)).toHaveValue("");
+  });
+
   it("Generate POSTs { student_id, rapor_period_id, teacher_comment, narrative } with the current inputs", async () => {
     const generateBodies: unknown[] = [];
     server.use(

@@ -61,8 +61,8 @@ export function RaporBuilder() {
   const [toggling, setToggling] = useState(false);
 
   const [adabValues, setAdabValues] = useState<Record<string, number>>({});
-  const [comment, setComment] = useState("");
-  const [narrative, setNarrative] = useState("");
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [narrativeDrafts, setNarrativeDrafts] = useState<Record<string, string>>({});
   const [savingAdab, setSavingAdab] = useState(false);
   const [generating, setGenerating] = useState(false);
 
@@ -135,6 +135,10 @@ export function RaporBuilder() {
 
   const adabOverrideKey = (criterionId: number): string =>
     `${selectedStudentIdResolved}:${selectedPeriodIdResolved}:${criterionId}`;
+
+  const textKey = `${selectedStudentIdResolved}:${selectedPeriodIdResolved}`;
+  const comment = commentDrafts[textKey] ?? "";
+  const narrative = narrativeDrafts[textKey] ?? "";
 
   const adabValueFor = (criterionId: number): string => {
     const override = adabValues[adabOverrideKey(criterionId)];
@@ -481,7 +485,12 @@ export function RaporBuilder() {
                   placeholder="Cerita perkembangan santri pada periode ini\u2026"
                   value={narrative}
                   disabled={locked}
-                  onChange={(event) => setNarrative(event.target.value)}
+                  onChange={(event) =>
+                    setNarrativeDrafts((prev) => ({
+                      ...prev,
+                      [textKey]: event.target.value,
+                    }))
+                  }
                 />
               </div>
             ) : (
@@ -523,7 +532,12 @@ export function RaporBuilder() {
                 className={`${inputClasses} min-h-20 resize-y`}
                 placeholder="Catatan bebas untuk rapor santri\u2026"
                 value={comment}
-                onChange={(event) => setComment(event.target.value)}
+                onChange={(event) =>
+                  setCommentDrafts((prev) => ({
+                    ...prev,
+                    [textKey]: event.target.value,
+                  }))
+                }
               />
             </div>
 
