@@ -142,7 +142,7 @@ export default function DashboardPage() {
       ) : null}
 
       {loading || !stats ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <div className={cardClasses}>

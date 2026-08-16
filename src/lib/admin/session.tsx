@@ -34,6 +34,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<SessionStatus>("loading");
   const [user, setUser] = useState<AdminMe | null>(null);
   const hadSession = useRef(false);
+  const prevPathname = useRef<string | null>(null);
 
   const probe = useCallback(() => {
     adminApi
@@ -60,6 +61,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     });
     probe();
   }, [probe]);
+
+  const pathname = usePathname();
+  useEffect(() => {
+    if (prevPathname.current === null) {
+      prevPathname.current = pathname;
+      return;
+    }
+    const leftLogin =
+      prevPathname.current.startsWith("/admin/login") &&
+      !pathname.startsWith("/admin/login");
+    prevPathname.current = pathname;
+    if (leftLogin && status === "unauthenticated") {
+      probe();
+    }
+  }, [pathname, status, probe]);
 
   return (
     <SessionContext.Provider value={{ status, user, refresh: probe, logout }}>

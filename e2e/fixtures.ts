@@ -19,11 +19,6 @@ export async function adminLogin(
     (url) => /\/admin(\/dashboard)?$/.test(url.pathname) || url.pathname === "/admin/login/verify"
   );
   if (page.url().includes("/admin/login/verify")) {
-    // QA FND-11: ?email= is dropped on soft nav, so the verify form shows its
-    // own email field — wait for it to appear (post-hydration) before refilling
-    const emailInput = page.getByLabel(/email/i);
-    const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
-    if (needsEmail) await emailInput.fill(email);
     if (opts.backupCode) {
       await page.getByRole("button", { name: /pakai kode cadangan/i }).click();
       await page.getByLabel(/kode cadangan/i).fill(opts.backupCode);
@@ -33,8 +28,5 @@ export async function adminLogin(
     }
     await page.getByRole("button", { name: "Verifikasi" }).click();
   }
-  // QA FND-12: hard navigation re-probes /me so AuthGate releases the dashboard
-  await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
 }

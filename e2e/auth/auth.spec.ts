@@ -35,10 +35,7 @@ test("11 admin login password-only (REQUIRE_2FA=off)", async ({ page }) => {
   await page.getByRole("button", { name: "Masuk" }).click();
   // D-SE-12 off-behavior: no verify page — the login lands straight on /admin
   await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  // QA FND-12: the soft nav doesn't re-probe /me, so a hard navigation
-  // releases AuthGate and shows the dashboard
-  await page.goto("/admin");
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible({ timeout: 60_000 });
   // While off, the 2FA endpoint is rejected even with a valid session
   const res = await page.request.post(VERIFY_2FA_URL, {
     data: { email: E2E_EMAIL, token: "000000" },
@@ -56,15 +53,6 @@ test("12 admin 2FA enrollment wizard (QR → backup codes → confirm)", async (
   const enrollResp = page.waitForResponse((r) => r.url().includes("/admin/auth/enroll") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page).toHaveURL(/\/admin\/login\/enroll/);
-
-  // QA FND-11: useQueryParams drops ?email= on soft nav, so the wizard sits
-  // on its email step; re-entering the email starts enrollment
-  const emailHeading = page.getByRole("heading", { name: "Email" });
-  const needsEmailStep = await emailHeading.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
-  if (needsEmailStep) {
-    await page.getByLabel(/email/i).fill(E2E_EMAIL);
-    await page.getByRole("button", { name: "Mulai" }).click();
-  }
 
   await expect(page.getByRole("heading", { name: "Amankan Akun Anda" })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole("img", { name: /Pindai kode QR/ })).toBeVisible({ timeout: 60_000 });
@@ -85,11 +73,7 @@ test("12 admin 2FA enrollment wizard (QR → backup codes → confirm)", async (
   const confirmResp = page.waitForResponse((r) => r.url().includes("/admin/auth/enroll-confirm") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Verifikasi & Aktifkan" }).click();
   await confirmResp;
-  // QA FND-12: SessionProvider doesn't re-probe /me after login; a hard
-  // navigation re-probes so AuthGate releases the dashboard
-  await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible({ timeout: 60_000 });
 });
 
 test("13 admin login via TOTP challenge", async ({ page }) => {
@@ -101,17 +85,11 @@ test("13 admin login via TOTP challenge", async ({ page }) => {
   await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page).toHaveURL(/\/admin\/login\/verify/);
-  // QA FND-11: ?email= lost on soft nav, so the form shows its email field
-  const emailInput = page.getByLabel(/email/i);
-  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
-  if (needsEmail) await emailInput.fill(E2E_EMAIL);
   await page.getByLabel(/kode totp/i).fill(await generate({ secret: store.secret }));
   const verifyResp = page.waitForResponse((r) => r.url().includes("/admin/auth/verify-2fa") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Verifikasi" }).click();
   await verifyResp;
-  await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible({ timeout: 60_000 });
 });
 
 test("14 admin login via backup code", async ({ page }) => {
@@ -123,18 +101,12 @@ test("14 admin login via backup code", async ({ page }) => {
   await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page).toHaveURL(/\/admin\/login\/verify/);
-  // QA FND-11: ?email= lost on soft nav, so the form shows its email field
-  const emailInput = page.getByLabel(/email/i);
-  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
-  if (needsEmail) await emailInput.fill(E2E_EMAIL);
   await page.getByRole("button", { name: "Pakai kode cadangan" }).click();
   await page.getByLabel(/kode cadangan/i).fill(store.backupCodes[0]);
   const verifyResp = page.waitForResponse((r) => r.url().includes("/admin/auth/verify-2fa") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Verifikasi" }).click();
   await verifyResp;
-  await page.goto("/admin");
-  await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible({ timeout: 60_000 });
 });
 
 test("15 verify-2fa lockout after repeated wrong codes (REQUIRE_2FA=on)", async ({ page }) => {
@@ -147,9 +119,6 @@ test("15 verify-2fa lockout after repeated wrong codes (REQUIRE_2FA=on)", async 
   await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page).toHaveURL(/\/admin\/login\/verify/);
-  const emailInput = page.getByLabel(/email/i);
-  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
-  if (needsEmail) await emailInput.fill(E2E_EMAIL);
   for (let i = 0; i < 4; i++) {
     await page.getByLabel(/kode totp/i).fill("000000");
     await page.getByRole("button", { name: "Verifikasi" }).click();
@@ -171,9 +140,6 @@ test("16 backup code is single-use (REQUIRE_2FA=on)", async ({ page }) => {
   await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page).toHaveURL(/\/admin\/login\/verify/);
-  const emailInput = page.getByLabel(/email/i);
-  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
-  if (needsEmail) await emailInput.fill(E2E_EMAIL);
   await page.getByRole("button", { name: "Pakai kode cadangan" }).click();
   await page.getByLabel(/kode cadangan/i).fill(store.backupCodes[0]);
   await page.getByRole("button", { name: "Verifikasi" }).click();

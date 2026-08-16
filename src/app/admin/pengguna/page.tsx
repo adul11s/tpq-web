@@ -143,7 +143,7 @@ export default function PenggunaPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : users.length === 0 ? (
         <p className="text-sm font-semibold text-slate-500">
           Tidak ada pengguna.

@@ -32,7 +32,7 @@ function formatCreatedAt(iso: string): string {
 }
 
 function truncate(text: string, max = 48): string {
-  return text.length <= max ? text : `${text.slice(0, max)}\u2026`;
+  return text.length <= max ? text : `${text.slice(0, max)}…`;
 }
 
 function actionLabel(action: string): string {
@@ -190,7 +190,7 @@ export default function AktivitasPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : rows.length === 0 ? (
         <p className="text-sm font-semibold text-slate-500">
           Tidak ada aktivitas.

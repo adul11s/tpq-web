@@ -193,7 +193,7 @@ export default function InquiryPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : visibleRows.length === 0 ? (
         <p className="text-sm font-semibold text-slate-500">
           Belum ada inquiry berstatus {STATUS_LABELS[filter]}.
@@ -295,7 +295,7 @@ export default function InquiryPage() {
                               [row.id]: event.target.value,
                             }))
                           }
-                          placeholder="Tulis ringkasan percakapan atau tindak lanjut\u2026"
+                          placeholder="Tulis ringkasan percakapan atau tindak lanjut…"
                           className="w-48 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800"
                         />
                         <Button

@@ -139,7 +139,7 @@ export default function PengaturanPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : rows.length === 0 ? (
         <p className="text-sm font-semibold text-slate-500">
           Belum ada pengaturan.

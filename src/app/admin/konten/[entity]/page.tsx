@@ -132,7 +132,7 @@ export default function KontenListPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : (
         <EntityTable
           entity={config}

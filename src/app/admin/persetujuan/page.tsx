@@ -237,7 +237,7 @@ export default function PersetujuanPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : items.length === 0 ? (
         <p className="text-sm font-semibold text-slate-500">
           Tidak ada konten menunggu persetujuan.
@@ -311,7 +311,7 @@ export default function PersetujuanPage() {
         onClose={() => setPreview(null)}
       >
         {previewLoading ? (
-          <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+          <p className="text-sm font-semibold text-slate-500">Memuat…</p>
         ) : previewError ? (
           <p
             role="alert"

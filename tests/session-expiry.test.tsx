@@ -7,10 +7,11 @@ import { server, adminMeOk, API_BASE } from "./msw-server";
 import { SessionProvider } from "../src/lib/admin/session";
 import { AppShell } from "../src/components/admin/AppShell";
 
-const { mockRedirectToLogin, mockConfirm, mockReload } = vi.hoisted(() => ({
+const { mockRedirectToLogin, mockConfirm, mockReload, mockUsePathname } = vi.hoisted(() => ({
   mockRedirectToLogin: vi.fn(),
   mockConfirm: vi.fn(),
   mockReload: vi.fn(),
+  mockUsePathname: { current: "/admin/inquiry" },
 }));
 
 vi.mock("../src/lib/admin/redirect", () => ({
@@ -18,7 +19,7 @@ vi.mock("../src/lib/admin/redirect", () => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/admin/inquiry",
+  usePathname: () => mockUsePathname.current,
 }));
 
 function renderShell() {
@@ -191,5 +192,45 @@ it("renders the page (children) even without a session on login routes (AppShell
   );
   await waitFor(() =>
     expect(screen.getByTestId("login-page")).toBeInTheDocument()
+  );
+});
+
+it("re-probes /me when navigating from a login route to a non-login route (FND-12)", async () => {
+  let meCalls = 0;
+  server.use(
+    http.get(`${API_BASE}/admin/me`, () => {
+      meCalls += 1;
+      if (meCalls === 1) {
+        return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      return HttpResponse.json({
+        id: 1,
+        email: "admin@tpq.id",
+        full_name: "Admin",
+        role: "admin",
+        has_2fa: false,
+      });
+    })
+  );
+  mockUsePathname.current = "/admin/login";
+  const { rerender } = render(
+    <SessionProvider>
+      <AppShell>
+        <div data-testid="page" />
+      </AppShell>
+    </SessionProvider>
+  );
+  await waitFor(() => expect(meCalls).toBe(1));
+  mockUsePathname.current = "/admin/dashboard";
+  rerender(
+    <SessionProvider>
+      <AppShell>
+        <div data-testid="page" />
+      </AppShell>
+    </SessionProvider>
+  );
+  await waitFor(() => expect(meCalls).toBeGreaterThanOrEqual(2));
+  await waitFor(() =>
+    expect(screen.getByTestId("page")).toBeInTheDocument()
   );
 });

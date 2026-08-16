@@ -158,7 +158,7 @@ export default function MediaPage() {
             <div className="h-full w-1/3 animate-pulse rounded bg-mint-500" />
           </div>
           <p className="mt-1.5 text-xs font-semibold text-mint-700">
-            Mengunggah\u2026
+            Mengunggah…
           </p>
         </div>
       ) : null}

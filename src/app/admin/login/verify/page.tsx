@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useQueryParams } from "@/lib/admin/useQueryParams";
+import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { adminApi } from "@/lib/api/auth";
 import type { ApiError } from "@/lib/api/client";
@@ -24,7 +23,7 @@ const labelClasses = "mb-1.5 block text-sm font-extrabold text-mint-900";
 
 function VerifyForm() {
   const router = useRouter();
-    const emailParam = useQueryParams().get("email");
+    const emailParam = useSearchParams().get("email");
 
   const [mode, setMode] = useState<VerifyMode>("totp");
   const [email, setEmail] = useState(emailParam ?? "");
@@ -223,6 +222,8 @@ function VerifyForm() {
 
 export default function AdminVerifyPage() {
   return (
+    <Suspense fallback={<div className="min-h-screen bg-cream" />}>
       <VerifyForm />
+    </Suspense>
   );
 }

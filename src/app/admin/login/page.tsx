@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { adminApi } from "@/lib/api/auth";
-import { useQueryParams } from "@/lib/admin/useQueryParams";
 import type { ApiError } from "@/lib/api/client";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +27,7 @@ const labelClasses = "mb-1.5 block text-sm font-extrabold text-mint-900";
 
 function LoginForm() {
   const router = useRouter();
-  const searchParams = useQueryParams();
+  const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<{
     status: number;
     message: string;
@@ -202,5 +201,9 @@ function LoginForm() {
 }
 
 export default function AdminLoginPage() {
-  return <LoginForm />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-cream" />}>
+      <LoginForm />
+    </Suspense>
+  );
 }

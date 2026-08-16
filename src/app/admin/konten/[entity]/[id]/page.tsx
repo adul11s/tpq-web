@@ -166,7 +166,7 @@ export default function KontenEditorPage() {
       ) : null}
 
       {loading ? (
-        <p className="text-sm font-semibold text-slate-500">Memuat\u2026</p>
+        <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : null}
 
       {!loading && !loadError ? (

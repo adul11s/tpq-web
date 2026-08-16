@@ -32,12 +32,12 @@ export function Navbar({ lang }: NavbarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const navLinks = localizeNavLinks(lang);
-  const rawPath = pathname.replace(/^\/en/, "") || "/";
+  const rawPath = pathname.replace(/^\/(en|id)/, "") || "/";
 
   const switchHref =
     lang === "en"
-      ? pathname.replace(/^\/en/, "") || "/"
-      : `/en${pathname === "/" ? "" : pathname}`;
+      ? rawPath
+      : `/en${rawPath}`;
 
   return (
     <header className="sticky top-0 z-40 border-b border-mint-200 bg-cream/90 backdrop-blur">

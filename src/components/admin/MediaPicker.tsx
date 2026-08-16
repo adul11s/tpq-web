@@ -133,7 +133,7 @@ export function MediaPicker({
               <input
                 type="search"
                 aria-label="Cari media"
-                placeholder="Cari media\u2026"
+                placeholder="Cari media…"
                 className={inputClasses}
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}

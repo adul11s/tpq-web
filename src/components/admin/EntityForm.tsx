@@ -353,7 +353,7 @@ const RowEditor = forwardRef<RowEditorHandle, RowEditorProps>(function RowEditor
                         updateRow(index, item.name, event.target.value)
                       }
                     >
-                      <option value="">Pilih\u2026</option>
+                      <option value="">Pilih…</option>
                       {(item.options ?? []).map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
@@ -587,7 +587,7 @@ export function EntityForm({
                 className={inputClasses}
                 {...register(field.name, { valueAsNumber: numeric })}
               >
-                <option value="">Pilih\u2026</option>
+                <option value="">Pilih…</option>
                 {(loadedOptions[field.name] ?? field.options)?.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
