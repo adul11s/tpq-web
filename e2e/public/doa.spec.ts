@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { API_BASE } from "../utils/constants";
 
 test("06 doa: featured card, filter chips, cards, share toast", async ({ page }) => {
-  const res = await fetch(`${API_BASE}/prayer-guides`);
+  const res = await fetch(`${API_BASE}/api/v1/prayer-guides`);
   const body = await res.json();
   const guides = body.data ?? body;
   await page.goto("/doa");
