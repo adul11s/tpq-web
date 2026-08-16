@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test";
+import { API_BASE } from "../utils/constants";
 
 test("19 inquiry inbox: pipeline, status change, admin note, CSV export", async ({ page, request }) => {
-  const settings = await request.get("http://localhost:3100/api/v1/site-settings");
+  const settings = await request.get(`${API_BASE}/api/v1/site-settings`);
   expect(settings.ok()).toBeTruthy();
   const settingsBody = (await settings.json()) as { privacy_policy_version: string | null };
-  const create = await request.post("http://localhost:3100/api/v1/inquiries", {
+  const create = await request.post(`${API_BASE}/api/v1/inquiries`, {
     data: {
       parent_name: "E2E Inbox Probe",
       phone: "081234567890",

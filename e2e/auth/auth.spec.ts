@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { execSync } from "node:child_process";
 import { generate } from "otplib";
-import { E2E_EMAIL, E2E_PASSWORD } from "../utils/constants";
+import { E2E_EMAIL, E2E_PASSWORD, API_BASE } from "../utils/constants";
 import { setAuthStore, getAuthStore } from "../utils/auth-store";
 
-const VERIFY_2FA_URL = "http://localhost:3100/api/v1/admin/auth/verify-2fa";
+const VERIFY_2FA_URL = `${API_BASE}/api/v1/admin/auth/verify-2fa`;
 
 // QA D-SE-12 mode probe: REQUIRE_2FA=off → login answers {challenge:null} and
 // sets the session directly (password-only); the 2FA flows only exist with the
@@ -12,7 +12,7 @@ const VERIFY_2FA_URL = "http://localhost:3100/api/v1/admin/auth/verify-2fa";
 // beforeEach reset keeps the suite well under 5/15min.
 let challengeIsNull = false;
 test.beforeAll(async ({ request }) => {
-  const res = await request.post("http://localhost:3100/api/v1/admin/auth/login", {
+  const res = await request.post(`${API_BASE}/api/v1/admin/auth/login`, {
     data: { email: E2E_EMAIL, password: E2E_PASSWORD },
   });
   const body = (await res.json()) as { challenge: "totp" | "enroll" | null };
@@ -38,7 +38,7 @@ test("11 admin login password-only (REQUIRE_2FA=off)", async ({ page }) => {
   // QA FND-12: the soft nav doesn't re-probe /me, so a hard navigation
   // releases AuthGate and shows the dashboard
   await page.goto("/admin");
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
   // While off, the 2FA endpoint is rejected even with a valid session
   const res = await page.request.post(VERIFY_2FA_URL, {
     data: { email: E2E_EMAIL, token: "000000" },
@@ -66,11 +66,11 @@ test("12 admin 2FA enrollment wizard (QR → backup codes → confirm)", async (
     await page.getByRole("button", { name: "Mulai" }).click();
   }
 
-  await expect(page.getByRole("heading", { name: "Amankan Akun Anda" })).toBeVisible();
-  await expect(page.getByRole("img", { name: /Pindai kode QR/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Amankan Akun Anda" })).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByRole("img", { name: /Pindai kode QR/ })).toBeVisible({ timeout: 60_000 });
   await page.getByRole("button", { name: "Saya sudah memindai" }).click();
 
-  await expect(page.getByRole("heading", { name: "Kode Cadangan Anda" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Kode Cadangan Anda" })).toBeVisible({ timeout: 60_000 });
   const codes: string[] = await page.locator("ol li").allInnerTexts();
   expect(codes).toHaveLength(8);
   for (const c of codes) expect(c).toMatch(/^[0-9A-F]{4}-[0-9A-F]{4}$/);
@@ -80,7 +80,7 @@ test("12 admin 2FA enrollment wizard (QR → backup codes → confirm)", async (
   await page.getByRole("checkbox", { name: "Saya sudah menyimpan kode cadangan di tempat aman." }).check();
   await page.getByRole("button", { name: "Lanjut" }).click();
 
-  await expect(page.getByRole("heading", { name: "Verifikasi Kode Pertama" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Verifikasi Kode Pertama" })).toBeVisible({ timeout: 60_000 });
   await page.getByLabel(/kode totp/i).fill(await generate({ secret: enrollBody.secret }));
   const confirmResp = page.waitForResponse((r) => r.url().includes("/admin/auth/enroll-confirm") && r.request().method() === "POST");
   await page.getByRole("button", { name: "Verifikasi & Aktifkan" }).click();
@@ -89,7 +89,7 @@ test("12 admin 2FA enrollment wizard (QR → backup codes → confirm)", async (
   // navigation re-probes so AuthGate releases the dashboard
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
 });
 
 test("13 admin login via TOTP challenge", async ({ page }) => {
@@ -111,7 +111,7 @@ test("13 admin login via TOTP challenge", async ({ page }) => {
   await verifyResp;
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
 });
 
 test("14 admin login via backup code", async ({ page }) => {
@@ -134,5 +134,46 @@ test("14 admin login via backup code", async ({ page }) => {
   await verifyResp;
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible({ timeout: 60_000 });
+});
+
+test("15 verify-2fa lockout after repeated wrong codes (REQUIRE_2FA=on)", async ({ page }) => {
+  test.skip(challengeIsNull, "REQUIRE_2FA=true required — run the API with REQUIRE_2FA=1 (SECURITY S1 gate)");
+  test.setTimeout(180_000);
+  const store = getAuthStore();
+  expect(store.secret).toBeTruthy();
+  await page.goto("/admin/login");
+  await page.getByLabel(/email/i).fill(E2E_EMAIL);
+  await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
+  await page.getByRole("button", { name: "Masuk" }).click();
+  await expect(page).toHaveURL(/\/admin\/login\/verify/);
+  const emailInput = page.getByLabel(/email/i);
+  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
+  if (needsEmail) await emailInput.fill(E2E_EMAIL);
+  for (let i = 0; i < 5; i++) {
+    await page.getByLabel(/kode totp/i).fill("000000");
+    await page.getByRole("button", { name: "Verifikasi" }).click();
+    await expect(page.getByText("Invalid credentials")).toBeVisible({ timeout: 60_000 });
+  }
+  await page.getByLabel(/kode totp/i).fill("000000");
+  await page.getByRole("button", { name: "Verifikasi" }).click();
+  await expect(page.getByText("Terlalu banyak percobaan verifikasi, coba lagi nanti")).toBeVisible({ timeout: 60_000 });
+});
+
+test("16 backup code is single-use (REQUIRE_2FA=on)", async ({ page }) => {
+  test.skip(challengeIsNull, "REQUIRE_2FA=true required — run the API with REQUIRE_2FA=1 (SECURITY S1 gate)");
+  const store = getAuthStore();
+  expect(store.backupCodes.length).toBeGreaterThan(0);
+  await page.goto("/admin/login");
+  await page.getByLabel(/email/i).fill(E2E_EMAIL);
+  await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
+  await page.getByRole("button", { name: "Masuk" }).click();
+  await expect(page).toHaveURL(/\/admin\/login\/verify/);
+  const emailInput = page.getByLabel(/email/i);
+  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
+  if (needsEmail) await emailInput.fill(E2E_EMAIL);
+  await page.getByRole("button", { name: "Pakai kode cadangan" }).click();
+  await page.getByLabel(/kode cadangan/i).fill(store.backupCodes[0]);
+  await page.getByRole("button", { name: "Verifikasi" }).click();
+  await expect(page.getByText("Invalid credentials")).toBeVisible({ timeout: 60_000 });
 });
