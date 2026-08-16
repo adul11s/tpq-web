@@ -11,7 +11,7 @@ describe("menuForRole", () => {
     ]);
   });
 
-  it("gives admin all eight menu entries", () => {
+  it("gives admin all nine menu entries including the SMS Santri screen", () => {
     expect(menuForRole("admin").map((item) => item.href)).toEqual([
       "/admin",
       "/admin/konten",
@@ -21,6 +21,8 @@ describe("menuForRole", () => {
       "/admin/pengguna",
       "/admin/aktivitas",
       "/admin/pengaturan",
+      "/admin/sms/students",
     ]);
+    expect(menuForRole("admin").map((item) => item.label)).toContain("Santri");
   });
 });

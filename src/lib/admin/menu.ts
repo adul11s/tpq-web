@@ -17,6 +17,7 @@ export const ADMIN_MENU: AdminMenuItem[] = [
   { href: "/admin/pengguna", label: "Pengguna", roles: ["admin"] },
   { href: "/admin/aktivitas", label: "Aktivitas", roles: ["admin"] },
   { href: "/admin/pengaturan", label: "Pengaturan", roles: ["admin"] },
+  { href: "/admin/sms/students", label: "Santri", roles: ["admin"] },
 ];
 
 export function menuForRole(role: Role): AdminMenuItem[] {
