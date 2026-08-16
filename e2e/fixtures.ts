@@ -13,9 +13,11 @@ export async function adminLogin(
   await page.getByLabel(/kata sandi/i).fill(password);
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page.getByRole("button", { name: "Verifikasi" })).toBeVisible();
-  if (await page.getByLabel(/email/i).isVisible().catch(() => false)) {
-    await page.getByLabel(/email/i).fill(email);
-  }
+  // QA FND-11: ?email= is dropped on soft nav, so the verify form shows its
+  // own email field — wait for it to appear (post-hydration) before refilling
+  const emailInput = page.getByLabel(/email/i);
+  const needsEmail = await emailInput.waitFor({ state: "visible", timeout: 15000 }).then(() => true).catch(() => false);
+  if (needsEmail) await emailInput.fill(email);
   if (opts.backupCode) {
     await page.getByRole("button", { name: /pakai kode cadangan/i }).click();
     await page.getByLabel(/kode cadangan/i).fill(opts.backupCode);

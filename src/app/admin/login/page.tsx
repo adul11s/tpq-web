@@ -38,6 +38,7 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -47,7 +48,12 @@ function LoginForm() {
   async function onSubmit(values: LoginValues) {
     setServerError(null);
     try {
-      const { challenge } = await adminApi.login(values.email, values.password);
+      const result = await adminApi.login(values.email, values.password);
+      if ("ok" in result) {
+        router.push("/admin");
+        return;
+      }
+      const { challenge } = result;
       const email = encodeURIComponent(values.email);
       const base =
         challenge === "totp"
@@ -161,6 +167,21 @@ function LoginForm() {
               Masuk
             </button>
           </form>
+
+          {process.env.NEXT_PUBLIC_DEV_CREDENTIALS === "true" ? (
+            <div className="mt-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setValue("email", "admin@tpq.id");
+                  setValue("password", "admin123");
+                }}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-dashed border-mint-300 bg-mint-50 px-4 py-2 text-xs font-bold text-mint-700 transition-colors hover:bg-mint-100"
+              >
+                Isi akun demo (dev)
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <p className="mt-5 text-center text-xs font-bold text-mint-800/50">

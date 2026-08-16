@@ -3,9 +3,9 @@ import type { AdminMe } from "../types/admin";
 
 export type LoginChallenge = "totp" | "enroll";
 
-export interface LoginResponse {
-  challenge: LoginChallenge;
-}
+export type LoginResponse =
+  | { challenge: LoginChallenge }
+  | { ok: true };
 
 export interface EnrollResponse {
   secret: string;
