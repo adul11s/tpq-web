@@ -11,7 +11,7 @@ describe("menuForRole", () => {
     ]);
   });
 
-  it("gives admin all nine menu entries including the SMS Santri screen", () => {
+  it("gives admin all ten menu entries including the SMS screens", () => {
     expect(menuForRole("admin").map((item) => item.href)).toEqual([
       "/admin",
       "/admin/konten",
@@ -22,7 +22,11 @@ describe("menuForRole", () => {
       "/admin/aktivitas",
       "/admin/pengaturan",
       "/admin/sms/students",
+      "/admin/sms/enrollments",
     ]);
     expect(menuForRole("admin").map((item) => item.label)).toContain("Santri");
+    expect(menuForRole("admin").map((item) => item.label)).toContain(
+      "Pendaftaran Kelas"
+    );
   });
 });
