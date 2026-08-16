@@ -22,6 +22,11 @@ describe("proxy", () => {
     expect(response.headers.get("x-middleware-rewrite")).toBeNull();
   });
 
+  it("passes /api paths through unchanged", () => {
+    const response = proxy(makeRequest("/api/parent/children"));
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull();
+  });
+
   it("still rewrites public paths under /id", () => {
     const response = proxy(makeRequest("/kontak"));
     expect(response.headers.get("x-middleware-rewrite")).toContain("/id/kontak");
