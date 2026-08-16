@@ -54,6 +54,10 @@ function LoginForm() {
         return;
       }
       const { challenge } = result;
+      if (!challenge) {
+        router.push("/admin");
+        return;
+      }
       const email = encodeURIComponent(values.email);
       const base =
         challenge === "totp"

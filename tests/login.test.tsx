@@ -162,3 +162,17 @@ it("handles a direct-session login ({ ok: true }) by navigating straight to /adm
   await devUser.click(screen.getByRole("button", { name: /masuk/i }));
   await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/admin"));
 });
+
+it("handles challenge: null (REQUIRE_2FA=0) by navigating straight to /admin", async () => {
+  server.use(
+    http.post(`${API_BASE}/admin/auth/login`, () =>
+      HttpResponse.json({ challenge: null }, { status: 200 })
+    )
+  );
+  render(<LoginPage />);
+  const devUser = userEvent.setup();
+  await devUser.type(screen.getByLabelText(/email/i), "admin@tpq.id");
+  await devUser.type(screen.getByLabelText(/kata sandi/i), "admin123");
+  await devUser.click(screen.getByRole("button", { name: /masuk/i }));
+  await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/admin"));
+});

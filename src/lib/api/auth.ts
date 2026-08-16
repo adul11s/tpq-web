@@ -4,7 +4,7 @@ import type { AdminMe } from "../types/admin";
 export type LoginChallenge = "totp" | "enroll";
 
 export type LoginResponse =
-  | { challenge: LoginChallenge }
+  | { challenge: LoginChallenge | null }
   | { ok: true };
 
 export interface EnrollResponse {
