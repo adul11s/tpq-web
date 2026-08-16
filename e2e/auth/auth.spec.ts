@@ -4,6 +4,21 @@ import { generate } from "otplib";
 import { E2E_EMAIL, E2E_PASSWORD } from "../utils/constants";
 import { setAuthStore, getAuthStore } from "../utils/auth-store";
 
+const VERIFY_2FA_URL = "http://localhost:3100/api/v1/admin/auth/verify-2fa";
+
+// QA D-SE-12 mode probe: REQUIRE_2FA=off → login answers {challenge:null} and
+// sets the session directly (password-only); the 2FA flows only exist with the
+// flag on. The probe counts as one login against the rate bucket — the
+// beforeEach reset keeps the suite well under 5/15min.
+let challengeIsNull = false;
+test.beforeAll(async ({ request }) => {
+  const res = await request.post("http://localhost:3100/api/v1/admin/auth/login", {
+    data: { email: E2E_EMAIL, password: E2E_PASSWORD },
+  });
+  const body = (await res.json()) as { challenge: "totp" | "enroll" | null };
+  challengeIsNull = body.challenge === null;
+});
+
 // Each scenario performs 2-3 login-bucket POSTs (login + enroll/confirm or
 // verify-2fa; api/src/routes/admin/auth.ts); the login bucket allows 5 per
 // 15min per email|ip, so reset it before every test (same local-dev reset
@@ -12,7 +27,28 @@ test.beforeEach(() => {
   execSync("npm --prefix ../api run e2e:reset-login-rate-limit", { stdio: "ignore" });
 });
 
-test("11 admin 2FA enrollment wizard (QR → backup codes → confirm)", async ({ page }) => {
+test("11 admin login password-only (REQUIRE_2FA=off)", async ({ page }) => {
+  await page.goto("/admin/login");
+  await page.getByLabel(/email/i).fill(E2E_EMAIL);
+  await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
+  await page.getByRole("button", { name: "Masuk" }).click();
+  // D-SE-12 off-behavior: no verify page — the login lands straight on /admin
+  await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
+  // QA FND-12: the soft nav doesn't re-probe /me, so a hard navigation
+  // releases AuthGate and shows the dashboard
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  // While off, the 2FA endpoint is rejected even with a valid session
+  const res = await page.request.post(VERIFY_2FA_URL, {
+    data: { email: E2E_EMAIL, token: "000000" },
+  });
+  expect(res.status()).toBe(403);
+  const body = (await res.json()) as { error?: string };
+  expect(body.error).toBe("Verifikasi dua langkah tidak aktif");
+});
+
+test("12 admin 2FA enrollment wizard (QR → backup codes → confirm)", async ({ page }) => {
+  test.skip(challengeIsNull, "REQUIRE_2FA=true required — run the API with REQUIRE_2FA=1 (SECURITY S1 gate)");
   await page.goto("/admin/login");
   await page.getByLabel(/email/i).fill(E2E_EMAIL);
   await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
@@ -55,7 +91,8 @@ test("11 admin 2FA enrollment wizard (QR → backup codes → confirm)", async (
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 });
 
-test("12 admin login via TOTP challenge", async ({ page }) => {
+test("13 admin login via TOTP challenge", async ({ page }) => {
+  test.skip(challengeIsNull, "REQUIRE_2FA=true required — run the API with REQUIRE_2FA=1 (SECURITY S1 gate)");
   const store = getAuthStore();
   expect(store.secret).toBeTruthy();
   await page.goto("/admin/login");
@@ -76,7 +113,8 @@ test("12 admin login via TOTP challenge", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 });
 
-test("13 admin login via backup code", async ({ page }) => {
+test("14 admin login via backup code", async ({ page }) => {
+  test.skip(challengeIsNull, "REQUIRE_2FA=true required — run the API with REQUIRE_2FA=1 (SECURITY S1 gate)");
   const store = getAuthStore();
   expect(store.backupCodes.length).toBeGreaterThan(0);
   await page.goto("/admin/login");
