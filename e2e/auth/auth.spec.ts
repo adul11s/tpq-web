@@ -28,6 +28,7 @@ test.beforeEach(() => {
 });
 
 test("11 admin login password-only (REQUIRE_2FA=off)", async ({ page }) => {
+  test.skip(!challengeIsNull, "REQUIRE_2FA off required — password-only login applies only with REQUIRE_2FA=0");
   await page.goto("/admin/login");
   await page.getByLabel(/email/i).fill(E2E_EMAIL);
   await page.getByLabel(/kata sandi/i).fill(E2E_PASSWORD);
