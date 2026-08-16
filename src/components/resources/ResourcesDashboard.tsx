@@ -331,7 +331,7 @@ export function ResourcesDashboard({ lang }: ResourcesDashboardProps) {
         {totalPages > 1 ? (
           <nav
             aria-label={lang === "en" ? "Page navigation" : "Navigasi halaman"}
-            className="mt-8 flex items-center justify-center gap-4"
+            className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2"
           >
             <button
               type="button"

@@ -4,6 +4,8 @@ import { fetchPrayerGuides } from "@/lib/data/prayerGuides";
 import { isLang, type Lang } from "@/lib/lang";
 import { buildMetadata } from "@/lib/seo";
 
+export const revalidate = 300;
+
 interface PrayerGuidesPageProps {
   params: Promise<{ lang: string }>;
 }

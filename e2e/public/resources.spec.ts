@@ -22,7 +22,8 @@ test("04 resources download: card button → download event → toast", async ({
   await page.goto("/resources");
   const card = page.locator("article", { hasText: /[1-9]\d*× diunduh/ }).first();
   const title = await card.locator("h3 a").innerText();
-  const download = card.getByRole("button", { name: new RegExp(`Unduh PDF ${title}`) });
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const download = card.getByRole("button", { name: new RegExp(`Unduh PDF ${escaped}`) });
   await expect(download).toBeVisible();
   await expect(card.getByText(/\d+(\.\d+)?× diunduh/)).toBeVisible();
   const dlPromise = page.waitForEvent("download");

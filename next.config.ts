@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
         port: "9000",
       },
     ],
+    // Dev/self-hosted only: MinIO media lives on localhost:9000; Next 16's
+    // SSRF guard blocks private-IP optimization by default. Prod uses the
+    // public CDN hostname above, so this is inert in production.
+    dangerouslyAllowLocalIP: true,
   },
 };
 

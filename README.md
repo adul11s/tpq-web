@@ -98,7 +98,7 @@ See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
 |---|---|
 | `NEXT_PUBLIC_API_BASE_URL` | REST API base; unset = mock-data mode (public pages only — admin requires it) |
 | `NEXT_PUBLIC_SITE_URL` | Canonical site URL for SEO/sitemap (default `https://tpq-qurani.example.id`) |
-| `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | GA4 tag; enables `page_view`, `download_material`, and `inquiry_submitted` tracking when set |
+| `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | GA4 tag; enables `page_view`, `download_material`, and `inquiry_submitted` tracking when set. **Unset (default) = no GA4 events fired.** Set the real Measurement ID before production launch (GA4 acceptance is Phase-2 per release checklist 1.5). |
 
 > **GA event timing (FND-3):** the client-side `download_material` event fires as soon as the signed download URL is requested — **before** the download itself succeeds (browser download is not observable from JS). The backend `download_count` counter remains the authoritative source for actual downloads.
 | `REVALIDATE_SECRET` | Shared secret for `POST /api/revalidate` (backend A4 notifications); unset = route rejects all calls |
