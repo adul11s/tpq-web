@@ -107,7 +107,10 @@ export function EnrollmentsScreen() {
   }
 
   async function handleRegister() {
-    const parsed = enrollmentFormSchema.safeParse(formValues);
+    const parsed = enrollmentFormSchema.safeParse({
+      ...formValues,
+      academic_year_id: yearValue,
+    });
     if (!parsed.success) {
       const errors: Record<string, string> = {};
       for (const issue of parsed.error.issues) {

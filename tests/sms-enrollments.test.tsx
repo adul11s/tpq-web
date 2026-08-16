@@ -144,6 +144,46 @@ describe("EnrollmentsScreen", () => {
     expect(screen.getByText(/pendaftaran berhasil/i)).toBeInTheDocument();
   });
 
+  it("submits the active academic year by default without an explicit year pick", async () => {
+    const enrollments: Enrollment[] = [ENR_BILAL];
+    let posted: unknown;
+    server.use(
+      ...screenHandlers(enrollments, [AISYAH, BILAL, HASAN], [YEAR_ACTIVE]),
+      http.post(`${API_BASE}/admin/enrollments`, async ({ request }) => {
+        posted = await request.json();
+        enrollments.push({
+          id: 12,
+          student_id: 3,
+          student_name: "Hasan",
+          class_id: 2,
+          class_code: "TPA",
+          academic_year_id: 7,
+          status: "active",
+        });
+        return HttpResponse.json({ id: 12 }, { status: 201 });
+      })
+    );
+    const user = userEvent.setup();
+    render(<EnrollmentsScreen />);
+
+    const table = await screen.findByRole("table");
+    await waitFor(() =>
+      expect(within(table).getByText("Bilal")).toBeInTheDocument()
+    );
+    await user.selectOptions(screen.getByLabelText(/^santri/i), "3");
+    await user.selectOptions(screen.getByLabelText(/^kelas/i), "2");
+    await user.click(screen.getByRole("button", { name: /daftarkan/i }));
+
+    await waitFor(() =>
+      expect(posted).toEqual({
+        student_id: 3,
+        class_id: 2,
+        academic_year_id: 7,
+      })
+    );
+    expect(screen.getByText(/pendaftaran berhasil/i)).toBeInTheDocument();
+  });
+
   it("deletes an enrollment via DELETE /admin/enrollments/:id after confirmation and the row disappears", async () => {
     const enrollments: Enrollment[] = [ENR_AISYAH, ENR_BILAL];
     let deletedId: string | null = null;
