@@ -1,5 +1,5 @@
 export type ContentStatus = "draft" | "published" | "archived";
-export type Role = "admin" | "content_manager" | "parent";
+export type Role = "admin" | "content_manager" | "parent" | "teacher";
 export type AgeGroup = "paud" | "tk" | "tpa" | "all";
 export type InquiryStatus = "new" | "contacted" | "visited" | "enrolled" | "closed";
 

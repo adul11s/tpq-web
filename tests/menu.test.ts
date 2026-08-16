@@ -11,7 +11,7 @@ describe("menuForRole", () => {
     ]);
   });
 
-  it("gives admin all ten menu entries including the SMS screens", () => {
+  it("gives admin all eleven menu entries including the SMS screens", () => {
     expect(menuForRole("admin").map((item) => item.href)).toEqual([
       "/admin",
       "/admin/konten",
@@ -23,10 +23,20 @@ describe("menuForRole", () => {
       "/admin/pengaturan",
       "/admin/sms/students",
       "/admin/sms/enrollments",
+      "/admin/sms/hafalan",
     ]);
     expect(menuForRole("admin").map((item) => item.label)).toContain("Santri");
     expect(menuForRole("admin").map((item) => item.label)).toContain(
       "Pendaftaran Kelas"
     );
+    expect(menuForRole("admin").map((item) => item.label)).toContain(
+      "Hafalan"
+    );
+  });
+
+  it("gives teacher only the Hafalan SMS screen", () => {
+    expect(menuForRole("teacher").map((item) => item.href)).toEqual([
+      "/admin/sms/hafalan",
+    ]);
   });
 });
