@@ -1,11 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || undefined,
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "cdn.example.id",
+        hostname: "cdn.tpq-qurani.example.id",
       },
       {
         protocol: "http",
