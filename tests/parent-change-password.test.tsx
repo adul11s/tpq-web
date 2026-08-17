@@ -96,7 +96,7 @@ describe("ChangePassword", () => {
     );
   });
 
-  it("unlocks the forced-change flag, shows the success notice, and navigates to /parent/anak", async () => {
+  it("unlocks the forced-change flag, paints the success notice, then navigates to /parent/anak", async () => {
     changeSpy = vi
       .spyOn(parentApi, "changePassword")
       .mockResolvedValue({ ok: true });
@@ -112,10 +112,14 @@ describe("ChangePassword", () => {
     await waitFor(() =>
       expect(screen.getByTestId("must-change")).toHaveTextContent("false")
     );
-    await waitFor(() =>
-      expect(screen.getByText("Kata sandi berhasil diubah")).toBeInTheDocument()
-    );
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/parent/anak"));
+    expect(
+      await screen.findByText("Kata sandi berhasil diubah")
+    ).toBeInTheDocument();
+    // The toast must get a chance to paint: navigation is deferred.
+    expect(mockPush).not.toHaveBeenCalled();
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/parent/anak"), {
+      timeout: 3000,
+    });
   });
 
   it("navigates to the lang-prefixed anak route on success", async () => {
@@ -128,8 +132,8 @@ describe("ChangePassword", () => {
     await fillAndSubmit(user, "en", "secret1", "rahasia123", "rahasia123");
 
     await waitFor(() =>
-      expect(mockPush).toHaveBeenCalledWith("/en/parent/anak")
-    );
+      expect(mockPush).toHaveBeenCalledWith("/en/parent/anak"),
+    { timeout: 3000 });
   });
 
   it("shows the backend 401 copy verbatim and does not navigate", async () => {

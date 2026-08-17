@@ -12,6 +12,7 @@ import { useParentSession } from "@/lib/parent/session";
 
 const GENERIC_ERROR = "Terjadi kesalahan. Coba lagi nanti.";
 const SAME_AS_CURRENT = "Password baru harus berbeda";
+const SUCCESS_NAV_DELAY_MS = 1200;
 
 const changePasswordSchema = z
   .object({
@@ -64,12 +65,22 @@ export function ChangePassword({ lang }: { lang: Lang }) {
   });
 
   useEffect(() => {
-    if (status === "guest") {
-      router.push(localizedHref(lang, "/parent/login"));
-    } else if (status === "authed" && !mustChangePassword) {
+    if (status !== "authed") {
+      if (status === "guest") {
+        router.push(localizedHref(lang, "/parent/login"));
+      }
+      return;
+    }
+    if (success) {
+      const timer = window.setTimeout(() => {
+        router.push(localizedHref(lang, "/parent/anak"));
+      }, SUCCESS_NAV_DELAY_MS);
+      return () => window.clearTimeout(timer);
+    }
+    if (!mustChangePassword) {
       router.push(localizedHref(lang, "/parent/anak"));
     }
-  }, [status, mustChangePassword, lang, router]);
+  }, [status, mustChangePassword, lang, router, success]);
 
   async function onSubmit(values: ChangePasswordValues) {
     setServerError(null);
@@ -203,10 +214,10 @@ export function ChangePassword({ lang }: { lang: Lang }) {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || success}
           className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-mint-600 px-6 py-3.5 text-sm font-extrabold text-white shadow-md shadow-mint-600/25 transition-colors hover:bg-mint-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSubmitting ? (
+          {isSubmitting || success ? (
             <span
               aria-hidden="true"
               className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
