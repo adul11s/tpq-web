@@ -66,7 +66,7 @@ export function ParentLogin({ lang }: { lang: Lang }) {
       <div className="flex min-h-screen items-center justify-center bg-cream">
         <div
           role="status"
-          aria-label="Memuat"
+          aria-label={pick(lang, "Memuat", "Loading")}
           className="h-10 w-10 animate-spin rounded-full border-4 border-mint-200 border-t-mint-600"
         />
       </div>

@@ -10,10 +10,13 @@ import {
 } from "@/lib/parent/session";
 import { ParentGate } from "@/components/parent/ParentGate";
 
-const { mockPush } = vi.hoisted(() => ({ mockPush: vi.fn() }));
+const { mockPush, mockReplace } = vi.hoisted(() => ({
+  mockPush: vi.fn(),
+  mockReplace: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, replace: mockReplace }),
 }));
 
 const ME_OK: ParentMe = {
@@ -69,6 +72,7 @@ function SetSessionProbe() {
 describe("ParentSessionProvider + ParentGate", () => {
   beforeEach(() => {
     mockPush.mockClear();
+    mockReplace.mockClear();
   });
 
   afterEach(() => {
@@ -92,7 +96,9 @@ describe("ParentSessionProvider + ParentGate", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status")).toHaveTextContent("guest")
     );
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/parent/login"));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/parent/login")
+    );
     expect(meSpy).toHaveBeenCalledTimes(1);
     expect(screen.queryByTestId("protected")).not.toBeInTheDocument();
   });
@@ -116,7 +122,7 @@ describe("ParentSessionProvider + ParentGate", () => {
     );
     expect(screen.getByTestId("must-change")).toHaveTextContent("true");
     await waitFor(() =>
-      expect(mockPush).toHaveBeenCalledWith("/en/parent/ganti-password")
+      expect(mockReplace).toHaveBeenCalledWith("/en/parent/ganti-password")
     );
     expect(screen.queryByTestId("protected")).not.toBeInTheDocument();
   });
@@ -135,7 +141,7 @@ describe("ParentSessionProvider + ParentGate", () => {
     await waitFor(() =>
       expect(screen.getByTestId("protected")).toBeInTheDocument()
     );
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it("render shows a loading spinner while me() is pending", async () => {
@@ -156,7 +162,7 @@ describe("ParentSessionProvider + ParentGate", () => {
 
     expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.queryByTestId("protected")).not.toBeInTheDocument();
-    expect(mockPush).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
 
     resolveMe(ME_OK);
     await waitFor(() =>
@@ -190,7 +196,9 @@ describe("ParentSessionProvider + ParentGate", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status")).toHaveTextContent("guest")
     );
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/parent/login"));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/parent/login")
+    );
     expect(meSpy).toHaveBeenCalledTimes(2);
   });
 
@@ -211,7 +219,9 @@ describe("ParentSessionProvider + ParentGate", () => {
     await waitFor(() =>
       expect(screen.getByTestId("status")).toHaveTextContent("guest")
     );
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/parent/login"));
+    await waitFor(() =>
+      expect(mockReplace).toHaveBeenCalledWith("/parent/login")
+    );
   });
 
   it("latest-wins: a stale in-flight me() cannot clobber a newer setSession", async () => {

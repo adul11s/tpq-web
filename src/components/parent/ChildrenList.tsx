@@ -131,7 +131,7 @@ export function ChildrenList({ lang }: { lang: Lang }) {
       {state.status === "loading" ? (
         <div
           role="status"
-          aria-label="Memuat data anak"
+          aria-label={pick(lang, "Memuat data anak", "Loading children data")}
           className="mt-5 space-y-4"
         >
           <Skeleton className="h-24 w-full rounded-3xl" />

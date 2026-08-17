@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useParentSession } from "@/lib/parent/session";
-import { localizedHref, type Lang } from "@/lib/lang";
+import { localizedHref, pick, type Lang } from "@/lib/lang";
 
 export function ParentGate({
   children,
@@ -18,9 +18,9 @@ export function ParentGate({
 
   useEffect(() => {
     if (status === "guest") {
-      router.push(localizedHref(lang, "/parent/login"));
+      router.replace(localizedHref(lang, "/parent/login"));
     } else if (status === "authed" && mustChangePassword) {
-      router.push(localizedHref(lang, "/parent/ganti-password"));
+      router.replace(localizedHref(lang, "/parent/ganti-password"));
     }
   }, [status, mustChangePassword, lang, router]);
 
@@ -29,7 +29,7 @@ export function ParentGate({
       <div className="flex min-h-screen items-center justify-center bg-cream">
         <div
           role="status"
-          aria-label="Memuat"
+          aria-label={pick(lang, "Memuat", "Loading")}
           className="h-10 w-10 animate-spin rounded-full border-4 border-mint-200 border-t-mint-600"
         />
       </div>
