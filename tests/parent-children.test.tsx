@@ -75,7 +75,9 @@ describe("ChildrenList", () => {
     expect(
       await screen.findByRole("heading", { name: "Anak Saya" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Aisyah Putri")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Aisyah Putri")
+    ).toBeInTheDocument();
     expect(screen.getByText("Muhammad Rayyan")).toBeInTheDocument();
     expect(
       screen.getByText(/TK Qur'ani Bintang · NIS TPQ-2026-0001/),

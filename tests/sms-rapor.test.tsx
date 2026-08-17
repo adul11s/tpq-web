@@ -1,6 +1,6 @@
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { server, API_BASE } from "./msw-server";
@@ -241,6 +241,55 @@ describe("RaporBuilder", () => {
         },
       ])
     );
+  });
+
+  it("rapid adab changes: a stale in-flight failure cannot overwrite the latest selection", async () => {
+    let releaseFirst: (() => void) | undefined;
+    const firstGate = new Promise<void>((resolve) => {
+      releaseFirst = resolve;
+    });
+    const putBodies: unknown[] = [];
+    server.use(
+      ...screenHandlers({
+        periods: freshPeriods(),
+        ratings: [
+          {
+            id: 1,
+            student_id: 1,
+            rapor_period_id: 1,
+            criterion_id: 1,
+            score: 3,
+          },
+        ],
+      }),
+      http.put(`${API_BASE}/admin/adab-ratings`, async ({ request }) => {
+        putBodies.push(await request.json());
+        if (putBodies.length === 1) {
+          await firstGate;
+          return HttpResponse.error();
+        }
+        return HttpResponse.json({ ok: true });
+      })
+    );
+    render(<RaporBuilder />);
+
+    const picker = await screen.findByLabelText("Kedisiplinan");
+    await waitFor(() => expect(picker).toHaveValue("3"));
+
+    fireEvent.change(picker, { target: { value: "4" } });
+    fireEvent.change(picker, { target: { value: "2" } });
+
+    await waitFor(() => expect(putBodies).toHaveLength(2));
+    await waitFor(() => expect(picker).toHaveValue("2"));
+    expect(
+      screen.getByText("Nilai adab disimpan (1 kriteria)")
+    ).toBeInTheDocument();
+
+    releaseFirst!();
+    await waitFor(() =>
+      expect(screen.getByLabelText("Kedisiplinan")).toHaveValue("2")
+    );
+    expect(screen.queryByText("Terjadi kesalahan")).not.toBeInTheDocument();
   });
 
   it("PAUD student shows the Narasi Perkembangan textarea and no adab pickers", async () => {

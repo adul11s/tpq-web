@@ -335,8 +335,8 @@ export function EnrollmentsScreen() {
             </p>
           ) : null}
           <p className="mt-1 text-xs text-slate-500">
-            Tahun ajaran baru berstatus tidak aktif sampai diaktifkan di
-            pengelolaan tahun ajaran.
+            Tahun ajaran baru ditambahkan sebagai tidak aktif, tetapi tetap
+            dapat langsung dipilih saat mendaftarkan santri.
           </p>
         </div>
       </form>

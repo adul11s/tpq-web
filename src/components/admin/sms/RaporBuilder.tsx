@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   smsApi,
   type AcademicYear,
@@ -65,6 +65,7 @@ export function RaporBuilder() {
   const [narrativeDrafts, setNarrativeDrafts] = useState<Record<string, string>>({});
   const [savingAdab, setSavingAdab] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const adabSaveRequestId = useRef(0);
 
   const load = useCallback(() => {
     Promise.all([
@@ -223,24 +224,29 @@ export function RaporBuilder() {
     setAdabValues(next);
     setSavingAdab(true);
     clearNotices();
+    const requestId = ++adabSaveRequestId.current;
     smsApi
       .updateAdabRatings({
         student_id: selectedStudent.student_id,
         rapor_period_id: selectedPeriod.id,
         ratings: entries,
       })
-      .then(() =>
+      .then(() => {
+        if (adabSaveRequestId.current !== requestId) return;
         setSuccess(
           entries.length > 0
             ? `Nilai adab disimpan (${entries.length} kriteria)`
             : "Nilai adab dikosongkan"
-        )
-      )
+        );
+      })
       .catch((err: unknown) => {
+        if (adabSaveRequestId.current !== requestId) return;
         setError(errorMessage(err));
         handleCancelEffect(criterionId);
       })
-      .finally(() => setSavingAdab(false));
+      .finally(() => {
+        if (adabSaveRequestId.current === requestId) setSavingAdab(false);
+      });
   }
 
   function handleCancelEffect(criterionId: number) {
@@ -484,6 +490,7 @@ export function RaporBuilder() {
                   className={`${inputClasses} min-h-24 resize-y`}
                   placeholder="Cerita perkembangan santri pada periode ini\u2026"
                   value={narrative}
+                  maxLength={2000}
                   disabled={locked}
                   onChange={(event) =>
                     setNarrativeDrafts((prev) => ({
@@ -532,6 +539,7 @@ export function RaporBuilder() {
                 className={`${inputClasses} min-h-20 resize-y`}
                 placeholder="Catatan bebas untuk rapor santri\u2026"
                 value={comment}
+                maxLength={1000}
                 onChange={(event) =>
                   setCommentDrafts((prev) => ({
                     ...prev,
