@@ -46,6 +46,26 @@ function RefreshProbe() {
   );
 }
 
+function SetSessionProbe() {
+  const session = useParentSession();
+  return (
+    <div>
+      <span data-testid="status">{session.status}</span>
+      <button
+        onClick={() =>
+          session.setSession({
+            email: "ibu@example.com",
+            full_name: "Ibu Siti Rahma",
+            must_change_password: false,
+          })
+        }
+      >
+        login
+      </button>
+    </div>
+  );
+}
+
 describe("ParentSessionProvider + ParentGate", () => {
   beforeEach(() => {
     mockPush.mockClear();
@@ -192,5 +212,31 @@ describe("ParentSessionProvider + ParentGate", () => {
       expect(screen.getByTestId("status")).toHaveTextContent("guest")
     );
     await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/parent/login"));
+  });
+
+  it("latest-wins: a stale in-flight me() cannot clobber a newer setSession", async () => {
+    let rejectMe: (reason: unknown) => void = () => {};
+    vi.spyOn(parentApi, "me").mockReturnValue(
+      new Promise((_resolve, reject) => {
+        rejectMe = reject;
+      })
+    );
+
+    const user = userEvent.setup();
+    render(
+      <ParentSessionProvider>
+        <SetSessionProbe />
+      </ParentSessionProvider>
+    );
+
+    expect(screen.getByTestId("status")).toHaveTextContent("loading");
+
+    await user.click(screen.getByRole("button", { name: /login/i }));
+    expect(screen.getByTestId("status")).toHaveTextContent("authed");
+
+    rejectMe(new ApiError(401, "Unauthorized"));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(screen.getByTestId("status")).toHaveTextContent("authed");
+    expect(screen.getByTestId("status")).not.toHaveTextContent("guest");
   });
 });

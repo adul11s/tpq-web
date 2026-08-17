@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 import type { ReactNode } from "react";
@@ -38,16 +39,20 @@ export function ParentSessionProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ParentSessionStatus>("loading");
   const [user, setUser] = useState<ParentSessionUser | null>(null);
   const [mustChangePassword, setMustChangePassword] = useState(false);
+  const generationRef = useRef(0);
 
   const refresh = useCallback(() => {
+    const generation = ++generationRef.current;
     return parentApi
       .me()
       .then((me) => {
+        if (generationRef.current !== generation) return;
         setUser({ email: me.email, full_name: me.full_name });
         setMustChangePassword(me.must_change_password);
         setStatus("authed");
       })
       .catch((error: unknown) => {
+        if (generationRef.current !== generation) return;
         if (error instanceof ApiError && error.status === 403) {
           setUser(null);
           setMustChangePassword(true);
@@ -61,6 +66,7 @@ export function ParentSessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const setSession = useCallback((session: ParentSessionSetInput | null) => {
+    generationRef.current += 1;
     if (session) {
       setUser({ email: session.email, full_name: session.full_name });
       setMustChangePassword(session.must_change_password);
