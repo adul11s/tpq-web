@@ -32,7 +32,9 @@ export async function adminFetch<T>(
   }
   if (UNSAFE.has(method)) headers["x-csrf-token"] = csrfToken();
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${path}`, {
+  // Same-origin proxy: session/CSRF cookies are set on this origin, so the
+  // browser sends them (cross-site fetches to the API would be cookie-less).
+  const res = await fetch(`/api/admin${path.replace(/^\/admin/, "")}`, {
     method, headers, body, credentials: "include",
   });
   if (!res.ok) {

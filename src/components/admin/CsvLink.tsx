@@ -24,7 +24,8 @@ export function CsvLink({
     setError(null);
     setDownloading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}${url}`, {
+      // Same-origin admin proxy — keeps the session cookie attached.
+      const response = await fetch(`/api/admin${url.replace(/^\/admin/, "")}`, {
         credentials: "include",
       });
       if (!response.ok) {
