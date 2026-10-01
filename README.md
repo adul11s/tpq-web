@@ -38,6 +38,8 @@ npm run build && npm run start   # or npm run dev
 - Admin demo login: `admin@tpq.id` / `admin123` (2FA is OFF by default —
   `REQUIRE_2FA=0`; the login page has a one-click demo fill when
   `NEXT_PUBLIC_DEV_CREDENTIALS=true`).
+  ⚠️ **Demo credentials are for the public portfolio demo only** — the
+  deployed database contains seed/demo data only, never real school records.
 
 ## Scripts
 
