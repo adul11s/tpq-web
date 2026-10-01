@@ -20,7 +20,10 @@ test("03 resources browse: search, chips, count, empty state, reset", async ({ p
 
 test("04 resources download: card button → download event → toast", async ({ page }) => {
   await page.goto("/resources");
-  const card = page.locator("article", { hasText: /\d+(\.\d+)?× diunduh/ }).first();
+  const card = page
+    .locator("article", { hasText: /\d+(\.\d+)?× diunduh/ })
+    .filter({ hasNotText: /Missing File/ })
+    .first();
   const title = await card.locator("h3 a").innerText();
   const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const download = card.getByRole("button", { name: new RegExp(`Unduh PDF ${escaped}`) });

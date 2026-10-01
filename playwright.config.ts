@@ -44,6 +44,16 @@ export default defineConfig({
       testDir: "./e2e/matrix-mobile",
       use: { ...devices["Pixel 5"] },
     },
+    {
+      name: "journeys",
+      testDir: "./e2e/journeys",
+      use: {
+        ...devices["Desktop Chrome"],
+        viewport: { width: 1440, height: 900 },
+        trace: "off",
+        screenshot: "off",
+      },
+    },
   ],
   webServer: {
     command: "npm run dev",
