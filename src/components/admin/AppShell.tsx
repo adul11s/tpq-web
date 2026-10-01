@@ -17,24 +17,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [loggingOut, setLoggingOut] = useState(false);
   const [forbidden, setForbidden] = useState(false);
   const [newInquiryCount, setNewInquiryCount] = useState<number | null>(null);
+  // Derived role gate — non-CMS roles (e.g. teacher) never fetch or show the
+  // inquiry badge; no setState inside the effect (react-hooks/set-state-in-effect).
+  const canManageInquiry =
+    user != null &&
+    (user.role === "admin" || user.role === "content_manager");
 
   useEffect(() => {
     setOnForbidden(() => setForbidden(true));
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    const canManageInquiry =
-      user.role === "admin" || user.role === "content_manager";
-    if (!canManageInquiry) {
-      setNewInquiryCount(null);
-      return;
-    }
+    if (!canManageInquiry) return;
     inquiryAdminApi
       .list("new")
       .then((result) => setNewInquiryCount(result.inquiries.length))
       .catch(() => setNewInquiryCount(null));
-  }, [user]);
+  }, [canManageInquiry]);
 
   if (!user) {
     return <main className="flex-1">{children}</main>;
@@ -117,6 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   >
                     <span className="flex-1">{item.label}</span>
                     {item.href === "/admin/inquiry" &&
+                    canManageInquiry &&
                     newInquiryCount !== null &&
                     newInquiryCount > 0 ? (
                       <span

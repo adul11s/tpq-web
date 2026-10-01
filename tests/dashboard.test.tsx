@@ -6,6 +6,7 @@ import { http, HttpResponse } from "msw";
 import {
   server,
   adminMeOk,
+  adminMeAs,
   API_BASE,
   contentListHandler,
   contentListError,
@@ -200,6 +201,27 @@ describe("Dashboard", () => {
     await waitFor(() => {
       expect(within(inquiryLink).queryByText("2")).not.toBeInTheDocument();
     });
+  });
+
+  it("zeroes stats for a non-CMS role (teacher) instead of showing CMS numbers", async () => {
+    server.use(adminMeAs("teacher"));
+    mockDashboardData();
+    renderDashboard();
+
+    // Cards render once the session probe resolves; teacher is gated to
+    // zeroed stats, never the mocked CMS numbers.
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "Total Unduhan" })
+      ).toBeInTheDocument();
+    });
+    const totalCard = cardOf(
+      screen.getByRole("heading", { name: "Total Unduhan" })
+    );
+    expect(totalCard).toHaveTextContent("0");
+    expect(totalCard).not.toHaveTextContent("27");
+    expect(screen.queryByText("Memuat…")).toBeNull();
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 
   it("still renders stats with a warning when one draft entity fails to load", async () => {

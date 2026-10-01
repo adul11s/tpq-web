@@ -44,6 +44,14 @@ function countForMonth(publishedAt: string | null): boolean {
   );
 }
 
+const EMPTY_STATS: DashboardStats = {
+  totalDownloads: 0,
+  topResources: [],
+  newInquiries: 0,
+  pendingDrafts: 0,
+  newThisMonth: 0,
+};
+
 const cardClasses =
   "rounded-2xl border border-mint-200 bg-white p-5 shadow-sm";
 
@@ -54,20 +62,14 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [failedGroups, setFailedGroups] = useState<string[]>([]);
 
+  // Role gate (WIP): only CMS staff may see live stats. Known non-CMS roles
+  // (e.g. teacher) render an empty dashboard and never fetch; user === null
+  // (session still probing) keeps the original behavior so stats load as soon
+  // as the probe resolves. Derived — no setState inside the effect.
+  const blocked =
+    user != null && user.role !== "admin" && user.role !== "content_manager";
+
   const load = useCallback(() => {
-    const cmsStaff = user?.role === "admin" || user?.role === "content_manager";
-    if (!cmsStaff) {
-      setStats({
-        totalDownloads: 0,
-        topResources: [],
-        newInquiries: 0,
-        pendingDrafts: 0,
-        newThisMonth: 0,
-      });
-      setFailedGroups([]);
-      setLoading(false);
-      return;
-    }
     Promise.allSettled([
       contentApi.list<AdminResource>("resources"),
       inquiryAdminApi.list("new"),
@@ -118,8 +120,14 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    if (blocked) return;
     load();
-  }, [load, user?.role]);
+  }, [load, blocked]);
+
+  const viewStats = blocked ? EMPTY_STATS : stats;
+  const viewLoading = blocked ? false : loading;
+  const viewError = blocked ? null : error;
+  const viewFailedGroups = blocked ? [] : failedGroups;
 
   return (
     <div>
@@ -128,6 +136,7 @@ export default function DashboardPage() {
         <button
           type="button"
           onClick={() => {
+            if (blocked) return;
             setLoading(true);
             setError(null);
             load();
@@ -138,25 +147,25 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {error ? (
+      {viewError ? (
         <p
           role="alert"
           className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700"
         >
-          {error}
+          {viewError}
         </p>
       ) : null}
 
-      {failedGroups.length > 0 ? (
+      {viewFailedGroups.length > 0 ? (
         <p
           role="alert"
           className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800"
         >
-          Sebagian data gagal dimuat: {failedGroups.join(", ")}
+          Sebagian data gagal dimuat: {viewFailedGroups.join(", ")}
         </p>
       ) : null}
 
-      {loading || !stats ? (
+      {viewLoading || !viewStats ? (
         <p className="text-sm font-semibold text-slate-500">Memuat…</p>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -165,7 +174,7 @@ export default function DashboardPage() {
               Total Unduhan
             </h3>
             <p className="mt-2 text-3xl font-extrabold text-mint-900">
-              {stats.totalDownloads.toLocaleString("id-ID")}
+              {viewStats.totalDownloads.toLocaleString("id-ID")}
             </p>
             <p className="mt-1 text-xs font-medium text-slate-500">
               per counter, bukan GA4
@@ -177,7 +186,7 @@ export default function DashboardPage() {
               Top 5 Materi
             </h3>
             <ol className="mt-2 space-y-1.5">
-              {stats.topResources.map((row, index) => (
+              {viewStats.topResources.map((row, index) => (
                 <li
                   key={String(row.id)}
                   className="flex items-center justify-between gap-2 text-sm"
@@ -199,7 +208,7 @@ export default function DashboardPage() {
               Inquiry Belum Dibalas
             </h3>
             <p className="mt-2 text-3xl font-extrabold text-mint-900">
-              {stats.newInquiries}
+              {viewStats.newInquiries}
             </p>
             <Link
               href="/admin/inquiry"
@@ -214,7 +223,7 @@ export default function DashboardPage() {
               Menunggu Persetujuan
             </h3>
             <p className="mt-2 text-3xl font-extrabold text-mint-900">
-              {stats.pendingDrafts}
+              {viewStats.pendingDrafts}
             </p>
             <p className="mt-1 text-xs font-medium text-slate-500">
               draft menunggu persetujuan admin
@@ -226,7 +235,7 @@ export default function DashboardPage() {
               Materi Baru Bulan Ini
             </h3>
             <p className="mt-2 text-3xl font-extrabold text-mint-900">
-              {stats.newThisMonth}
+              {viewStats.newThisMonth}
             </p>
             <p className="mt-1 text-xs font-medium text-slate-500">
               materi dipublikasikan bulan ini
