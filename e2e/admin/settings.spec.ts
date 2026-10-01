@@ -1,8 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { API_BASE } from "../utils/constants";
 
 test("22 settings: edit whatsapp → reflected on public kontak page, then restored", async ({ page }) => {
-  const settings = await page.request.get(`${API_BASE}/api/v1/admin/site_settings`);
+  const settings = await page.request.get("/api/admin/site_settings");
   expect(settings.ok()).toBeTruthy();
   const body = (await settings.json()) as { site_settings: Array<{ key: string; value: unknown }> };
   const before = (body.site_settings.find((s) => s.key === "whatsapp")?.value as string) ?? "";

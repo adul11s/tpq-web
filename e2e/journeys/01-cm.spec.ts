@@ -8,7 +8,7 @@ test("cm journey: content manager full capability, single take", async ({ page }
   // 1. Login (password-only, no 2FA)
   await loginSimple(page, "content@tpq.id", "content123");
   await pace(page, 1200);
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
   await pace(page, 2400);
 
   // 2. Konten: edit an existing published printable (revert-to-draft behavior)

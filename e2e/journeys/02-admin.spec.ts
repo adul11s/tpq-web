@@ -6,14 +6,14 @@ test.setTimeout(960_000);
 
 test("admin journey: full capability, single take (REQUIRE_2FA=1)", async ({ page }) => {
   const bridge: JourneyBridge = {};
-  await page.route("**/api/v1/admin/users/parents", async (route) => {
+  await page.route("**/api/admin/users/parents", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     const data = route.request().postDataJSON() as { email?: string; initial_password?: string };
     bridge.email = data.email;
     bridge.password = data.initial_password;
     await route.continue();
   });
-  await page.route("**/api/v1/admin/students", async (route) => {
+  await page.route("**/api/admin/students", async (route) => {
     if (route.request().method() !== "POST") return route.continue();
     const resp = await route.fetch();
     bridge.studentId = (await resp.json()).id as number;
@@ -25,7 +25,7 @@ test("admin journey: full capability, single take (REQUIRE_2FA=1)", async ({ pag
   await pace(page, 1200);
 
   // 2. Dashboard tour
-  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard", level: 1 })).toBeVisible();
   await pace(page, 2600);
 
   // 3. Konten: create a resource draft with PDF + thumbnail, publish, public check

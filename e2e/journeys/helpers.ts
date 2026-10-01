@@ -38,9 +38,8 @@ export async function loginSimple(
   await page.getByLabel(/kata sandi/i).fill(password);
   await page.getByRole("button", { name: "Masuk" }).click();
   await expect(page).toHaveURL(/\/admin(\/dashboard)?$/);
-  await expect(page.getByRole("heading", { name: "Panel Admin", level: 1 })).toBeVisible({
-    timeout: 60_000,
-  });
+  // Note: no heading assertion here — role landings differ (admin/teacher/parent
+  // dashboards), and "Panel Admin" only exists on the login page itself.
 }
 
 export async function logoutAdmin(page: Page): Promise<void> {
