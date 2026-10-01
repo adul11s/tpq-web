@@ -7,6 +7,30 @@ inquiry form. Built with **Next.js (App Router) + React 19 + TypeScript +
 Tailwind CSS**, aligned with `System-Analyst-Design.md` v1.2 and
 `SA-Dev-Handoff.md` v1.2.
 
+## Live deployment
+
+| Piece | Where |
+|---|---|
+| Site (this repo) | https://tpq-qurani-portfolio.vercel.app — Vercel Hobby (Next.js) |
+| API | https://tpq-api.onrender.com — Render Free, built from `Dockerfile` (Oregon) |
+| Database | Neon Postgres (serverless, `DATABASE_URL`) |
+| Cache / rate limit | Upstash Redis (`rediss://`, `REDIS_URL`) |
+| Media | Cloudflare R2 bucket `tpq-media` — public `r2.dev` origin (pinned in `next.config.ts`) |
+
+Notes:
+
+- The API **sleeps after ~15 min of idle** — the first visitor request wakes it
+  (~30–60 s); subsequent requests are fast.
+- Authenticated admin/parent traffic flows through the same-origin Next.js
+  proxies `/api/admin/*` and `/api/parent/*` (session + CSRF cookies are
+  first-party). Public catalog reads call the API directly (CORS,
+  `CORS_ORIGIN` on the API = this site's origin).
+- Demo admin login: `admin@tpq.id` / `admin123` — **seed/demo data only**;
+  disable or rotate before any real use (`NEXT_PUBLIC_DEV_CREDENTIALS=false`
+  hides it from the UI).
+- Deployment mechanics for the API (env, migrations, smoke) live in
+  `../api/DEPLOY.md`.
+
 ## Getting started
 
 ```bash
