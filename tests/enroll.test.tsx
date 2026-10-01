@@ -154,7 +154,7 @@ describe("Admin 2FA enrollment wizard", () => {
 
   it("downloads the backup codes as a .txt file containing every code", async () => {
     server.use(adminEnrollOk);
-    const createObjectURL = vi.fn((_blob: Blob) => "blob:mock");
+    const createObjectURL = vi.fn<typeof URL.createObjectURL>(() => "blob:mock");
     const revokeObjectURL = vi.fn();
     URL.createObjectURL = createObjectURL as unknown as typeof URL.createObjectURL;
     URL.revokeObjectURL = revokeObjectURL as unknown as typeof URL.revokeObjectURL;

@@ -24,6 +24,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!user) return;
+    const canManageInquiry =
+      user.role === "admin" || user.role === "content_manager";
+    if (!canManageInquiry) {
+      setNewInquiryCount(null);
+      return;
+    }
     inquiryAdminApi
       .list("new")
       .then((result) => setNewInquiryCount(result.inquiries.length))

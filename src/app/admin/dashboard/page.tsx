@@ -5,6 +5,7 @@ import Link from "next/link";
 import { contentApi } from "@/lib/api/content";
 import { inquiryAdminApi } from "@/lib/api/inquiries";
 import { ENTITY_CONFIG } from "@/lib/admin/entities";
+import { useSession } from "@/lib/admin/session";
 import type { AdminResource } from "@/lib/types/admin";
 
 export const dynamic = "force-dynamic";
@@ -47,12 +48,26 @@ const cardClasses =
   "rounded-2xl border border-mint-200 bg-white p-5 shadow-sm";
 
 export default function DashboardPage() {
+  const { user } = useSession();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [failedGroups, setFailedGroups] = useState<string[]>([]);
 
   const load = useCallback(() => {
+    const cmsStaff = user?.role === "admin" || user?.role === "content_manager";
+    if (!cmsStaff) {
+      setStats({
+        totalDownloads: 0,
+        topResources: [],
+        newInquiries: 0,
+        pendingDrafts: 0,
+        newThisMonth: 0,
+      });
+      setFailedGroups([]);
+      setLoading(false);
+      return;
+    }
     Promise.allSettled([
       contentApi.list<AdminResource>("resources"),
       inquiryAdminApi.list("new"),
@@ -104,7 +119,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     load();
-  }, [load]);
+  }, [load, user?.role]);
 
   return (
     <div>

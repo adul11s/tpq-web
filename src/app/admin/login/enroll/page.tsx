@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { adminApi } from "@/lib/api/auth";
@@ -224,7 +225,7 @@ function EnrollForm() {
 
               <div className="mx-auto mt-5 flex aspect-square w-44 items-center justify-center rounded-2xl border-2 border-dashed border-mint-300 bg-white p-3">
                 {qrSrc ? (
-                  <img
+                  <Image
                     src={qrSrc}
                     alt="Pindai kode QR dengan aplikasi autentikator"
                     width={220}
