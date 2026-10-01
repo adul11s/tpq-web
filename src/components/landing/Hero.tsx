@@ -156,7 +156,7 @@ export function Hero({ lang }: HeroProps) {
               </g>
             </svg>
             <span className="animate-floaty absolute -right-2 top-6 rounded-2xl bg-white/95 px-4 py-2 font-display text-sm font-bold text-mint-700 shadow-lg">
-              {lang === "en" ? "Love of the Qur'an" : "Cinta Al-Qur&rsquo;an"}
+              {lang === "en" ? "Love of the Qur'an" : "Cinta Al-Qur’an"}
             </span>
             <span
               className="animate-floaty absolute -left-2 bottom-16 rounded-2xl bg-gold-100 px-4 py-2 font-display text-sm font-bold text-gold-700 shadow-lg"
