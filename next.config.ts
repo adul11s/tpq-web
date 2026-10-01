@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "cdn.tpq-qurani.example.id",
+        hostname: "pub-34c5ce5d1648439398fcedbfe1903645.r2.dev",
       },
       {
         protocol: "http",
