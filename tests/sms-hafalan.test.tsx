@@ -49,13 +49,13 @@ function screenHandlers(
   enrollments: Enrollment[] = [ENR_AISYAH, ENR_BILAL]
 ) {
   return [
-    http.get(`${API_BASE}/admin/hafalan-targets`, () =>
+    http.get(`*/api/admin/hafalan-targets`, () =>
       HttpResponse.json({ targets: TARGETS })
     ),
-    http.get(`${API_BASE}/admin/hafalan`, () =>
+    http.get(`*/api/admin/hafalan`, () =>
       HttpResponse.json({ records })
     ),
-    http.get(`${API_BASE}/admin/enrollments`, () =>
+    http.get(`*/api/admin/enrollments`, () =>
       HttpResponse.json({ enrollments })
     ),
     contentListHandler("classes", CLASS_ROWS),
@@ -63,7 +63,7 @@ function screenHandlers(
 }
 
 function hafalanPutHandler(records: HafalanRecord[], putBodies: unknown[]) {
-  return http.put(`${API_BASE}/admin/hafalan`, async ({ request }) => {
+  return http.put(`*/api/admin/hafalan`, async ({ request }) => {
     const body = (await request.json()) as {
       student_id: number;
       surah_name: string;

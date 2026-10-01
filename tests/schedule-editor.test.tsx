@@ -227,8 +227,8 @@ describe("Schedule editor", () => {
       (call) => new URL(call[0].url).pathname
     );
     expect(urls).toEqual([
-      "/api/v1/admin/class_schedule_items/12",
-      "/api/v1/admin/class_schedule_items/11",
+      "/api/admin/class_schedule_items/12",
+      "/api/admin/class_schedule_items/11",
     ]);
     expect(onSchedulePatch.mock.calls[0][1]).toEqual({
       day_name: "Rabu",
@@ -274,7 +274,7 @@ describe("Schedule editor", () => {
     const request = onDelete.mock.calls[0][0] as Request;
     expect(request.method).toBe("DELETE");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/class_schedule_items/11"
+      "/api/admin/class_schedule_items/11"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
 
@@ -367,7 +367,7 @@ describe("Schedule editor", () => {
     let failRefetch = false;
     server.use(
       contentPreviewHandler("classes", CLASS_ROWS[0]),
-      http.get(`${API_BASE}/admin/class_schedule_items`, () => {
+      http.get(`*/api/admin/class_schedule_items`, () => {
         if (failRefetch) {
           return HttpResponse.json(
             { error: "Internal server error" },
@@ -410,7 +410,7 @@ describe("Schedule editor", () => {
       contentListHandler("class_schedule_items", SCHEDULE_ROWS),
       contentListHandler("curriculum_items", []),
       http.delete(
-        `${API_BASE}/admin/class_schedule_items/:id`,
+        `*/api/admin/class_schedule_items/:id`,
         () =>
           HttpResponse.json({ error: "Internal server error" }, { status: 500 })
       )

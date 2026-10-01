@@ -224,7 +224,7 @@ describe("Aktivitas (audit log)", () => {
     await waitFor(() => expect(onExport).toHaveBeenCalledTimes(1));
     const request = onExport.mock.calls[0][0] as Request;
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/audit/export.csv"
+      "/api/admin/audit/export.csv"
     );
     expect(request.credentials).toBe("include");
     expect(createObjectUrl).toHaveBeenCalledTimes(1);

@@ -42,14 +42,14 @@ function screenHandlers(
   guardianships: Guardianship[]
 ) {
   return [
-    http.get(`${API_BASE}/admin/students`, () =>
+    http.get(`*/api/admin/students`, () =>
       HttpResponse.json({ students })
     ),
-    http.get(`${API_BASE}/admin/guardianships`, () =>
+    http.get(`*/api/admin/guardianships`, () =>
       HttpResponse.json({ guardianships })
     ),
     contentListHandler("classes", CLASS_ROWS),
-    http.get(`${API_BASE}/admin/academic-years`, () =>
+    http.get(`*/api/admin/academic-years`, () =>
       HttpResponse.json({ academic_years: [YEAR] })
     ),
   ];
@@ -85,7 +85,7 @@ describe("StudentsScreen", () => {
     let enrolled: unknown;
     server.use(
       ...screenHandlers(students, []),
-      http.post(`${API_BASE}/admin/students`, async ({ request }) => {
+      http.post(`*/api/admin/students`, async ({ request }) => {
         posted = await request.json();
         const body = posted as { full_name: string };
         students.push({
@@ -98,7 +98,7 @@ describe("StudentsScreen", () => {
         });
         return HttpResponse.json({ id: 3, full_name: body.full_name }, { status: 201 });
       }),
-      http.post(`${API_BASE}/admin/enrollments`, async ({ request }) => {
+      http.post(`*/api/admin/enrollments`, async ({ request }) => {
         enrolled = await request.json();
         return HttpResponse.json({ id: 5 }, { status: 201 });
       })
@@ -133,7 +133,7 @@ describe("StudentsScreen", () => {
     const studentPosts = vi.fn();
     server.use(
       ...screenHandlers(students, []),
-      http.post(`${API_BASE}/admin/students`, async ({ request }) => {
+      http.post(`*/api/admin/students`, async ({ request }) => {
         studentPosts();
         const body = (await request.json()) as { full_name: string };
         students.push({
@@ -149,7 +149,7 @@ describe("StudentsScreen", () => {
           { status: 201 }
         );
       }),
-      http.post(`${API_BASE}/admin/enrollments`, () =>
+      http.post(`*/api/admin/enrollments`, () =>
         HttpResponse.json({ error: "Internal server error" }, { status: 500 })
       )
     );
@@ -178,7 +178,7 @@ describe("StudentsScreen", () => {
     const onRequest = vi.fn();
     server.use(
       ...screenHandlers([AISYAH], []),
-      http.post(`${API_BASE}/admin/students`, ({ request }) => {
+      http.post(`*/api/admin/students`, ({ request }) => {
         onRequest(request);
         return HttpResponse.json({ id: 3, full_name: "X" }, { status: 201 });
       })
@@ -201,7 +201,7 @@ describe("StudentsScreen", () => {
     let deletedId: string | null = null;
     server.use(
       ...screenHandlers(students, [LINK]),
-      http.delete(`${API_BASE}/admin/students/:id`, ({ params }) => {
+      http.delete(`*/api/admin/students/:id`, ({ params }) => {
         deletedId = params.id as string;
         students.splice(
           students.findIndex((s) => s.id === Number(params.id)),
@@ -235,7 +235,7 @@ describe("GuardianshipsPanel", () => {
     let deletedId: string | null = null;
     const onChanged = vi.fn();
     server.use(
-      http.get(`${API_BASE}/admin/users`, () =>
+      http.get(`*/api/admin/users`, () =>
         HttpResponse.json({
           users: [
             {
@@ -257,11 +257,11 @@ describe("GuardianshipsPanel", () => {
           ],
         })
       ),
-      http.post(`${API_BASE}/admin/guardianships`, async ({ request }) => {
+      http.post(`*/api/admin/guardianships`, async ({ request }) => {
         posted = await request.json();
         return HttpResponse.json({ id: 11 }, { status: 201 });
       }),
-      http.delete(`${API_BASE}/admin/guardianships/:id`, ({ params }) => {
+      http.delete(`*/api/admin/guardianships/:id`, ({ params }) => {
         deletedId = params.id as string;
         return HttpResponse.json({ ok: true });
       })

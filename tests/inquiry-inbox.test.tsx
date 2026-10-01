@@ -152,7 +152,7 @@ describe("Inquiry inbox", () => {
       { status?: string },
     ];
     expect(request.method).toBe("PATCH");
-    expect(new URL(request.url).pathname).toBe("/api/v1/admin/inquiries/1");
+    expect(new URL(request.url).pathname).toBe("/api/admin/inquiries/1");
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
     expect(body).toEqual({ status: "contacted" });
 
@@ -188,7 +188,7 @@ describe("Inquiry inbox", () => {
       Request,
       { admin_note?: string },
     ];
-    expect(new URL(request.url).pathname).toBe("/api/v1/admin/inquiries/1");
+    expect(new URL(request.url).pathname).toBe("/api/admin/inquiries/1");
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
     expect(body).toEqual({ admin_note: "Hubungi besok pagi" });
   });
@@ -257,7 +257,7 @@ describe("Inquiry inbox", () => {
     await waitFor(() => expect(onExport).toHaveBeenCalledTimes(1));
     const request = onExport.mock.calls[0][0] as Request;
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/inquiries/export.csv"
+      "/api/admin/inquiries/export.csv"
     );
     expect(request.credentials).toBe("include");
     expect(request.headers.get("x-csrf-token")).toBeNull();

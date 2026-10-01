@@ -20,16 +20,16 @@ const ME: AdminMe = {
   has_2fa: true,
 };
 
-export const adminMeOk = http.get(`${API_BASE}/admin/me`, () =>
+export const adminMeOk = http.get(`*/api/admin/me`, () =>
   HttpResponse.json(ME)
 );
 
-export const adminMeUnauthorized = http.get(`${API_BASE}/admin/me`, () =>
+export const adminMeUnauthorized = http.get(`*/api/admin/me`, () =>
   HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
 );
 
 export const adminMeAs = (role: Role) =>
-  http.get(`${API_BASE}/admin/me`, () => HttpResponse.json({ ...ME, role }));
+  http.get(`*/api/admin/me`, () => HttpResponse.json({ ...ME, role }));
 
 export const CLASS_ROWS: Record<string, unknown>[] = [
   {
@@ -74,13 +74,13 @@ export const contentListHandler = (
   rows: Record<string, unknown>[],
   onQuery?: (params: URLSearchParams) => void
 ) =>
-  http.get(`${API_BASE}/admin/${entity}`, ({ request }) => {
+  http.get(`*/api/admin/${entity}`, ({ request }) => {
     onQuery?.(new URL(request.url).searchParams);
     return HttpResponse.json({ [entity]: rows });
   });
 
 export const contentListError = (entity: string, status = 500) =>
-  http.get(`${API_BASE}/admin/${entity}`, () =>
+  http.get(`*/api/admin/${entity}`, () =>
     HttpResponse.json({ error: "Internal server error" }, { status })
   );
 
@@ -88,7 +88,7 @@ export const contentPreviewHandler = (
   entity: string,
   row: Record<string, unknown>
 ) =>
-  http.get(`${API_BASE}/admin/${entity}/${String(row.id)}/preview`, () =>
+  http.get(`*/api/admin/${entity}/${String(row.id)}/preview`, () =>
     HttpResponse.json(row)
   );
 
@@ -96,7 +96,7 @@ export const contentCreateHandler = (
   entity: string,
   onRequest?: (request: Request, body: unknown) => void
 ) =>
-  http.post(`${API_BASE}/admin/${entity}`, async ({ request }) => {
+  http.post(`*/api/admin/${entity}`, async ({ request }) => {
     const body = await request.json();
     onRequest?.(request, body);
     return HttpResponse.json({ id: 99 }, { status: 201 });
@@ -107,7 +107,7 @@ export const contentCreateError = (
   status: number,
   body: Record<string, unknown>
 ) =>
-  http.post(`${API_BASE}/admin/${entity}`, () =>
+  http.post(`*/api/admin/${entity}`, () =>
     HttpResponse.json(body, { status })
   );
 
@@ -115,7 +115,7 @@ export const contentUpdateHandler = (
   entity: string,
   onRequest?: (request: Request, body: unknown) => void
 ) =>
-  http.patch(`${API_BASE}/admin/${entity}/:id`, async ({ request }) => {
+  http.patch(`*/api/admin/${entity}/:id`, async ({ request }) => {
     const body = await request.json();
     onRequest?.(request, body);
     return HttpResponse.json({});
@@ -125,7 +125,7 @@ export const contentDeleteHandler = (
   entity: string,
   onRequest?: (request: Request, params: Record<string, string>) => void
 ) =>
-  http.delete(`${API_BASE}/admin/${entity}/:id`, ({ request, params }) => {
+  http.delete(`*/api/admin/${entity}/:id`, ({ request, params }) => {
     onRequest?.(request, params as Record<string, string>);
     return HttpResponse.json(null, { status: 204 });
   });
@@ -134,7 +134,7 @@ export const contentPublishHandler = (
   entity: string,
   onRequest?: (request: Request) => void
 ) =>
-  http.post(`${API_BASE}/admin/${entity}/:id/publish`, ({ request }) => {
+  http.post(`*/api/admin/${entity}/:id/publish`, ({ request }) => {
     onRequest?.(request);
     return HttpResponse.json({});
   });
@@ -143,43 +143,43 @@ export const contentArchiveHandler = (
   entity: string,
   onRequest?: (request: Request) => void
 ) =>
-  http.post(`${API_BASE}/admin/${entity}/:id/archive`, ({ request }) => {
+  http.post(`*/api/admin/${entity}/:id/archive`, ({ request }) => {
     onRequest?.(request);
     return HttpResponse.json({});
   });
 
 export const adminLoginChallenge = (challenge: "totp" | "enroll") =>
-  http.post(`${API_BASE}/admin/auth/login`, () =>
+  http.post(`*/api/admin/auth/login`, () =>
     HttpResponse.json({ challenge })
   );
 
-export const adminLoginUnauthorized = http.post(`${API_BASE}/admin/auth/login`, () =>
+export const adminLoginUnauthorized = http.post(`*/api/admin/auth/login`, () =>
   HttpResponse.json({ error: "Invalid credentials" }, { status: 401 })
 );
 
-export const adminLoginRateLimited = http.post(`${API_BASE}/admin/auth/login`, () =>
+export const adminLoginRateLimited = http.post(`*/api/admin/auth/login`, () =>
   HttpResponse.json(
     { error: "Terlalu banyak percobaan login, coba lagi nanti" },
     { status: 429 }
   )
 );
 
-export const adminLoginDelayed = http.post(`${API_BASE}/admin/auth/login`, async () => {
+export const adminLoginDelayed = http.post(`*/api/admin/auth/login`, async () => {
   await new Promise((resolve) => setTimeout(resolve, 150));
   return HttpResponse.json({ challenge: "totp" });
 });
 
-export const adminVerifyOk = http.post(`${API_BASE}/admin/auth/verify-2fa`, () =>
+export const adminVerifyOk = http.post(`*/api/admin/auth/verify-2fa`, () =>
   HttpResponse.json({ ok: true })
 );
 
 export const adminVerifyUnauthorized = http.post(
-  `${API_BASE}/admin/auth/verify-2fa`,
+  `*/api/admin/auth/verify-2fa`,
   () => HttpResponse.json({ error: "Invalid credentials" }, { status: 401 })
 );
 
 export const adminVerifyRateLimited = http.post(
-  `${API_BASE}/admin/auth/verify-2fa`,
+  `*/api/admin/auth/verify-2fa`,
   () =>
     HttpResponse.json(
       { error: "Terlalu banyak percobaan verifikasi, coba lagi nanti" },
@@ -201,7 +201,7 @@ export const ENROLL_BACKUP_CODES = [
   "C9D0-E1F2",
 ];
 
-export const adminEnrollOk = http.post(`${API_BASE}/admin/auth/enroll`, () =>
+export const adminEnrollOk = http.post(`*/api/admin/auth/enroll`, () =>
   HttpResponse.json({
     secret: ENROLL_SECRET,
     otpauth_uri: ENROLL_OTPAUTH_URI,
@@ -210,13 +210,13 @@ export const adminEnrollOk = http.post(`${API_BASE}/admin/auth/enroll`, () =>
 );
 
 export const adminEnrollConfirmCapture = (onBody: (body: unknown) => void) =>
-  http.post(`${API_BASE}/admin/auth/enroll-confirm`, async ({ request }) => {
+  http.post(`*/api/admin/auth/enroll-confirm`, async ({ request }) => {
     onBody(await request.json());
     return HttpResponse.json({ ok: true });
   });
 
 export const adminEnrollConfirmUnauthorized = http.post(
-  `${API_BASE}/admin/auth/enroll-confirm`,
+  `*/api/admin/auth/enroll-confirm`,
   () => HttpResponse.json({ error: "Invalid credentials" }, { status: 401 })
 );
 
@@ -242,13 +242,13 @@ export const MEDIA_ROWS: AdminMediaAsset[] = [
 ];
 
 export const mediaListHandler = (onRequest?: () => void) =>
-  http.get(`${API_BASE}/admin/media`, () => {
+  http.get(`*/api/admin/media`, () => {
     onRequest?.();
     return HttpResponse.json({ media: MEDIA_ROWS });
   });
 
 export const mediaUploadHandler = (onRequest?: (request: Request) => void) =>
-  http.post(`${API_BASE}/admin/media`, ({ request }) => {
+  http.post(`*/api/admin/media`, ({ request }) => {
     onRequest?.(request);
     return HttpResponse.json(
       {
@@ -263,7 +263,7 @@ export const mediaUploadHandler = (onRequest?: (request: Request) => void) =>
   });
 
 export const mediaUploadError = (status: number, body: Record<string, unknown>) =>
-  http.post(`${API_BASE}/admin/media`, () => HttpResponse.json(body, { status }));
+  http.post(`*/api/admin/media`, () => HttpResponse.json(body, { status }));
 
 export const classesPublicHandler = (rows: Record<string, unknown>[] = CLASS_ROWS) =>
   http.get(`${API_BASE}/classes`, () => HttpResponse.json(rows));
@@ -272,7 +272,7 @@ export const inquiriesListHandler = (
   rows: AdminInquiry[],
   onQuery?: (params: URLSearchParams) => void
 ) =>
-  http.get(`${API_BASE}/admin/inquiries`, ({ request }) => {
+  http.get(`*/api/admin/inquiries`, ({ request }) => {
     onQuery?.(new URL(request.url).searchParams);
     return HttpResponse.json({ inquiries: rows });
   });
@@ -281,7 +281,7 @@ export const inquiryUpdateHandler = (
   rows: AdminInquiry[],
   onRequest?: (request: Request, body: unknown) => void
 ) =>
-  http.patch(`${API_BASE}/admin/inquiries/:id`, async ({ request, params }) => {
+  http.patch(`*/api/admin/inquiries/:id`, async ({ request, params }) => {
     const body = (await request.json()) as {
       status?: InquiryStatus;
       admin_note?: string;
@@ -301,7 +301,7 @@ export const inquiryUpdateHandler = (
   });
 
 export const inquiriesCsvHandler = (onRequest?: (request: Request) => void) =>
-  http.get(`${API_BASE}/admin/inquiries/export.csv`, ({ request }) => {
+  http.get(`*/api/admin/inquiries/export.csv`, ({ request }) => {
     onRequest?.(request);
     return HttpResponse.text(
       'id,parent_name,phone\n1,"Ibu Siti Rahma",081234567801\n',
@@ -310,13 +310,13 @@ export const inquiriesCsvHandler = (onRequest?: (request: Request) => void) =>
   });
 
 export const usersListHandler = (rows: AdminUser[], onRequest?: () => void) =>
-  http.get(`${API_BASE}/admin/users`, () => {
+  http.get(`*/api/admin/users`, () => {
     onRequest?.();
     return HttpResponse.json({ users: rows });
   });
 
 export const userReset2faHandler = (onRequest?: (request: Request) => void) =>
-  http.post(`${API_BASE}/admin/users/:id/reset-2fa`, ({ request }) => {
+  http.post(`*/api/admin/users/:id/reset-2fa`, ({ request }) => {
     onRequest?.(request);
     return HttpResponse.json({ ok: true });
   });
@@ -325,7 +325,7 @@ export const userDeactivateHandler = (
   rows: AdminUser[],
   onRequest?: (request: Request) => void
 ) =>
-  http.post(`${API_BASE}/admin/users/:id/deactivate`, ({ request, params }) => {
+  http.post(`*/api/admin/users/:id/deactivate`, ({ request, params }) => {
     onRequest?.(request);
     const row = rows.find((r) => r.id === Number(params.id));
     if (!row) {
@@ -339,7 +339,7 @@ export const userActivateHandler = (
   rows: AdminUser[],
   onRequest?: (request: Request) => void
 ) =>
-  http.post(`${API_BASE}/admin/users/:id/activate`, ({ request, params }) => {
+  http.post(`*/api/admin/users/:id/activate`, ({ request, params }) => {
     onRequest?.(request);
     const row = rows.find((r) => r.id === Number(params.id));
     if (!row) {
@@ -361,13 +361,13 @@ export const auditListHandler = (
   meta: AuditMeta,
   onQuery?: (params: URLSearchParams) => void
 ) =>
-  http.get(`${API_BASE}/admin/audit`, ({ request }) => {
+  http.get(`*/api/admin/audit`, ({ request }) => {
     onQuery?.(new URL(request.url).searchParams);
     return HttpResponse.json({ data: rows, meta });
   });
 
 export const auditCsvHandler = (onRequest?: (request: Request) => void) =>
-  http.get(`${API_BASE}/admin/audit/export.csv`, ({ request }) => {
+  http.get(`*/api/admin/audit/export.csv`, ({ request }) => {
     onRequest?.(request);
     return HttpResponse.text(
       'id,user_id,action,entity_type,entity_id,ip,user_agent,created_at\n' +

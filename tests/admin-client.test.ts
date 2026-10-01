@@ -15,7 +15,7 @@ describe("adminFetch", () => {
   it("sends credentials and CSRF header on POST", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('{"ok":true}', { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
-    await adminFetch("/api/v1/admin/auth/logout", { method: "POST" });
+    await adminFetch("/admin/auth/logout", { method: "POST" });
     const [, init] = fetchMock.mock.calls[0];
     expect(init.credentials).toBe("include");
     expect(init.headers["x-csrf-token"]).toBe("abc123");
@@ -25,7 +25,7 @@ describe("adminFetch", () => {
     const handler = vi.fn();
     setOnUnauthorized(handler);
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response('{"error":"Unauthorized"}', { status: 401 })));
-    await expect(adminFetch("/api/v1/admin/users")).rejects.toThrow();
+    await expect(adminFetch("/admin/users")).rejects.toThrow();
     expect(handler).toHaveBeenCalled();
   });
 
@@ -36,7 +36,7 @@ describe("adminFetch", () => {
       "fetch",
       vi.fn().mockResolvedValue(new Response('{"error":"Forbidden"}', { status: 403 }))
     );
-    const error = await adminFetch("/api/v1/admin/users", { method: "POST" }).catch(
+    const error = await adminFetch("/admin/users", { method: "POST" }).catch(
       (e: unknown) => e
     );
     expect(error).toMatchObject({ status: 403, message: "Forbidden" });

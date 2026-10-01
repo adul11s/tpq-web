@@ -146,7 +146,7 @@ describe("Persetujuan approval queue", () => {
     const request = onPublish.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/classes/1/publish"
+      "/api/admin/classes/1/publish"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
 
@@ -181,7 +181,7 @@ describe("Persetujuan approval queue", () => {
     const request = onArchive.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/resources/2/archive"
+      "/api/admin/resources/2/archive"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
 

@@ -75,7 +75,7 @@ describe("Parent provisioning and reset", () => {
     const user = userEvent.setup();
     server.use(
       usersListHandler(PARENTS),
-      http.post(`${API_BASE}/admin/users/parents`, async ({ request }) => {
+      http.post(`*/api/admin/users/parents`, async ({ request }) => {
         posted = (await request.json()) as Record<string, unknown>;
         return HttpResponse.json(
           {
@@ -126,7 +126,7 @@ describe("Parent provisioning and reset", () => {
     server.use(
       usersListHandler(PARENTS),
       http.post(
-        `${API_BASE}/admin/users/:id/reset-password`,
+        `*/api/admin/users/:id/reset-password`,
         async ({ request, params }) => {
           resetId = params.id as string;
           postedBody = await request.json();

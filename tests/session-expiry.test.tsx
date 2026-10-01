@@ -61,7 +61,7 @@ describe("session expiry and logout UX", () => {
   it("redirects with reason=expired when a 401 arrives from an adminFetch on a non-login admin page", async () => {
     server.use(
       adminMeOk,
-      http.get(`${API_BASE}/admin/inquiries`, () =>
+      http.get(`*/api/admin/inquiries`, () =>
         HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
       )
     );
@@ -74,7 +74,7 @@ describe("session expiry and logout UX", () => {
 
   it("first visit without a session redirects WITHOUT reason=expired (no misleading banner)", async () => {
     server.use(
-      http.get(`${API_BASE}/admin/me`, () =>
+      http.get(`*/api/admin/me`, () =>
         HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
       )
     );
@@ -88,7 +88,7 @@ describe("session expiry and logout UX", () => {
     const onLogout = vi.fn();
     server.use(
       adminMeOk,
-      http.post(`${API_BASE}/admin/auth/logout`, () => {
+      http.post(`*/api/admin/auth/logout`, () => {
         onLogout();
         return HttpResponse.json({ ok: true });
       })
@@ -110,7 +110,7 @@ describe("session expiry and logout UX", () => {
     const onLogout = vi.fn();
     server.use(
       adminMeOk,
-      http.post(`${API_BASE}/admin/auth/logout`, () => {
+      http.post(`*/api/admin/auth/logout`, () => {
         onLogout();
         return HttpResponse.json({ ok: true });
       })
@@ -129,7 +129,7 @@ describe("session expiry and logout UX", () => {
   it("still redirects to login when the logout API fails", async () => {
     server.use(
       adminMeOk,
-      http.post(`${API_BASE}/admin/auth/logout`, () =>
+      http.post(`*/api/admin/auth/logout`, () =>
         HttpResponse.json({ error: "Boom" }, { status: 500 })
       )
     );
@@ -155,7 +155,7 @@ describe("CSRF 403 UX", () => {
   it("shows the Forbidden banner with a reload button when adminFetch returns 403", async () => {
     server.use(
       adminMeOk,
-      http.get(`${API_BASE}/admin/inquiries`, () =>
+      http.get(`*/api/admin/inquiries`, () =>
         HttpResponse.json({ error: "Forbidden" }, { status: 403 })
       )
     );
@@ -179,7 +179,7 @@ describe("CSRF 403 UX", () => {
 
 it("renders the page (children) even without a session on login routes (AppShell must not return null)", async () => {
   server.use(
-    http.get(`${API_BASE}/admin/me`, () =>
+    http.get(`*/api/admin/me`, () =>
       HttpResponse.json({ error: "Unauthorized" }, { status: 401 })
     )
   );
@@ -198,7 +198,7 @@ it("renders the page (children) even without a session on login routes (AppShell
 it("re-probes /me when navigating from a login route to a non-login route (FND-12)", async () => {
   let meCalls = 0;
   server.use(
-    http.get(`${API_BASE}/admin/me`, () => {
+    http.get(`*/api/admin/me`, () => {
       meCalls += 1;
       if (meCalls === 1) {
         return HttpResponse.json({ error: "Unauthorized" }, { status: 401 });

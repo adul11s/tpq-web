@@ -63,14 +63,14 @@ function screenHandlers(
   years: AcademicYear[]
 ) {
   return [
-    http.get(`${API_BASE}/admin/enrollments`, () =>
+    http.get(`*/api/admin/enrollments`, () =>
       HttpResponse.json({ enrollments })
     ),
-    http.get(`${API_BASE}/admin/students`, () =>
+    http.get(`*/api/admin/students`, () =>
       HttpResponse.json({ students })
     ),
     contentListHandler("classes", CLASS_ROWS),
-    http.get(`${API_BASE}/admin/academic-years`, () =>
+    http.get(`*/api/admin/academic-years`, () =>
       HttpResponse.json({ academic_years: years })
     ),
   ];
@@ -102,7 +102,7 @@ describe("EnrollmentsScreen", () => {
     let posted: unknown;
     server.use(
       ...screenHandlers(enrollments, [AISYAH, BILAL, HASAN], [YEAR_ACTIVE]),
-      http.post(`${API_BASE}/admin/enrollments`, async ({ request }) => {
+      http.post(`*/api/admin/enrollments`, async ({ request }) => {
         posted = await request.json();
         enrollments.push({
           id: 12,
@@ -149,7 +149,7 @@ describe("EnrollmentsScreen", () => {
     let posted: unknown;
     server.use(
       ...screenHandlers(enrollments, [AISYAH, BILAL, HASAN], [YEAR_ACTIVE]),
-      http.post(`${API_BASE}/admin/enrollments`, async ({ request }) => {
+      http.post(`*/api/admin/enrollments`, async ({ request }) => {
         posted = await request.json();
         enrollments.push({
           id: 12,
@@ -189,7 +189,7 @@ describe("EnrollmentsScreen", () => {
     let deletedId: string | null = null;
     server.use(
       ...screenHandlers(enrollments, [AISYAH, BILAL], [YEAR_ACTIVE]),
-      http.delete(`${API_BASE}/admin/enrollments/:id`, ({ params }) => {
+      http.delete(`*/api/admin/enrollments/:id`, ({ params }) => {
         deletedId = params.id as string;
         enrollments.splice(
           enrollments.findIndex((e) => e.id === Number(params.id)),
@@ -247,7 +247,7 @@ describe("EnrollmentsScreen", () => {
     let posted: unknown;
     server.use(
       ...screenHandlers([], [], years),
-      http.post(`${API_BASE}/admin/academic-years`, async ({ request }) => {
+      http.post(`*/api/admin/academic-years`, async ({ request }) => {
         posted = await request.json();
         years.push({ id: 8, name: "2027/2028", is_active: false });
         return HttpResponse.json({ id: 8, name: "2027/2028" }, { status: 201 });

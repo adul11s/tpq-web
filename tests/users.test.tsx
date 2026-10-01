@@ -120,7 +120,7 @@ describe("Users management", () => {
     const request = onRequest.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/users/2/reset-2fa"
+      "/api/admin/users/2/reset-2fa"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
 
@@ -151,7 +151,7 @@ describe("Users management", () => {
     const request = onRequest.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/users/2/deactivate"
+      "/api/admin/users/2/deactivate"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
 
@@ -183,7 +183,7 @@ describe("Users management", () => {
     const request = onRequest.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/users/3/activate"
+      "/api/admin/users/3/activate"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
 

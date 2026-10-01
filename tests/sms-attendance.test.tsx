@@ -39,10 +39,10 @@ function screenHandlers(
   enrollments: Enrollment[] = [ENR_AISYAH, ENR_BILAL]
 ) {
   return [
-    http.get(`${API_BASE}/admin/attendance`, () =>
+    http.get(`*/api/admin/attendance`, () =>
       HttpResponse.json({ attendance })
     ),
-    http.get(`${API_BASE}/admin/enrollments`, () =>
+    http.get(`*/api/admin/enrollments`, () =>
       HttpResponse.json({ enrollments })
     ),
     contentListHandler("classes", CLASS_ROWS),
@@ -50,7 +50,7 @@ function screenHandlers(
 }
 
 function attendancePostHandler(postBodies: unknown[]) {
-  return http.post(`${API_BASE}/admin/attendance`, async ({ request }) => {
+  return http.post(`*/api/admin/attendance`, async ({ request }) => {
     const body = (await request.json()) as {
       class_id: number;
       date: string;
@@ -196,7 +196,7 @@ describe("AttendanceGrid", () => {
     let getCalls = 0;
 
     server.use(
-      http.get(`${API_BASE}/admin/attendance`, () => {
+      http.get(`*/api/admin/attendance`, () => {
         getCalls += 1;
         if (getCalls === 1) {
           return HttpResponse.json({ attendance: [] });
@@ -222,7 +222,7 @@ describe("AttendanceGrid", () => {
           })
         );
       }),
-      http.get(`${API_BASE}/admin/enrollments`, () =>
+      http.get(`*/api/admin/enrollments`, () =>
         HttpResponse.json({ enrollments: [ENR_AISYAH, ENR_BILAL] })
       ),
       contentListHandler("classes", CLASS_ROWS),

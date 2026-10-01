@@ -97,29 +97,29 @@ function screenHandlers({
   documents?: RaporDocument[];
 }) {
   return [
-    http.get(`${API_BASE}/admin/rapor-periods`, () =>
+    http.get(`*/api/admin/rapor-periods`, () =>
       HttpResponse.json({ periods })
     ),
-    http.get(`${API_BASE}/admin/academic-years`, () =>
+    http.get(`*/api/admin/academic-years`, () =>
       HttpResponse.json({ academic_years: YEARS })
     ),
-    http.get(`${API_BASE}/admin/adab-criteria`, () =>
+    http.get(`*/api/admin/adab-criteria`, () =>
       HttpResponse.json({ criteria: CRITERIA })
     ),
-    http.get(`${API_BASE}/admin/enrollments`, () =>
+    http.get(`*/api/admin/enrollments`, () =>
       HttpResponse.json({ enrollments })
     ),
-    http.get(`${API_BASE}/admin/adab-ratings`, () =>
+    http.get(`*/api/admin/adab-ratings`, () =>
       HttpResponse.json({ ratings })
     ),
-    http.get(`${API_BASE}/admin/rapor/documents`, () =>
+    http.get(`*/api/admin/rapor/documents`, () =>
       HttpResponse.json({ documents })
     ),
   ];
 }
 
 function periodLockHandler(periods: RaporPeriod[], lockIds: number[]) {
-  return http.post(`${API_BASE}/admin/rapor-periods/:id/lock`, ({ params }) => {
+  return http.post(`*/api/admin/rapor-periods/:id/lock`, ({ params }) => {
     const id = Number(params.id);
     lockIds.push(id);
     const period = periods.find((p) => p.id === id);
@@ -151,7 +151,7 @@ describe("RaporBuilder", () => {
     const periods = freshPeriods();
     server.use(
       ...screenHandlers({ periods }),
-      http.post(`${API_BASE}/admin/rapor-periods`, async ({ request }) => {
+      http.post(`*/api/admin/rapor-periods`, async ({ request }) => {
         createBodies.push(await request.json());
         return HttpResponse.json({ id: 99, status: "open" }, { status: 201 });
       })
@@ -212,7 +212,7 @@ describe("RaporBuilder", () => {
           },
         ],
       }),
-      http.put(`${API_BASE}/admin/adab-ratings`, async ({ request }) => {
+      http.put(`*/api/admin/adab-ratings`, async ({ request }) => {
         putBodies.push(await request.json());
         return HttpResponse.json({ ok: true });
       })
@@ -262,7 +262,7 @@ describe("RaporBuilder", () => {
           },
         ],
       }),
-      http.put(`${API_BASE}/admin/adab-ratings`, async ({ request }) => {
+      http.put(`*/api/admin/adab-ratings`, async ({ request }) => {
         putBodies.push(await request.json());
         if (putBodies.length === 1) {
           await firstGate;
@@ -314,7 +314,7 @@ describe("RaporBuilder", () => {
     const generateBodies: unknown[] = [];
     server.use(
       ...screenHandlers({ periods: freshPeriods() }),
-      http.post(`${API_BASE}/admin/rapor/generate`, async ({ request }) => {
+      http.post(`*/api/admin/rapor/generate`, async ({ request }) => {
         generateBodies.push(await request.json());
         return HttpResponse.json(
           { id: 31, storage_key: "rapor/2025-2026/ganjil/1-9.pdf", file_size: 5120 },
@@ -385,7 +385,7 @@ describe("RaporBuilder", () => {
     const generateBodies: unknown[] = [];
     server.use(
       ...screenHandlers({ periods: freshPeriods() }),
-      http.post(`${API_BASE}/admin/rapor/generate`, async ({ request }) => {
+      http.post(`*/api/admin/rapor/generate`, async ({ request }) => {
         generateBodies.push(await request.json());
         return HttpResponse.json(
           {
@@ -441,7 +441,7 @@ describe("RaporBuilder", () => {
         documents: [DOC_AISYAH],
       }),
       http.get(
-        `${API_BASE}/admin/rapor/documents/:id/download`,
+        `*/api/admin/rapor/documents/:id/download`,
         ({ params }) => {
           downloaded.push(Number(params.id));
           return HttpResponse.json({

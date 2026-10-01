@@ -54,7 +54,7 @@ function cardOf(heading: HTMLElement): HTMLElement {
 
 function mockDashboardData() {
   server.use(
-    http.get(`${API_BASE}/admin/resources`, ({ request }) => {
+    http.get(`*/api/admin/resources`, ({ request }) => {
       const status = new URL(request.url).searchParams.get("status");
       return HttpResponse.json({
         resources: status === "draft" ? [] : RESOURCES,

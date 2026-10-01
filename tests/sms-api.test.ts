@@ -6,7 +6,7 @@ import { smsApi } from "@/lib/api/sms";
 describe("smsApi", () => {
   it("lists students", async () => {
     server.use(
-      http.get("*/api/v1/admin/students", () =>
+      http.get("*/api/admin/students", () =>
         HttpResponse.json({
           students: [
             {
@@ -29,7 +29,7 @@ describe("smsApi", () => {
   it("creates a student with snake_case body", async () => {
     let captured: unknown;
     server.use(
-      http.post("*/api/v1/admin/students", async ({ request }) => {
+      http.post("*/api/admin/students", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({ id: 2, full_name: "Bilal" }, { status: 201 });
       }),
@@ -42,7 +42,7 @@ describe("smsApi", () => {
   it("updates a student via PATCH", async () => {
     let captured: unknown;
     server.use(
-      http.patch("*/api/v1/admin/students/:id", async ({ request }) => {
+      http.patch("*/api/admin/students/:id", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({ id: 2, full_name: "Bilal Ahmad" });
       }),
@@ -54,7 +54,7 @@ describe("smsApi", () => {
 
   it("deletes a student", async () => {
     server.use(
-      http.delete("*/api/v1/admin/students/:id", () => HttpResponse.json({ ok: true })),
+      http.delete("*/api/admin/students/:id", () => HttpResponse.json({ ok: true })),
     );
     const res = await smsApi.deleteStudent(2);
     expect(res).toEqual({ ok: true });
@@ -62,7 +62,7 @@ describe("smsApi", () => {
 
   it("lists guardianships", async () => {
     server.use(
-      http.get("*/api/v1/admin/guardianships", () =>
+      http.get("*/api/admin/guardianships", () =>
         HttpResponse.json({
           guardianships: [
             {
@@ -84,7 +84,7 @@ describe("smsApi", () => {
   it("creates a guardianship", async () => {
     let captured: unknown;
     server.use(
-      http.post("*/api/v1/admin/guardianships", async ({ request }) => {
+      http.post("*/api/admin/guardianships", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({ id: 5 }, { status: 201 });
       }),
@@ -96,7 +96,7 @@ describe("smsApi", () => {
 
   it("deletes a guardianship", async () => {
     server.use(
-      http.delete("*/api/v1/admin/guardianships/:id", () => HttpResponse.json({ ok: true })),
+      http.delete("*/api/admin/guardianships/:id", () => HttpResponse.json({ ok: true })),
     );
     const res = await smsApi.deleteGuardianship(5);
     expect(res).toEqual({ ok: true });
@@ -104,7 +104,7 @@ describe("smsApi", () => {
 
   it("lists academic years", async () => {
     server.use(
-      http.get("*/api/v1/admin/academic-years", () =>
+      http.get("*/api/admin/academic-years", () =>
         HttpResponse.json({ academic_years: [{ id: 1, name: "2026/2027", is_active: true }] }),
       ),
     );
@@ -115,7 +115,7 @@ describe("smsApi", () => {
   it("creates an academic year", async () => {
     let captured: unknown;
     server.use(
-      http.post("*/api/v1/admin/academic-years", async ({ request }) => {
+      http.post("*/api/admin/academic-years", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({ id: 2, name: "2027/2028" }, { status: 201 });
       }),
@@ -127,7 +127,7 @@ describe("smsApi", () => {
 
   it("lists enrollments", async () => {
     server.use(
-      http.get("*/api/v1/admin/enrollments", () =>
+      http.get("*/api/admin/enrollments", () =>
         HttpResponse.json({
           enrollments: [
             {
@@ -150,7 +150,7 @@ describe("smsApi", () => {
   it("creates an enrollment", async () => {
     let captured: unknown;
     server.use(
-      http.post("*/api/v1/admin/enrollments", async ({ request }) => {
+      http.post("*/api/admin/enrollments", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({ id: 3 }, { status: 201 });
       }),
@@ -162,7 +162,7 @@ describe("smsApi", () => {
 
   it("deletes an enrollment", async () => {
     server.use(
-      http.delete("*/api/v1/admin/enrollments/:id", () => HttpResponse.json({ ok: true })),
+      http.delete("*/api/admin/enrollments/:id", () => HttpResponse.json({ ok: true })),
     );
     const res = await smsApi.deleteEnrollment(3);
     expect(res).toEqual({ ok: true });
@@ -170,7 +170,7 @@ describe("smsApi", () => {
 
   it("lists hafalan targets, optionally filtered by level", async () => {
     server.use(
-      http.get("*/api/v1/admin/hafalan-targets", ({ request }) => {
+      http.get("*/api/admin/hafalan-targets", ({ request }) => {
         const url = new URL(request.url);
         expect(url.searchParams.get("level")).toBe("tpa");
         return HttpResponse.json({
@@ -184,7 +184,7 @@ describe("smsApi", () => {
 
   it("lists hafalan records, optionally filtered by student", async () => {
     server.use(
-      http.get("*/api/v1/admin/hafalan", ({ request }) => {
+      http.get("*/api/admin/hafalan", ({ request }) => {
         const url = new URL(request.url);
         expect(url.searchParams.get("student_id")).toBe("1");
         return HttpResponse.json({
@@ -210,7 +210,7 @@ describe("smsApi", () => {
   it("upserts a hafalan record via PUT with snake_case body", async () => {
     let captured: unknown;
     server.use(
-      http.put("*/api/v1/admin/hafalan", async ({ request }) => {
+      http.put("*/api/admin/hafalan", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({
           id: 7,
@@ -233,7 +233,7 @@ describe("smsApi", () => {
 
   it("lists attendance per class and date", async () => {
     server.use(
-      http.get("*/api/v1/admin/attendance", ({ request }) => {
+      http.get("*/api/admin/attendance", ({ request }) => {
         const url = new URL(request.url);
         expect(url.searchParams.get("class_id")).toBe("2");
         expect(url.searchParams.get("date")).toBe("2026-08-16");
@@ -251,7 +251,7 @@ describe("smsApi", () => {
   it("posts attendance as a batch body", async () => {
     let captured: unknown;
     server.use(
-      http.post("*/api/v1/admin/attendance", async ({ request }) => {
+      http.post("*/api/admin/attendance", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json({ ok: true, saved: 2 });
       }),
@@ -277,7 +277,7 @@ describe("smsApi", () => {
 
   it("lists adab criteria", async () => {
     server.use(
-      http.get("*/api/v1/admin/adab-criteria", () =>
+      http.get("*/api/admin/adab-criteria", () =>
         HttpResponse.json({ criteria: [{ id: 1, name: "Salam", sort_order: 1 }] }),
       ),
     );
@@ -287,7 +287,7 @@ describe("smsApi", () => {
 
   it("lists adab ratings", async () => {
     server.use(
-      http.get("*/api/v1/admin/adab-ratings", () =>
+      http.get("*/api/admin/adab-ratings", () =>
         HttpResponse.json({ ratings: [{ id: 1, student_id: 1, criterion_id: 1, rapor_period_id: 2, score: 4 }] }),
       ),
     );
@@ -297,7 +297,7 @@ describe("smsApi", () => {
 
   it("lists rapor periods", async () => {
     server.use(
-      http.get("*/api/v1/admin/rapor-periods", () =>
+      http.get("*/api/admin/rapor-periods", () =>
         HttpResponse.json({
           periods: [
             { id: 1, academic_year_id: 1, academic_year: "2026/2027", semester: "ganjil", status: "open" },
@@ -311,7 +311,7 @@ describe("smsApi", () => {
 
   it("locks a rapor period", async () => {
     server.use(
-      http.post("*/api/v1/admin/rapor-periods/:id/lock", () =>
+      http.post("*/api/admin/rapor-periods/:id/lock", () =>
         HttpResponse.json({ id: 1, status: "locked" }),
       ),
     );
@@ -321,7 +321,7 @@ describe("smsApi", () => {
 
   it("unlocks a rapor period", async () => {
     server.use(
-      http.post("*/api/v1/admin/rapor-periods/:id/unlock", () =>
+      http.post("*/api/admin/rapor-periods/:id/unlock", () =>
         HttpResponse.json({ id: 1, status: "open" }),
       ),
     );
@@ -332,7 +332,7 @@ describe("smsApi", () => {
   it("generates a rapor PDF", async () => {
     let captured: unknown;
     server.use(
-      http.post("*/api/v1/admin/rapor/generate", async ({ request }) => {
+      http.post("*/api/admin/rapor/generate", async ({ request }) => {
         captured = await request.json();
         return HttpResponse.json(
           { id: 10, storage_key: "rapor/2026-2027/ganjil/1-123.pdf", file_size: 4096 },
@@ -347,7 +347,7 @@ describe("smsApi", () => {
 
   it("lists rapor documents", async () => {
     server.use(
-      http.get("*/api/v1/admin/rapor/documents", () =>
+      http.get("*/api/admin/rapor/documents", () =>
         HttpResponse.json({
           documents: [
             {

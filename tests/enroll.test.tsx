@@ -112,7 +112,7 @@ describe("Admin 2FA enrollment wizard", () => {
   it("shows the API message on enroll failure and retries on demand", async () => {
     let fail = true;
     server.use(
-      http.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/auth/enroll`, () => {
+      http.post(`*/api/admin/auth/enroll`, () => {
         if (fail) {
           return HttpResponse.json({ error: "2FA already configured" }, { status: 409 });
         }

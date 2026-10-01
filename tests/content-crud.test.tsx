@@ -203,7 +203,7 @@ describe("Konten list page", () => {
     const request = onRequest.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/classes/1/publish"
+      "/api/admin/classes/1/publish"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
   });
@@ -224,7 +224,7 @@ describe("Konten list page", () => {
     const request = onRequest.mock.calls[0][0] as Request;
     expect(request.method).toBe("POST");
     expect(new URL(request.url).pathname).toBe(
-      "/api/v1/admin/classes/2/archive"
+      "/api/admin/classes/2/archive"
     );
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
   });
@@ -352,7 +352,7 @@ describe("Konten editor page", () => {
     await waitFor(() => expect(onPatch).toHaveBeenCalledTimes(1));
     const request = onPatch.mock.calls[0][0] as Request;
     expect(request.method).toBe("PATCH");
-    expect(new URL(request.url).pathname).toBe("/api/v1/admin/classes/1");
+    expect(new URL(request.url).pathname).toBe("/api/admin/classes/1");
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
     expect(onPatch.mock.calls[0][1]).toMatchObject({
       name: "TK Qur'ani Nurul Huda",
