@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Scene, type SceneKey } from "@/components/illustrations/Scenes";
 import { useState } from "react";
 import { formatTime } from "@/lib/admin/time";
 import { localizedHref, pick, type Lang } from "@/lib/lang";
@@ -31,7 +32,7 @@ interface ProgramData {
   gradient: string;
   badgeLeft: string;
   badgeRight: string;
-  illustration: React.ReactNode;
+  scene: SceneKey;
   introId: string;
   introEn: string;
   learnBg: string;
@@ -117,14 +118,7 @@ const PROGRAMS: Record<TabKey, ProgramData> = {
     gradient: "from-sky-100 to-mint-100",
     badgeLeft: "bg-primary text-on-primary",
     badgeRight: "bg-white/95 text-sky-700",
-    illustration: (
-      <svg className="h-auto w-full text-mint-700/70" viewBox="0 0 200 120" aria-hidden="true">
-        <circle cx="100" cy="40" r="26" fill="#fcd34d" />
-        <path d="M60 110 Q 60 70 100 70 Q 140 70 140 110 Z" fill="#2b8a63" opacity="0.85" />
-        <path d="M74 110 Q 74 84 100 84 Q 126 84 126 110 Z" fill="#93d8b4" />
-        <path d="M100 52 L 104 62 L 114 63 L 106 69 L 109 79 L 100 73 L 91 79 L 94 69 L 86 63 L 96 62 Z" fill="#d97706" />
-      </svg>
-    ),
+    scene: "paud",
     introId:
       "Fondasi pertama perjalanan Qur'ani ananda. Melalui bermain, bernyanyi, dan mewarnai, anak dikenalkan pada huruf hijaiyah, doa-doa pendek harian, dan kebiasaan baik sejak dini.",
     introEn:
@@ -170,13 +164,7 @@ const PROGRAMS: Record<TabKey, ProgramData> = {
     gradient: "from-gold-100 to-mint-100",
     badgeLeft: "bg-gold-500 text-on-accent",
     badgeRight: "bg-white/95 text-gold-700",
-    illustration: (
-      <svg className="h-auto w-full text-gold-600/70" viewBox="0 0 220 140" aria-hidden="true">
-        <rect x="24" y="26" width="172" height="100" rx="10" fill="#ffffff" opacity="0.85" />
-        <path d="M44 54 h132 M44 72 h104 M44 90 h124 M44 108 h76" stroke="#f59e0b" strokeWidth="5" strokeLinecap="round" />
-        <circle cx="170" cy="44" r="13" fill="#fbbf24" />
-      </svg>
-    ),
+    scene: "tk",
     introId:
       "Anak mulai membaca Al-Qur'an dengan tahsin awal, menghafal surat-surat pendek, dan menyiapkan kemampuan calistung — tetap melalui kegiatan yang seru dan menyenangkan.",
     introEn:
@@ -222,14 +210,7 @@ const PROGRAMS: Record<TabKey, ProgramData> = {
     gradient: "from-violet-100 to-mint-100",
     badgeLeft: "bg-violet-600 text-white",
     badgeRight: "bg-white/95 text-violet-700",
-    illustration: (
-      <svg className="h-auto w-full text-violet-700/70" viewBox="0 0 220 140" aria-hidden="true">
-        <path d="M110 16 Q 62 58 66 128 L 154 128 Q 158 58 110 16 Z" fill="#8b5cf6" opacity="0.85" />
-        <path d="M110 40 Q 78 68 82 122 L 138 122 Q 142 68 110 40 Z" fill="#c4b5fd" opacity="0.9" />
-        <circle cx="110" cy="14" r="6" fill="#f59e0b" />
-        <rect x="56" y="126" width="108" height="12" rx="6" fill="#6d28d9" opacity="0.4" />
-      </svg>
-    ),
+    scene: "tpa",
     introId:
       "Anak menamatkan tahsin dengan tajwid yang benar, menghafal Juz 30, dan belajar mempraktikkan ibadah serta adab sehari-hari secara mandiri.",
     introEn:
@@ -502,7 +483,7 @@ export function KelasTabs({ lang, classes = [], whatsapp }: KelasTabsProps) {
                       {lang === "en" ? "Ages" : "Usia"} {age}
                     </span>
                     <span className="absolute left-1/2 top-1/2 w-1/3 -translate-x-1/2 -translate-y-1/2">
-                      {program.illustration}
+                      {<Scene name={program.scene} />}
                     </span>
                   </div>
                   <div className="p-6 sm:p-8">

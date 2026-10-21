@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { localizedHref, type Lang } from "@/lib/lang";
+import { HeroScene } from "@/components/illustrations/Scenes";
 
 interface HeroProps {
   lang: Lang;
@@ -100,61 +101,7 @@ export function Hero({ lang }: HeroProps) {
           </div>
 
           <div className="relative mx-auto w-full max-w-md lg:max-w-none" aria-hidden="true">
-            <svg className="w-full" viewBox="0 0 480 440">
-              <defs>
-                <linearGradient id="hero-sky" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0" stopColor="#d7f2e4" />
-                  <stop offset="1" stopColor="#fdf6e3" />
-                </linearGradient>
-              </defs>
-              <rect x="20" y="20" width="440" height="400" rx="48" fill="url(#hero-sky)" />
-              <circle cx="392" cy="86" r="42" fill="#fcd34d" />
-              <circle cx="392" cy="86" r="32" fill="#fbbf24" />
-              <g fill="#ffffff">
-                <path d="M52 96 q14 -12 28 0 q-14 8 -28 0" opacity="0.9" />
-                <path d="M96 74 q16 -14 32 0 q-16 9 -32 0" opacity="0.85" />
-                <path d="M384 150 q14 -12 28 0 q-14 8 -28 0" opacity="0.8" />
-              </g>
-              <g fill="#f59e0b">
-                <path d="M70 46 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3 Z" />
-                <path d="M148 40 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 Z" />
-                <path d="M410 44 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 Z" />
-                <path d="M446 130 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 Z" />
-                <path d="M128 130 l3 6 6 3 -6 3 -3 6 -3 -6 -6 -3 6 -3 Z" />
-              </g>
-              <ellipse cx="240" cy="396" rx="180" ry="18" fill="#3aa476" opacity="0.22" />
-              <rect x="96" y="330" width="288" height="18" rx="8" fill="#2b8a63" />
-              <rect x="112" y="262" width="22" height="76" rx="8" fill="#93d8b4" />
-              <rect x="346" y="262" width="22" height="76" rx="8" fill="#93d8b4" />
-              <circle cx="123" cy="256" r="15" fill="none" stroke="#2b8a63" strokeWidth="6" />
-              <circle cx="357" cy="256" r="15" fill="none" stroke="#2b8a63" strokeWidth="6" />
-              <path d="M240 150 Q 152 216 160 322 L 320 322 Q 328 216 240 150 Z" fill="#2b8a63" />
-              <path d="M240 178 Q 178 224 186 314 L 294 314 Q 302 224 240 178 Z" fill="#93d8b4" opacity="0.85" />
-              <circle cx="240" cy="126" r="17" fill="#d97706" />
-              <path d="M240 109 L 246 122 L 260 123 L 249 132 L 252 146 L 240 138 L 228 146 L 231 132 L 220 123 L 234 122 Z" fill="#fbbf24" />
-              <rect x="216" y="308" width="48" height="18" rx="6" fill="#205844" />
-              <path d="M150 330 Q 150 296 190 296 L 290 296 Q 330 296 330 330 Z" fill="#5cbf8e" opacity="0.5" />
-              <g fill="#f9a8d4">
-                <circle cx="88" cy="372" r="10" />
-                <circle cx="100" cy="362" r="10" />
-                <circle cx="112" cy="372" r="10" />
-                <circle cx="100" cy="380" r="10" />
-                <circle cx="100" cy="371" r="6" fill="#fde047" />
-              </g>
-              <g fill="#fbbf24">
-                <circle cx="374" cy="370" r="11" />
-                <circle cx="386" cy="360" r="11" />
-                <circle cx="398" cy="370" r="11" />
-                <circle cx="386" cy="378" r="11" />
-                <circle cx="386" cy="369" r="6.5" fill="#f43f5e" />
-              </g>
-              <g stroke="#2b8a63" strokeWidth="3" strokeLinecap="round" opacity="0.7">
-                <path d="M96 208 q10 -14 20 0" fill="none" />
-                <path d="M364 200 q10 -14 20 0" fill="none" />
-                <path d="M200 206 q10 -14 20 0" fill="none" />
-                <path d="M260 196 q10 -14 20 0" fill="none" />
-              </g>
-            </svg>
+            <HeroScene />
             <span className="animate-floaty absolute -right-2 top-6 rounded-2xl bg-white/95 px-4 py-2 font-display text-sm font-bold text-mint-700 shadow-lg">
               {lang === "en" ? "Love of the Qur'an" : "Cinta Al-Qur’an"}
             </span>

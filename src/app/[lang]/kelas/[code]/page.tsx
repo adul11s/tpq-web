@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Scene, type SceneKey } from "@/components/illustrations/Scenes";
 import { fetchClassByCode } from "@/lib/data/classes";
 import { fetchSiteSettings } from "@/lib/data/pages";
 import { isLang, localizedHref, pick, type Lang } from "@/lib/lang";
@@ -22,6 +23,12 @@ const aspectLabels: Record<CurriculumAspect, { id: string; en: string }> = {
   adab: { id: "Adab & Akhlak", en: "Manners & Character" },
   academics: { id: "Akademik", en: "Academics" },
   life_skills: { id: "Kecakapan Hidup", en: "Life Skills" },
+};
+
+const CLASS_SCENES: Record<string, SceneKey> = {
+  PAUD: "paud",
+  TK: "tk",
+  TPA: "tpa",
 };
 
 export async function generateMetadata({
@@ -62,6 +69,8 @@ export default async function ClassDetailPage({
     `Assalamu'alaikum, saya ingin mendaftar ${classDetail.name}.`,
   );
 
+  const sceneKey: SceneKey = CLASS_SCENES[classDetail.code] ?? "tpa";
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
       <nav aria-label="Breadcrumb" className="text-sm text-slate-500">
@@ -72,7 +81,7 @@ export default async function ClassDetailPage({
         <span className="text-slate-700">{classDetail.code}</span>
       </nav>
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+      <div className="mt-4 grid items-start gap-6 sm:grid-cols-[1fr_16rem]">
         <div>
           <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
             {pick(lang, classDetail.name, classDetail.nameEn)}
@@ -114,6 +123,17 @@ export default async function ClassDetailPage({
           {pick(lang, "Daftar via WhatsApp", "Enroll via WhatsApp")}
         </Button>
       </div>
+
+      <figure className="mx-auto mt-8 max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <Scene name={sceneKey} />
+        <figcaption className="border-t border-slate-100 px-5 py-3 text-sm text-slate-500">
+          {pick(
+            lang,
+            `Suasana belajar kelas ${classDetail.name}.`,
+            `A look inside the ${classDetail.nameEn} classroom.`,
+          )}
+        </figcaption>
+      </figure>
 
       <section className="mt-12">
         <h2 className="text-xl font-bold text-slate-900">
