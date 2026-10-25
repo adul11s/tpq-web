@@ -1,5 +1,8 @@
 # TPQ Qur'ani — Web Frontend
 
+[![CI](https://github.com/adul11s/tpq-web/actions/workflows/ci.yml/badge.svg)](https://github.com/adul11s/tpq-web/actions/workflows/ci.yml)
+[![Uptime](https://github.com/adul11s/tpq-web/actions/workflows/uptime.yml/badge.svg)](https://github.com/adul11s/tpq-web/actions/workflows/uptime.yml)
+
 Public website for PAUD/TK/TPA Qur'ani: landing pages (class profiles), a
 Resource Dashboard (downloadable materials: prayers, readings, coloring,
 calligraphy), bilingual routing (`/` = ID, `/en/` = EN), and an enrollment
@@ -30,6 +33,27 @@ Notes:
   hides it from the UI).
 - Deployment mechanics for the API (env, migrations, smoke) live in
   `../api/DEPLOY.md`.
+
+## Demo (video)
+
+![Demo — situs publik ID/EN + CMS admin](docs/media/demo.gif)
+
+Rekaman 80 detik dari deployment live: halaman publik (ID + EN), Resource
+Dashboard, lalu login admin → dashboard → Konten → Inquiry → Aktivitas. Versi
+penuh dengan audio-free 1280×720: [`docs/media/demo.mp4`](docs/media/demo.mp4)
+(1,4 MB). GIF di atas adalah 42 detik pertama (3 MB).
+
+Direkam otomatis, bukan manual: `node scripts/demo-video.mjs` membuka
+`PLAYWRIGHT_BASE_URL` (default: URL live di atas) dengan Chromium, menggerakkan
+kursor asli + ripple klik, dan menyimpan rekaman ke `docs/media/`. Login demo
+yang dipakai ada di tabel deployment di atas (data seed, bukan data sekolah).
+
+## Uptime
+
+`.github/workflows/uptime.yml` memeriksa tiap 6 jam: `GET /health` di API
+(memberi toleransi cold start Render sampai 120 detik + 3 retry), lalu `/id`,
+`/en`, `/id/resources`, `sitemap.xml`, dan `/admin/login`. Run merah = alarm.
+Badge Uptime di atas menampilkan status pemeriksaan terakhir.
 
 ## Getting started
 

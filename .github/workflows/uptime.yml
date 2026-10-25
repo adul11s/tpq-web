@@ -1,0 +1,45 @@
+name: Uptime
+
+# Synthetic check for the two public deployments (web + API).
+# Render Free sleeps after ~15 min idle, so the API probe allows a long
+# cold start and retries. A red run here is the alert.
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: API health (allows Render cold start)
+        run: |
+          body=$(mktemp)
+          code=$(curl -sS -o "$body" -w "%{http_code}" \
+            --max-time 120 --retry 3 --retry-all-errors --retry-delay 20 \
+            https://tpq-api.onrender.com/health)
+          echo "status: $code"
+          cat "$body"; echo
+          grep -q '"status":"ok"' "$body" || { echo "unexpected body"; exit 1; }
+          [ "$code" = "200" ] || { echo "API health returned $code"; exit 1; }
+
+      - name: Public pages (id + en)
+        run: |
+          for url in \
+            https://tpq-qurani-portfolio.vercel.app/id \
+            https://tpq-qurani-portfolio.vercel.app/en \
+            https://tpq-qurani-portfolio.vercel.app/id/resources \
+            https://tpq-qurani-portfolio.vercel.app/sitemap.xml
+          do
+            code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 45 "$url")
+            echo "$url -> $code"
+            [ "$code" = "200" ] || exit 1
+          done
+
+      - name: Admin login page reachable
+        run: |
+          code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 45 \
+            https://tpq-qurani-portfolio.vercel.app/admin/login)
+          echo "admin/login -> $code"
+          [ "$code" = "200" ] || exit 1
