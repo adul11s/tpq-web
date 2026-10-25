@@ -4,8 +4,8 @@ Public website for PAUD/TK/TPA Qur'ani: landing pages (class profiles), a
 Resource Dashboard (downloadable materials: prayers, readings, coloring,
 calligraphy), bilingual routing (`/` = ID, `/en/` = EN), and an enrollment
 inquiry form. Built with **Next.js (App Router) + React 19 + TypeScript +
-Tailwind CSS**, aligned with `System-Analyst-Design.md` v1.2 and
-`SA-Dev-Handoff.md` v1.2.
+Tailwind CSS**, aligned with [`System-Analyst-Design.md`](https://github.com/adul11s/tpq-docs/blob/main/design/System-Analyst-Design.md) v1.2 and
+[`SA-Dev-Handoff.md`](https://github.com/adul11s/tpq-docs/blob/main/design/SA-Dev-Handoff.md) v1.2.
 
 ## Live deployment
 
@@ -117,6 +117,12 @@ src/
 ## API
 
 See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
+
+## Quality
+
+- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (49 file test, 316 test hijau, CI 4 gerbang).
+- Keputusan arsitektur: [`docs/adr/`](docs/adr/) — bilingual URL scheme, proxy same-origin untuk trafik admin.
+- Dokumen proses (PRD, desain sistem, QA plan, security, user guide): repo [`tpq-docs`](https://github.com/adul11s/tpq-docs).
 
 ## Environment variables
 
