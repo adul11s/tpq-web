@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { localizedHref, type Lang } from "@/lib/lang";
-import { ClassPhoto, type SceneKey } from "@/components/illustrations/PhotoScenes";
+import { Scene, type SceneKey } from "@/components/illustrations/CartoonScenes";
 import type { ClassSummary } from "@/lib/types/class";
 
 interface ClassCardProps {
@@ -116,8 +116,8 @@ export function ClassCard({ classItem, lang }: ClassCardProps) {
           {theme.ageIcon}
           {lang === "en" ? "Ages" : "Usia"} {classItem.ageMin}–{classItem.ageMax}
         </span>
-        <span className="absolute inset-0">
-          <ClassPhoto name={theme.scene} />
+        <span className="absolute inset-0 flex items-center justify-center p-4">
+          <Scene name={theme.scene} />
         </span>
         <span
           className={`absolute bottom-4 left-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-extrabold shadow-sm ${LABEL_CHIP[classItem.code] ?? LABEL_CHIP.PAUD}`}

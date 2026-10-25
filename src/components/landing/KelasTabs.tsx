@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ClassPhoto, type SceneKey } from "@/components/illustrations/PhotoScenes";
+import { Scene, type SceneKey } from "@/components/illustrations/CartoonScenes";
 import { useState } from "react";
 import { formatTime } from "@/lib/admin/time";
 import { localizedHref, pick, type Lang } from "@/lib/lang";
@@ -482,10 +482,9 @@ export function KelasTabs({ lang, classes = [], whatsapp }: KelasTabsProps) {
                     <span className={`absolute right-4 top-4 rounded-full px-3 py-1 text-xs font-extrabold shadow-sm ${program.badgeRight}`}>
                       {lang === "en" ? "Ages" : "Usia"} {age}
                     </span>
-                    <ClassPhoto
-                      name={program.scene}
-                      sizes="(min-width: 1024px) 60vw, 100vw"
-                    />
+                    <span className="absolute left-1/2 top-1/2 w-1/3 -translate-x-1/2 -translate-y-1/2">
+                      <Scene name={program.scene} />
+                    </span>
                   </div>
                   <div className="p-6 sm:p-8">
                     <p className="text-sm leading-relaxed text-mint-900/75">

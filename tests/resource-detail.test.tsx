@@ -44,15 +44,12 @@ async function renderPage(thumbnailUrl: string) {
   );
 }
 
-describe("ResourceDetailPage thumbnails (C1 image guard)", () => {
-  it("swaps a /placeholders/* thumbnail for the local category photo", async () => {
+describe("ResourceDetailPage thumbnails (C1 SVG guard)", () => {
+  it("renders the inline cartoon tile for /placeholders/* thumbnails", async () => {
     const { container } = await renderPage("/placeholders/prayers.svg");
-    const img = container.querySelector("img");
-    expect(img).not.toBeNull();
-    // the placeholder SVG path must never be used as the rendered source
-    const src = decodeURIComponent(img?.getAttribute("src") ?? "");
-    expect(src).not.toContain("/placeholders/");
-    expect(src).toContain("prayers");
+    expect(container.querySelector("img")).toBeNull();
+    const svg = container.querySelector("svg[aria-label^='Ilustrasi kartun kategori']");
+    expect(svg).not.toBeNull();
     expect(
       screen.getAllByText("Poster Doa Sebelum Makan").length,
     ).toBeGreaterThanOrEqual(1);

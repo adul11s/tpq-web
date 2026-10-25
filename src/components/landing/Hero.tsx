@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { localizedHref, type Lang } from "@/lib/lang";
-import { HeroPhoto } from "@/components/illustrations/PhotoScenes";
+import { HeroScene } from "@/components/illustrations/CartoonScenes";
 
 interface HeroProps {
   lang: Lang;
@@ -101,12 +101,14 @@ export function Hero({ lang }: HeroProps) {
           </div>
 
           <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-            <HeroPhoto />
-            <span className="animate-floaty absolute -right-2 top-6 rounded-2xl bg-white/95 px-4 py-2 font-display text-sm font-bold text-mint-700 shadow-lg">
+            <div className="relative aspect-[6/5] w-full overflow-hidden rounded-[2rem] border border-mint-100 bg-gradient-to-br from-mint-50 to-cream shadow-lg">
+              <HeroScene />
+            </div>
+            <span className="animate-floaty absolute -right-1 top-4 rounded-2xl bg-white/95 px-4 py-2 font-display text-sm font-bold text-mint-700 shadow-lg">
               {lang === "en" ? "Love of the Qur'an" : "Cinta Al-Qur’an"}
             </span>
             <span
-              className="animate-floaty absolute -left-2 bottom-16 rounded-2xl bg-gold-100 px-4 py-2 font-display text-sm font-bold text-gold-700 shadow-lg"
+              className="animate-floaty absolute -left-1 bottom-3 rounded-2xl bg-gold-100 px-4 py-2 font-display text-sm font-bold text-gold-700 shadow-lg"
               style={{ animationDelay: "-2.5s" }}
             >
               {lang === "en" ? "Learning Through Play" : "Belajar Sambil Bermain"}
