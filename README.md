@@ -48,6 +48,11 @@ Direkam otomatis, bukan manual: `node scripts/demo-video.mjs` membuka
 kursor asli + ripple klik, dan menyimpan rekaman ke `docs/media/`. Login demo
 yang dipakai ada di tabel deployment di atas (data seed, bukan data sekolah).
 
+Foto di hero, kartu kelas, dan tile kategori adalah **fotografi asli** (bukan
+ilustrasi vektor) dari Pexels — sumber per file, lisensi, kotak crop, dan daftar
+kandidat yang ditolak ada di [`docs/media/image-provenance.md`](docs/media/image-provenance.md).
+Aturan editorial: tidak ada wajah anak yang jadi subjek utama.
+
 ## Uptime
 
 `.github/workflows/uptime.yml` memeriksa tiap 6 jam: `GET /health` di API
