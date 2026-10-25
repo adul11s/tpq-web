@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Scene, type SceneKey } from "@/components/illustrations/Scenes";
+import { ClassPhoto, type SceneKey } from "@/components/illustrations/PhotoScenes";
 import { fetchClassByCode } from "@/lib/data/classes";
 import { fetchSiteSettings } from "@/lib/data/pages";
 import { isLang, localizedHref, pick, type Lang } from "@/lib/lang";
@@ -125,7 +125,9 @@ export default async function ClassDetailPage({
       </div>
 
       <figure className="mx-auto mt-8 max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-        <Scene name={sceneKey} />
+        <div className="relative aspect-[4/3]">
+          <ClassPhoto name={sceneKey} sizes="(min-width: 768px) 28rem, 100vw" />
+        </div>
         <figcaption className="border-t border-slate-100 px-5 py-3 text-sm text-slate-500">
           {pick(
             lang,

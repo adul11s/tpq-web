@@ -50,3 +50,6 @@ next-env.d.ts
 
 # demo recording artefacts
 /demo-output/
+
+# scratch: candidate photo downloads before cropping
+/.demo-images/

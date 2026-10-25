@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { localizedHref, type Lang } from "@/lib/lang";
-import { HeroScene } from "@/components/illustrations/Scenes";
+import { HeroPhoto } from "@/components/illustrations/PhotoScenes";
 
 interface HeroProps {
   lang: Lang;
@@ -100,8 +100,8 @@ export function Hero({ lang }: HeroProps) {
             </dl>
           </div>
 
-          <div className="relative mx-auto w-full max-w-md lg:max-w-none" aria-hidden="true">
-            <HeroScene />
+          <div className="relative mx-auto w-full max-w-md lg:max-w-none">
+            <HeroPhoto />
             <span className="animate-floaty absolute -right-2 top-6 rounded-2xl bg-white/95 px-4 py-2 font-display text-sm font-bold text-mint-700 shadow-lg">
               {lang === "en" ? "Love of the Qur'an" : "Cinta Al-Qur’an"}
             </span>

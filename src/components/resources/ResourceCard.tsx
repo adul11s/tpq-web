@@ -73,7 +73,7 @@ export function ResourceCard({
         aria-label={`${lang === "en" ? "Preview" : "Pratinjau"} ${resource.title}`}
       >
         {placeholderThumb ? (
-          <CategoryIllustration category={resource.category.slug} />
+          <CategoryIllustration category={resource.category.slug} seed={resource.slug} />
         ) : (
           <Image
             src={resource.thumbnailUrl}

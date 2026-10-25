@@ -66,7 +66,7 @@ export default async function ResourceDetailPage({
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 shadow-sm">
           {isPlaceholderThumb(resource.thumbnailUrl) ? (
-            <CategoryIllustration category={resource.category.slug} />
+            <CategoryIllustration category={resource.category.slug} seed={resource.slug} />
           ) : (
             <Image
               src={resource.thumbnailUrl}
