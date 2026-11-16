@@ -5,7 +5,6 @@ import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import {
   server,
-  API_BASE,
   CLASS_ROWS,
   contentCreateHandler,
   contentDeleteHandler,

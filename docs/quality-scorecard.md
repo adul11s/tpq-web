@@ -20,3 +20,17 @@ pengukuran nyata pada 2026-10-25, bukan estimasi.
 **Target berikutnya:** jalankan e2e di CI (headless, artefak video), tambah 1 run Lighthouse, dan tulis case study 1 halaman → potensi 9,6.
 **Riwayat:** 8,9 (scorecard awal) → **9,3** (video demo + uptime check, 2026-10-25).
 **Tanggal review:** 2026-10-25
+
+## Pembaruan audit — 2026-11-16
+
+Skor di atas adalah pengukuran historis. Perbaikan audit menambahkan gerbang
+typecheck, audit dependency production, dan smoke test Playwright desktop/mobile
+ke workflow CI. Smoke memakai production build dengan mock data dan tidak
+membutuhkan backend, database, atau kredensial. Suite integrasi penuh yang
+memakai backend terpisah tetap belum dijalankan di CI.
+
+Perubahan juga mengamankan serialisasi JSON-LD, membatasi image optimization
+lokal ke development, mempertahankan respons proxy tanpa body, membedakan 404
+dari gangguan API, serta memperbaiki bahasa dokumen dan fokus modal. Langkah
+reproduksi smoke ada di README. Hasil lokal dicatat pada PR perbaikan; skor
+tidak dinaikkan tanpa pengukuran ulang.

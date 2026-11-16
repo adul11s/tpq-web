@@ -58,7 +58,9 @@ async function forward(
     responseHeaders.append("set-cookie", setCookie);
   }
 
-  const upstreamBody = await upstream.arrayBuffer();
+  const upstreamBody = [204, 205, 304].includes(upstream.status)
+    ? null
+    : await upstream.arrayBuffer();
   return new Response(upstreamBody, {
     status: upstream.status,
     headers: responseHeaders,

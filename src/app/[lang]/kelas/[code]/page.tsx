@@ -1,3 +1,4 @@
+import { rethrowUnlessNotFound } from "@/lib/api/client";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,7 +37,7 @@ export async function generateMetadata({
 }: ClassDetailPageProps): Promise<Metadata> {
   const { lang: langParam, code } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
-  const classDetail = await fetchClassByCode(code).catch(() => null);
+  const classDetail = await fetchClassByCode(code).catch(rethrowUnlessNotFound);
   if (!classDetail) {
     return { title: "Kelas tidak ditemukan" };
   }
@@ -56,7 +57,7 @@ export default async function ClassDetailPage({
   const { lang: langParam, code } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
   const [classDetail, settings] = await Promise.all([
-    fetchClassByCode(code).catch(() => null),
+    fetchClassByCode(code).catch(rethrowUnlessNotFound),
     fetchSiteSettings(),
   ]);
 

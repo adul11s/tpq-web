@@ -1,4 +1,4 @@
-import { USE_MOCK_DATA } from "@/lib/api/client";
+import { ApiError, USE_MOCK_DATA } from "@/lib/api/client";
 import {
   inquiryErrorToApiError,
   postInquiry,
@@ -24,7 +24,7 @@ export async function fetchPageBySlug(slug: string): Promise<Page> {
   if (USE_MOCK_DATA) {
     const page = mockPages.find((item) => item.slug === slug);
     if (!page || page.status !== "published") {
-      throw new Error("Halaman tidak ditemukan");
+      throw new ApiError(404, "Halaman tidak ditemukan");
     }
     return page;
   }

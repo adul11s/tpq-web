@@ -45,7 +45,9 @@ async function forward(
     );
   }
 
-  const upstreamBody = await upstream.text().catch(() => "");
+  const upstreamBody = [204, 205, 304].includes(upstream.status)
+    ? null
+    : await upstream.text();
   const responseHeaders = new Headers();
   const contentType = upstream.headers.get("content-type");
   if (contentType) responseHeaders.set("content-type", contentType);

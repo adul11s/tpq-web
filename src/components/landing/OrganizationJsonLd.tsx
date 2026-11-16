@@ -26,7 +26,9 @@ export function OrganizationJsonLd({ settings }: OrganizationJsonLdProps) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }}
+      dangerouslySetInnerHTML={{
+        __html: JSON.stringify(organization).replace(/</g, "\\u003c"),
+      }}
     />
   );
 }

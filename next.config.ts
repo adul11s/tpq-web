@@ -8,16 +8,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "pub-34c5ce5d1648439398fcedbfe1903645.r2.dev",
       },
-      {
-        protocol: "http",
-        hostname: "localhost",
-        port: "9000",
-      },
+      ...(process.env.NODE_ENV === "development"
+        ? [{ protocol: "http" as const, hostname: "localhost", port: "9000" }]
+        : []),
     ],
-    // Dev/self-hosted only: MinIO media lives on localhost:9000; Next 16's
-    // SSRF guard blocks private-IP optimization by default. Prod uses the
-    // public CDN hostname above, so this is inert in production.
-    dangerouslyAllowLocalIP: true,
+    // Local MinIO is available only while developing; keep the SSRF guard in production.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV === "development",
   },
 };
 

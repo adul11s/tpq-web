@@ -7,7 +7,6 @@ import {
   server,
   adminMeOk,
   adminMeAs,
-  API_BASE,
   contentListHandler,
   contentListError,
   contentUpdateHandler,
