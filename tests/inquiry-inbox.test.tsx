@@ -1,6 +1,6 @@
 import React from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   server,
@@ -85,8 +85,16 @@ describe("Inquiry inbox", () => {
     document.cookie = "tpq_csrf=abc123; path=/";
   });
 
-  it("renders the inbox from the API with New tab default, counts, class label, 24h badge and handled-by", async () => {
-    server.use(inquiriesListHandler(INQUIRIES), classesPublicHandler());
+  it("prioritizes the oldest new lead and shows conversion and SLA summaries", async () => {
+    server.use(
+      inquiriesListHandler([
+        INQUIRIES[1],
+        INQUIRIES[0],
+        INQUIRIES[2],
+        INQUIRIES[3],
+      ]),
+      classesPublicHandler(),
+    );
     renderPage();
 
     expect(await screen.findByText("Ibu Siti Rahma")).toBeInTheDocument();
@@ -96,38 +104,52 @@ describe("Inquiry inbox", () => {
     expect(screen.getByText("TK")).toBeInTheDocument();
     expect(screen.getByText("Bagaimana jadwal kelas TK?")).toBeInTheDocument();
     expect(screen.getByText("Ditangani oleh: #3")).toBeInTheDocument();
-    expect(screen.getAllByText("> 24 jam")).toHaveLength(1);
+    expect(
+      within(screen.getByRole("table")).getAllByText("Lewat SLA 24 jam"),
+    ).toHaveLength(1);
+    expect(screen.getByText("2 hari menunggu")).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: "New 2" })).toHaveAttribute(
+    const summary = screen.getByRole("region", {
+      name: "Ringkasan konversi inquiry",
+    });
+    expect(summary).toHaveTextContent("Perlu follow-up2");
+    expect(summary).toHaveTextContent("Lewat SLA 24 jam1");
+    expect(summary).toHaveTextContent("Menjadi santri1");
+
+    const rows = screen.getAllByRole("row").map((row) => row.textContent ?? "");
+    expect(rows.findIndex((row) => row.includes("Ibu Siti Rahma"))).toBeLessThan(
+      rows.findIndex((row) => row.includes("Bapak Dimas")),
+    );
+
+    expect(screen.getByRole("button", { name: "Baru 2" })).toHaveAttribute(
       "aria-pressed",
       "true"
     );
-    expect(screen.getByRole("button", { name: "Contacted 0" })).toHaveAttribute(
-      "aria-pressed",
-      "false"
-    );
-    expect(screen.getByRole("button", { name: "Closed 1" })).toHaveAttribute(
+    expect(
+      screen.getByRole("button", { name: "Sudah dihubungi 0" }),
+    ).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Ditutup 1" })).toHaveAttribute(
       "aria-pressed",
       "false"
     );
     expect(screen.queryByText("Dianonimkan")).not.toBeInTheDocument();
   });
 
-  it("filters by pipeline tab: Closed shows anonymized row, Enrolled shows SMS hint", async () => {
+  it("filters the pipeline and links enrolled leads to student creation", async () => {
     server.use(inquiriesListHandler(INQUIRIES), classesPublicHandler());
     const user = userEvent.setup();
     renderPage();
 
     await screen.findByText("Ibu Siti Rahma");
-    await user.click(screen.getByRole("button", { name: "Closed 1" }));
+    await user.click(screen.getByRole("button", { name: "Ditutup 1" }));
 
     expect(screen.getByText("Dianonimkan")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Enrolled 1" }));
+    await user.click(screen.getByRole("button", { name: "Terdaftar 1" }));
     expect(screen.getByText("Ibu Ayu")).toBeInTheDocument();
     expect(
-      screen.getByText("Tandai \u2192 daftarkan di SMS (fase 2)")
-    ).toBeInTheDocument();
+      screen.getByRole("link", { name: "Buat data santri" }),
+    ).toHaveAttribute("href", "/admin/sms/students");
   });
 
   it("changes status via PATCH with CSRF header and moves the row between tabs", async () => {
@@ -156,11 +178,15 @@ describe("Inquiry inbox", () => {
     expect(request.headers.get("x-csrf-token")).toBe("abc123");
     expect(body).toEqual({ status: "contacted" });
 
-    expect(screen.getByRole("button", { name: "New 1" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Contacted 1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Baru 1" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Sudah dihubungi 1" }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Ibu Siti Rahma")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Contacted 1" }));
+    await user.click(
+      screen.getByRole("button", { name: "Sudah dihubungi 1" }),
+    );
     expect(screen.getByText("Ibu Siti Rahma")).toBeInTheDocument();
   });
 
@@ -193,12 +219,14 @@ describe("Inquiry inbox", () => {
     expect(body).toEqual({ admin_note: "Hubungi besok pagi" });
   });
 
-  it("builds wa.me links carrying encoded child age and question, preferring whatsapp over phone", async () => {
+  it("builds personalized wa.me follow-up links and prefers whatsapp over phone", async () => {
     server.use(inquiriesListHandler(INQUIRIES), classesPublicHandler());
     renderPage();
 
     await screen.findByText("Ibu Siti Rahma");
-    const links = screen.getAllByRole("link", { name: "Lanjut via WhatsApp" });
+    const links = screen.getAllByRole("link", {
+      name: "WhatsApp & tandai dihubungi",
+    });
     expect(links).toHaveLength(2);
 
     const hrefs = links.map((link) => ({
@@ -209,14 +237,39 @@ describe("Inquiry inbox", () => {
     expect(hrefs[0].url.pathname).toBe("/6281234567801");
     expect(hrefs[0].raw).toContain("%20");
     const text0 = hrefs[0].url.searchParams.get("text") ?? "";
+    expect(text0).toContain("Ibu Siti Rahma");
+    expect(text0).toContain("Minat kelas: TK");
     expect(text0).toContain("6 tahun");
     expect(text0).toContain("Bagaimana jadwal kelas TK?");
+    expect(text0).toContain("proses pendaftarannya");
     expect(links[0]).toHaveAttribute("target", "_blank");
 
     expect(hrefs[1].url.pathname).toBe("/6285212345678");
     const text1 = hrefs[1].url.searchParams.get("text") ?? "";
     expect(text1).toContain("9 tahun");
     expect(text1).toContain("Apakah ada kelas sore?");
+  });
+
+  it("marks a new lead as contacted when WhatsApp follow-up is opened", async () => {
+    const onRequest = vi.fn();
+    server.use(
+      inquiriesListHandler(INQUIRIES),
+      classesPublicHandler(),
+      inquiryUpdateHandler(INQUIRIES, onRequest),
+    );
+    const user = userEvent.setup();
+    renderPage();
+
+    const links = await screen.findAllByRole("link", {
+      name: "WhatsApp & tandai dihubungi",
+    });
+    await user.click(links[0]);
+
+    await waitFor(() => expect(onRequest).toHaveBeenCalledTimes(1));
+    expect(onRequest.mock.calls[0][1]).toEqual({ status: "contacted" });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Baru 1" })).toBeInTheDocument(),
+    );
   });
 
   it("hides the export button for content managers", async () => {

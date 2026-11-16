@@ -170,7 +170,7 @@ See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
 
 ## Quality
 
-- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (50 file test, 322 test hijau, CI 4 gerbang).
+- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (53 file test, 345 test hijau, CI 7 gerbang).
 - Keputusan arsitektur: [`docs/adr/`](docs/adr/) — bilingual URL scheme, proxy same-origin untuk trafik admin.
 - Dokumen proses (PRD, desain sistem, QA plan, security, user guide): repo [`tpq-docs`](https://github.com/adul11s/tpq-docs).
 
@@ -208,7 +208,7 @@ the client only reacts to 401 by redirecting to `/admin/login`.
 | `/admin/konten/[entity]/baru` | Create form | ✓ | ✓ |
 | `/admin/konten/[entity]/[id]` | Edit form | ✓ | ✓ |
 | `/admin/media` | Media library (upload + reuse) | ✓ | ✓ |
-| `/admin/inquiry` | Inquiry inbox (pipeline, WhatsApp reply, CSV export) | ✓ | ✓ |
+| `/admin/inquiry` | Inquiry inbox (SLA follow-up, pipeline, WhatsApp handoff, CSV export) | ✓ | ✓ |
 | `/admin/persetujuan` | Approval queue (publish/archive) | ✓ | – |
 | `/admin/pengguna` | Users (2FA reset, deactivate) | ✓ | – |
 | `/admin/aktivitas` | Audit log + CSV export | ✓ | – |
