@@ -461,6 +461,18 @@ describe("RaporBuilder", () => {
     expect(within(table).getByText("4.0 KB")).toBeInTheDocument();
     expect(within(table).getByText("16/08/2026")).toBeInTheDocument();
 
+    const shareLink = within(table).getByRole("link", {
+      name: "Beritahu Wali",
+    });
+    const shareUrl = new URL(shareLink.getAttribute("href") ?? "");
+    const shareText = shareUrl.searchParams.get("text") ?? "";
+    expect(shareUrl.host).toBe("wa.me");
+    expect(shareText).toContain("Rapor Aisyah");
+    expect(shareText).toContain("Ganjil 2025/2026");
+    expect(shareText).toContain("/id/parent/anak");
+    expect(shareText).not.toContain("X-Amz-Signature");
+    expect(shareLink).toHaveAttribute("target", "_blank");
+
     await user.click(
       within(table).getByRole("button", { name: /Unduh/ })
     );
@@ -470,6 +482,22 @@ describe("RaporBuilder", () => {
       "https://presigned.example/rapor.pdf?X-Amz-Signature=abc123",
       "_blank"
     );
+  });
+
+  it("does not offer parent notification before a report is finalized", async () => {
+    server.use(
+      ...screenHandlers({
+        periods: freshPeriods(),
+        documents: [{ ...DOC_AISYAH, finalized_at: null }],
+      }),
+    );
+    render(<RaporBuilder />);
+
+    const table = await screen.findByRole("table");
+    expect(within(table).getByText("Aisyah")).toBeInTheDocument();
+    expect(
+      within(table).queryByRole("link", { name: "Beritahu Wali" }),
+    ).toBeNull();
   });
 });
 

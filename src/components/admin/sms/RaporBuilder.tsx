@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/sms";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { waLink } from "@/lib/wa";
 
 const SEMESTER_LABELS: Record<Semester, string> = {
   ganjil: "Ganjil",
@@ -38,6 +39,23 @@ function formatDate(iso: string | null): string {
 
 const labelClasses =
   "mb-1 block text-sm font-semibold text-slate-700";
+
+const parentPortalUrl = `${(
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://tpq-qurani.example.id"
+).replace(/\/$/, "")}/id/parent/anak`;
+
+function shareRaporHref(
+  document: RaporDocument,
+  period: RaporPeriod | undefined,
+): string | null {
+  if (!document.finalized_at || !period) return null;
+  const message =
+    `Assalamu'alaikum. Rapor ${document.student_name} untuk semester ` +
+    `${SEMESTER_LABELS[document.semester]} ${period.academic_year} sudah tersedia ` +
+    `di Portal Orang Tua: ${parentPortalUrl}\n\n` +
+    "Silakan masuk menggunakan akun orang tua yang sudah diberikan. Terima kasih.";
+  return waLink("", message);
+}
 
 export function RaporBuilder() {
   const [periods, setPeriods] = useState<RaporPeriod[]>([]);
@@ -585,30 +603,52 @@ export function RaporBuilder() {
               </tr>
             </thead>
             <tbody>
-              {visibleDocuments.map((document) => (
-                <tr key={document.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2.5 font-semibold text-mint-900">
-                    {document.student_name}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    {SEMESTER_LABELS[document.semester]}
-                  </td>
-                  <td className="px-3 py-2.5">{formatSize(document.file_size)}</td>
-                  <td className="px-3 py-2.5">
-                    {formatDate(document.finalized_at)}
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDownload(document)}
-                    >
-                      Unduh
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+              {visibleDocuments.map((document) => {
+                const shareHref = shareRaporHref(
+                  document,
+                  periods.find(
+                    (period) => period.id === document.rapor_period_id,
+                  ),
+                );
+                return (
+                  <tr key={document.id} className="border-b border-slate-100">
+                    <td className="px-3 py-2.5 font-semibold text-mint-900">
+                      {document.student_name}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {SEMESTER_LABELS[document.semester]}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {formatSize(document.file_size)}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      {formatDate(document.finalized_at)}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(document)}
+                        >
+                          Unduh
+                        </Button>
+                        {shareHref ? (
+                          <a
+                            href={shareHref}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex min-h-9 items-center rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700"
+                          >
+                            Beritahu Wali
+                          </a>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
