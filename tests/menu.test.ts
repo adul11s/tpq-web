@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isMenuItemActive,
   menuForRole,
   menuSectionsForRole,
 } from "../src/lib/admin/menu";
@@ -14,9 +15,10 @@ describe("menuForRole", () => {
     ]);
   });
 
-  it("gives admin all thirteen menu entries including the SMS screens", () => {
+  it("gives admin the setup guide and all SMS screens", () => {
     expect(menuForRole("admin").map((item) => item.href)).toEqual([
       "/admin",
+      "/admin/mulai",
       "/admin/konten",
       "/admin/media",
       "/admin/persetujuan",
@@ -97,5 +99,13 @@ describe("menu sections (SMS group)", () => {
       ["/admin/sms/absensi", ["admin", "teacher"]],
       ["/admin/sms/rapor", ["admin"]],
     ]);
+  });
+});
+
+describe("isMenuItemActive", () => {
+  it("does not keep Dashboard active on nested admin routes", () => {
+    expect(isMenuItemActive("/admin/mulai", "/admin")).toBe(false);
+    expect(isMenuItemActive("/admin/mulai", "/admin/mulai")).toBe(true);
+    expect(isMenuItemActive("/admin/dashboard", "/admin")).toBe(true);
   });
 });

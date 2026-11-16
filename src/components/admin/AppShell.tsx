@@ -6,7 +6,11 @@ import { usePathname } from "next/navigation";
 import { adminApi } from "@/lib/api/auth";
 import { setOnForbidden } from "@/lib/api/admin-client";
 import { inquiryAdminApi } from "@/lib/api/inquiries";
-import { menuForRole, menuSectionsForRole } from "@/lib/admin/menu";
+import {
+  isMenuItemActive,
+  menuForRole,
+  menuSectionsForRole,
+} from "@/lib/admin/menu";
 import { redirectToLogin, useSession } from "@/lib/admin/session";
 import { Button } from "@/components/ui/Button";
 import { ForbiddenNotice } from "./ForbiddenNotice";
@@ -41,9 +45,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const items = menuForRole(user.role);
   const sections = menuSectionsForRole(user.role);
-  const activeItem = items.find(
-    (item) =>
-      pathname === item.href || pathname.startsWith(`${item.href}/`)
+  const activeItem = items.find((item) =>
+    isMenuItemActive(pathname, item.href),
   );
   const initials = user.full_name
     .split(" ")
@@ -101,8 +104,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </p>
               ) : null}
               {section.items.map((item) => {
-                const active =
-                  pathname === item.href || pathname.startsWith(`${item.href}/`);
+                const active = isMenuItemActive(pathname, item.href);
                 return (
                   <Link
                     key={item.href}
