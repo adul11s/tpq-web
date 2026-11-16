@@ -149,7 +149,7 @@ See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
 
 ## Quality
 
-- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (49 file test, 316 test hijau, CI 4 gerbang).
+- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (50 file test, 322 test hijau, CI 4 gerbang).
 - Keputusan arsitektur: [`docs/adr/`](docs/adr/) — bilingual URL scheme, proxy same-origin untuk trafik admin.
 - Dokumen proses (PRD, desain sistem, QA plan, security, user guide): repo [`tpq-docs`](https://github.com/adul11s/tpq-docs).
 
@@ -181,6 +181,7 @@ the client only reacts to 401 by redirecting to `/admin/login`.
 | Route | Page | admin | CM |
 |---|---|---|---|
 | `/admin` | Dashboard (stats) | ✓ | ✓ |
+| `/admin/mulai` | Panduan setup operasional berbasis progres data | ✓ | – |
 | `/admin/konten` | Content lists (classes, resources, schedule, curriculum, prayer guides, teachers, testimonials, FAQs, pages, site settings) | ✓ | ✓ |
 | `/admin/konten/[entity]` | Entity list | ✓ | ✓ |
 | `/admin/konten/[entity]/baru` | Create form | ✓ | ✓ |
@@ -235,6 +236,7 @@ The admin suite is **Vitest + jsdom + msw** (`tests/`); the API is mocked at the
 | C9 Schedule editor | T10 | `tests/schedule-editor.test.tsx` |
 | C10 Aktivitas (audit log) | T15 | `tests/audit.test.tsx` |
 | C11 Users (2FA reset, deactivate) | T14 | `tests/users.test.tsx` |
+| C12 Guided setup | Product onboarding | `tests/guided-setup.test.tsx` |
 
 Also covered: session-expiry UX (401 → login) in `tests/session-expiry.test.tsx` and content
 revalidation hookup in `tests/revalidate.test.tsx`.
