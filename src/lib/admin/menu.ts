@@ -16,6 +16,7 @@ export interface AdminMenuSection {
 
 export const ADMIN_MENU: AdminMenuItem[] = [
   { href: "/admin", label: "Dashboard", roles: ["admin", "content_manager"] },
+  { href: "/admin/mulai", label: "Panduan Setup", roles: ["admin"] },
   { href: "/admin/konten", label: "Konten", roles: ["admin", "content_manager"] },
   { href: "/admin/media", label: "Media", roles: ["admin", "content_manager"] },
   { href: "/admin/persetujuan", label: "Persetujuan", roles: ["admin"] },
@@ -32,6 +33,13 @@ export const ADMIN_MENU: AdminMenuItem[] = [
 
 export function menuForRole(role: Role): AdminMenuItem[] {
   return ADMIN_MENU.filter((item) => item.roles.includes(role));
+}
+
+export function isMenuItemActive(pathname: string, href: string): boolean {
+  if (href === "/admin") {
+    return pathname === "/admin" || pathname === "/admin/dashboard";
+  }
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function menuSectionsForRole(role: Role): AdminMenuSection[] {
