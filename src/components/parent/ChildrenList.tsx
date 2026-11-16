@@ -30,39 +30,51 @@ function RaporChip({ lang }: { lang: Lang }) {
   );
 }
 
-function RaporLink({
+function semesterLabel(
+  semester: ParentChild["rapor_periods"][number]["semester"],
+  lang: Lang,
+): string {
+  if (semester === "ganjil") return pick(lang, "Ganjil", "Odd");
+  return pick(lang, "Genap", "Even");
+}
+
+function RaporLinks({
   child,
   lang,
 }: {
   child: ParentChild;
   lang: Lang;
 }) {
-  const period = child.rapor_periods[0];
-  if (!period) {
+  if (child.rapor_periods.length === 0) {
     return <RaporChip lang={lang} />;
   }
   return (
-    <Link
-      href={localizedHref(
-        lang,
-        `/parent/rapor/${child.student_id}/${period.period_id}`,
-      )}
-      className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-mint-600 px-4 text-xs font-extrabold text-white transition-colors hover:bg-mint-700"
-    >
-      {pick(lang, "Lihat Rapor", "View Report")}
-      <svg
-        className="h-3.5 w-3.5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M5 12h14m0 0-6-6m6 6-6 6" />
-      </svg>
-    </Link>
+    <div className="flex flex-wrap gap-2 sm:justify-end">
+      {child.rapor_periods.map((period, index) => {
+        const label = `${semesterLabel(period.semester, lang)} ${period.academic_year}`;
+        return (
+          <Link
+            key={period.period_id}
+            href={localizedHref(
+              lang,
+              `/parent/rapor/${child.student_id}/${period.period_id}`,
+            )}
+            aria-label={pick(
+              lang,
+              `Lihat rapor ${label}`,
+              `View report ${label}`,
+            )}
+            className={
+              index === 0
+                ? "inline-flex min-h-11 shrink-0 items-center rounded-full bg-mint-600 px-4 text-xs font-extrabold text-white transition-colors hover:bg-mint-700"
+                : "inline-flex min-h-11 shrink-0 items-center rounded-full border border-mint-200 bg-white px-4 text-xs font-extrabold text-mint-700 transition-colors hover:bg-mint-50"
+            }
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 
@@ -85,7 +97,7 @@ function ChildCard({ child, lang }: { child: ParentChild; lang: Lang }) {
           </h2>
           <p className="text-xs font-bold text-mint-800/60">{metaOf(child)}</p>
         </div>
-        <RaporLink child={child} lang={lang} />
+        <RaporLinks child={child} lang={lang} />
       </div>
     </li>
   );

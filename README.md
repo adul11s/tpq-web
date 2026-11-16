@@ -3,10 +3,10 @@
 [![CI](https://github.com/adul11s/tpq-web/actions/workflows/ci.yml/badge.svg)](https://github.com/adul11s/tpq-web/actions/workflows/ci.yml)
 [![Uptime](https://github.com/adul11s/tpq-web/actions/workflows/uptime.yml/badge.svg)](https://github.com/adul11s/tpq-web/actions/workflows/uptime.yml)
 
-Public website for PAUD/TK/TPA Qur'ani: landing pages (class profiles), a
-Resource Dashboard (downloadable materials: prayers, readings, coloring,
-calligraphy), bilingual routing (`/` = ID, `/en/` = EN), and an enrollment
-inquiry form. Built with **Next.js (App Router) + React 19 + TypeScript +
+Operational platform for PAUD/TK/TPA Qur'ani: public enrollment and resources,
+admin workflows for inquiry through report cards, and a parent portal with
+semester report history. Public routes are bilingual (`/` = ID, `/en/` = EN).
+Built with **Next.js (App Router) + React 19 + TypeScript +
 Tailwind CSS**, aligned with [`System-Analyst-Design.md`](https://github.com/adul11s/tpq-docs/blob/main/design/System-Analyst-Design.md) v1.2 and
 [`SA-Dev-Handoff.md`](https://github.com/adul11s/tpq-docs/blob/main/design/SA-Dev-Handoff.md) v1.2.
 
@@ -170,7 +170,7 @@ See [`REST-API.md`](./REST-API.md) for the full endpoint reference.
 
 ## Quality
 
-- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (53 file test, 345 test hijau, CI 7 gerbang).
+- Skor per dimensi + bukti: [`docs/quality-scorecard.md`](docs/quality-scorecard.md) — **8.9/10** (53 file test, 346 test hijau, CI 7 gerbang).
 - Keputusan arsitektur: [`docs/adr/`](docs/adr/) — bilingual URL scheme, proxy same-origin untuk trafik admin.
 - Dokumen proses (PRD, desain sistem, QA plan, security, user guide): repo [`tpq-docs`](https://github.com/adul11s/tpq-docs).
 
@@ -213,12 +213,20 @@ the client only reacts to 401 by redirecting to `/admin/login`.
 | `/admin/pengguna` | Users (2FA reset, deactivate) | ✓ | – |
 | `/admin/aktivitas` | Audit log + CSV export | ✓ | – |
 | `/admin/pengaturan` | Site settings editor | ✓ | – |
+| `/admin/sms/rapor` | Generate, download, dan bagikan notifikasi rapor | ✓ | – |
 | `/admin/login` | Login | – | – |
 | `/admin/login/enroll` | 2FA enrollment | – | – |
 | `/admin/login/verify` | TOTP / backup-code verification | – | – |
 
 Content role rules: only `admin` can publish/archive publishable entities (submission goes to the
 approval queue); `content_manager` can create and edit drafts.
+
+### Parent portal
+
+Orang tua masuk melalui `/[lang]/parent/login`, melihat anak yang terhubung di
+`/[lang]/parent/anak`, lalu membuka seluruh riwayat rapor semester yang sudah
+difinalisasi. Notifikasi WhatsApp dari admin mengarah ke portal ini, bukan ke
+signed PDF, sehingga pemeriksaan session dan kepemilikan anak tetap berlaku.
 
 ### First-login 2FA flow
 
@@ -258,6 +266,7 @@ The admin suite is **Vitest + jsdom + msw** (`tests/`); the API is mocked at the
 | C10 Aktivitas (audit log) | T15 | `tests/audit.test.tsx` |
 | C11 Users (2FA reset, deactivate) | T14 | `tests/users.test.tsx` |
 | C12 Guided setup | Product onboarding | `tests/guided-setup.test.tsx` |
+| C13 Parent report distribution | Parent engagement | `tests/sms-rapor.test.tsx`, `tests/parent-children.test.tsx` |
 
 Also covered: session-expiry UX (401 → login) in `tests/session-expiry.test.tsx` and content
 revalidation hookup in `tests/revalidate.test.tsx`.

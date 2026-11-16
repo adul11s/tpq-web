@@ -90,20 +90,30 @@ describe("ChildrenList", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
   });
 
-  it("links Lihat Rapor to the latest rapor period when one exists", async () => {
+  it("links every available report period instead of hiding report history", async () => {
     vi.spyOn(parentApi, "children").mockResolvedValue({ children: [AISYAH] });
     renderChildren("id");
 
-    const link = await screen.findByRole("link", { name: "Lihat Rapor" });
-    expect(link).toHaveAttribute("href", "/parent/rapor/1/2");
+    const latest = await screen.findByRole("link", {
+      name: "Lihat rapor Ganjil 2026/2027",
+    });
+    expect(latest).toHaveAttribute("href", "/parent/rapor/1/2");
+    expect(
+      screen.getByRole("link", { name: "Lihat rapor Genap 2025/2026" }),
+    ).toHaveAttribute("href", "/parent/rapor/1/1");
   });
 
   it("lang-prefixes the rapor link for the en locale", async () => {
     vi.spyOn(parentApi, "children").mockResolvedValue({ children: [AISYAH] });
     renderChildren("en");
 
-    const link = await screen.findByRole("link", { name: "View Report" });
+    const link = await screen.findByRole("link", {
+      name: "View report Odd 2026/2027",
+    });
     expect(link).toHaveAttribute("href", "/en/parent/rapor/1/2");
+    expect(
+      screen.getByRole("link", { name: "View report Even 2025/2026" }),
+    ).toHaveAttribute("href", "/en/parent/rapor/1/1");
   });
 
   it("shows no Lihat Rapor link when the child has no rapor yet", async () => {
@@ -112,7 +122,7 @@ describe("ChildrenList", () => {
 
     expect(await screen.findByText("Muhammad Rayyan")).toBeInTheDocument();
     expect(
-      screen.queryByRole("link", { name: "Lihat Rapor" }),
+      screen.queryByRole("link", { name: /Lihat rapor/ }),
     ).not.toBeInTheDocument();
     expect(screen.getByText("Rapor belum tersedia")).toBeInTheDocument();
   });
@@ -160,7 +170,7 @@ describe("ChildrenList", () => {
       await screen.findByRole("status", { name: "Memuat data anak" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("link", { name: "Lihat Rapor" }),
+      screen.queryByRole("link", { name: /Lihat rapor/ }),
     ).not.toBeInTheDocument();
 
     resolveChildren({ children: [AISYAH] });
