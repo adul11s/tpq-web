@@ -48,10 +48,12 @@ const RESOURCES: Record<string, unknown>[] = [
 ];
 
 function cardOf(heading: HTMLElement): HTMLElement {
-  return heading.closest("div")!;
+  return heading.closest("article")!;
 }
 
 function mockDashboardData() {
+  const oldHafalan = new Date();
+  oldHafalan.setDate(oldHafalan.getDate() - 30);
   server.use(
     http.get(`*/api/admin/resources`, ({ request }) => {
       const status = new URL(request.url).searchParams.get("status");
@@ -69,7 +71,48 @@ function mockDashboardData() {
     contentListHandler("pages", []),
     contentListHandler("teachers", []),
     contentListHandler("testimonials", []),
-    contentListHandler("faqs", [])
+    contentListHandler("faqs", []),
+    http.get(`*/api/admin/enrollments`, () =>
+      HttpResponse.json({
+        enrollments: [
+          { id: 10, student_id: 1, student_name: "Aisyah", class_id: 1, class_code: "TK", academic_year_id: 1, status: "active" },
+          { id: 11, student_id: 2, student_name: "Bilal", class_id: 1, class_code: "TK", academic_year_id: 1, status: "active" },
+          { id: 12, student_id: 3, student_name: "Hasan", class_id: 2, class_code: "TPA", academic_year_id: 1, status: "active" },
+          { id: 13, student_id: 4, student_name: "Fatimah", class_id: 2, class_code: "TPA", academic_year_id: 1, status: "graduated" },
+        ],
+      }),
+    ),
+    http.get(`*/api/admin/attendance`, ({ request }) => {
+      expect(new URL(request.url).searchParams.get("date")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      return HttpResponse.json({
+        attendance: [
+          { enrollment_id: 10, student_name: "Aisyah", date: monthIso(0), status: "hadir", note: null },
+          { enrollment_id: 11, student_name: "Bilal", date: monthIso(0), status: "alpha", note: null },
+        ],
+      });
+    }),
+    http.get(`*/api/admin/hafalan`, () =>
+      HttpResponse.json({
+        records: [
+          { id: 1, student_id: 1, student_name: "Aisyah", surah_name: "Al-Fatihah", status: "tuntas", fluency: "lancar", updated_by: 1, updated_at: new Date().toISOString() },
+          { id: 2, student_id: 2, student_name: "Bilal", surah_name: "Al-Fatihah", status: "sedang", fluency: null, updated_by: 1, updated_at: oldHafalan.toISOString() },
+        ],
+      }),
+    ),
+    http.get(`*/api/admin/rapor-periods`, () =>
+      HttpResponse.json({
+        periods: [
+          { id: 5, academic_year_id: 1, academic_year: "2026/2027", semester: "ganjil", status: "open" },
+        ],
+      }),
+    ),
+    http.get(`*/api/admin/rapor/documents`, () =>
+      HttpResponse.json({
+        documents: [
+          { id: 21, student_id: 1, student_name: "Aisyah", rapor_period_id: 5, semester: "ganjil", storage_key: "rapor/1.pdf", file_size: 1024, finalized_at: null },
+        ],
+      }),
+    )
   );
 }
 
@@ -115,21 +158,21 @@ describe("Dashboard", () => {
     mockPush.mockClear();
   });
 
-  it("computes Total Unduhan, Top 5 Materi, Inquiry count, pending drafts and new-this-month from API data", async () => {
+  it("computes operational priorities and content performance from existing API data", async () => {
     mockDashboardData();
     renderDashboard();
 
-    await waitFor(() => {
+    await waitFor(() =>
       expect(
-        screen.getByRole("heading", { name: "Total Unduhan" })
-      ).toBeInTheDocument();
-    });
+        cardOf(screen.getByRole("heading", { name: "Total Unduhan" })),
+      ).toHaveTextContent("27"),
+    );
 
     const totalCard = cardOf(
       screen.getByRole("heading", { name: "Total Unduhan" })
     );
     expect(totalCard).toHaveTextContent("27");
-    expect(totalCard).toHaveTextContent("per counter, bukan GA4");
+    expect(totalCard).toHaveTextContent("4 materi dipublikasikan bulan ini");
 
     const top5 = cardOf(screen.getByRole("heading", { name: "Top 5 Materi" }));
     const topItems = within(top5).getAllByRole("listitem");
@@ -154,15 +197,42 @@ describe("Dashboard", () => {
     );
     expect(pendingCard).toHaveTextContent("2");
 
-    const freshCard = cardOf(
-      screen.getByRole("heading", { name: "Materi Baru Bulan Ini" })
+    const activeStudentsCard = cardOf(
+      screen.getByRole("heading", { name: "Santri Aktif" })
     );
-    expect(freshCard).toHaveTextContent("4");
+    expect(activeStudentsCard).toHaveTextContent("3");
 
-    const ga4Card = cardOf(
-      screen.getByRole("heading", { name: "Pengunjung (GA4)" })
+    const attendanceCard = cardOf(
+      screen.getByRole("heading", { name: "Absensi Hari Ini" })
     );
-    expect(ga4Card).toHaveTextContent("tersedia setelah GA4 terpasang");
+    expect(attendanceCard).toHaveTextContent("2/3");
+    expect(attendanceCard).toHaveTextContent("1 alpa · 1 belum dicatat");
+
+    const hafalanCard = cardOf(
+      screen.getByRole("heading", { name: "Hafalan Perlu Perhatian" })
+    );
+    expect(hafalanCard).toHaveTextContent("2");
+
+    const raporCard = cardOf(
+      screen.getByRole("heading", { name: "Rapor Periode Aktif" })
+    );
+    expect(raporCard).toHaveTextContent("1/3");
+    expect(raporCard).toHaveTextContent("Ganjil 2026/2027");
+
+    expect(
+      screen.getByRole("link", { name: /3 inquiry belum dibalas/ })
+    ).toHaveAttribute("href", "/admin/inquiry");
+    expect(
+      screen.getByRole("link", { name: /1 absensi belum dicatat/ })
+    ).toHaveAttribute("href", "/admin/sms/absensi");
+    expect(
+      screen.getByRole("link", {
+        name: /2 santri tanpa pembaruan hafalan/,
+      })
+    ).toHaveAttribute("href", "/admin/sms/hafalan");
+    expect(
+      screen.getByRole("link", { name: /2 rapor belum dibuat/ })
+    ).toHaveAttribute("href", "/admin/sms/rapor");
   });
 
   it("shows the red badge with the new-inquiries count on the Inquiry menu item", async () => {
@@ -209,11 +279,9 @@ describe("Dashboard", () => {
 
     // Cards render once the session probe resolves; teacher is gated to
     // zeroed stats, never the mocked CMS numbers.
-    await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Total Unduhan" })
-      ).toBeInTheDocument();
-    });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Muat ulang" })).toBeEnabled(),
+    );
     const totalCard = cardOf(
       screen.getByRole("heading", { name: "Total Unduhan" })
     );
@@ -223,23 +291,39 @@ describe("Dashboard", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 
+  it("keeps operational data admin-only and sends content managers to their content queue", async () => {
+    server.use(adminMeAs("content_manager"));
+    mockDashboardData();
+    renderDashboard();
+
+    await waitFor(() =>
+      expect(
+        cardOf(screen.getByRole("heading", { name: "Total Unduhan" })),
+      ).toHaveTextContent("27"),
+    );
+
+    expect(
+      screen.queryByRole("heading", { name: "Operasional hari ini" }),
+    ).toBeNull();
+    expect(
+      within(
+        cardOf(screen.getByRole("heading", { name: "Menunggu Persetujuan" })),
+      ).getByRole("link", { name: "Buka daftar konten" }),
+    ).toHaveAttribute("href", "/admin/konten");
+  });
+
   it("still renders stats with a warning when one draft entity fails to load", async () => {
     mockDashboardData();
     server.use(contentListError("teachers"));
     renderDashboard();
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Total Unduhan" })
-      ).toBeInTheDocument();
-    });
+    expect(
+      await screen.findByText(/Sebagian data gagal dimuat: Guru/i),
+    ).toBeInTheDocument();
     const pendingCard = cardOf(
       screen.getByRole("heading", { name: "Menunggu Persetujuan" })
     );
     expect(pendingCard).toHaveTextContent("2");
-    expect(
-      screen.getByText(/Sebagian data gagal dimuat: Guru/i)
-    ).toBeInTheDocument();
   });
 
   it("adds Pengaturan to the admin menu only", () => {
