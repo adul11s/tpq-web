@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { inquiryAdminApi } from "@/lib/api/inquiries";
 import { fetchClasses } from "@/lib/data/classes";
 import { waLink } from "@/lib/wa";
@@ -21,11 +22,11 @@ const PIPELINE: InquiryStatus[] = [
 ];
 
 const STATUS_LABELS: Record<InquiryStatus, string> = {
-  new: "New",
-  contacted: "Contacted",
-  visited: "Visited",
-  enrolled: "Enrolled",
-  closed: "Closed",
+  new: "Baru",
+  contacted: "Sudah dihubungi",
+  visited: "Kunjungan",
+  enrolled: "Terdaftar",
+  closed: "Ditutup",
 };
 
 const HOUR_24_MS = 24 * 60 * 60 * 1000;
@@ -41,12 +42,30 @@ function isOverdue(row: AdminInquiry): boolean {
   return Number.isFinite(created) && Date.now() - created > HOUR_24_MS;
 }
 
-function waHref(row: AdminInquiry): string | null {
+function ageLabel(createdAt: string): string {
+  const created = Date.parse(createdAt);
+  if (!Number.isFinite(created)) return "Waktu tidak diketahui";
+  const hours = Math.max(0, Math.floor((Date.now() - created) / (60 * 60 * 1000)));
+  if (hours < 1) return "Baru masuk";
+  if (hours < 24) return `${hours} jam menunggu`;
+  return `${Math.floor(hours / 24)} hari menunggu`;
+}
+
+function waHref(row: AdminInquiry, programClass: string): string | null {
   const number = row.whatsapp ?? row.phone;
   if (!number) return null;
-  const parts = ["Assalamu'alaikum, saya dari TPQ Qur'ani."];
+  const greeting = row.parent_name ? ` ${row.parent_name}` : "";
+  const parts = [
+    `Assalamu'alaikum${greeting}, saya dari TPQ Qur'ani. Terima kasih sudah menghubungi kami.`,
+  ];
+  if (row.program_class_id !== null) {
+    parts.push(`Minat kelas: ${programClass}.`);
+  }
   if (row.child_age) parts.push(`Usia anak: ${row.child_age}.`);
   if (row.message) parts.push(`Pertanyaan: "${row.message}"`);
+  parts.push(
+    "Apakah ada waktu yang nyaman untuk kami jelaskan jadwal dan proses pendaftarannya?",
+  );
   return waLink(number, parts.join(" "));
 }
 
@@ -88,9 +107,14 @@ export default function InquiryPage() {
   }, [rows]);
 
   const visibleRows = useMemo(
-    () => rows.filter((row) => row.status === filter),
-    [rows, filter]
+    () =>
+      rows
+        .filter((row) => row.status === filter)
+        .sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at)),
+    [rows, filter],
   );
+
+  const overdueCount = useMemo(() => rows.filter(isOverdue).length, [rows]);
 
   const classById = useMemo(
     () => new Map(classes.map((cls) => [cls.id, cls])),
@@ -158,6 +182,36 @@ export default function InquiryPage() {
         </p>
       ) : null}
 
+      <section
+        aria-label="Ringkasan konversi inquiry"
+        className="mb-4 grid gap-3 sm:grid-cols-3"
+      >
+        <div className="rounded-xl border border-mint-200 bg-white p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+            Perlu follow-up
+          </p>
+          <p className="mt-1 text-2xl font-extrabold text-mint-900">
+            {counts.new}
+          </p>
+        </div>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-amber-700">
+            Lewat SLA 24 jam
+          </p>
+          <p className="mt-1 text-2xl font-extrabold text-amber-900">
+            {overdueCount}
+          </p>
+        </div>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">
+            Menjadi santri
+          </p>
+          <p className="mt-1 text-2xl font-extrabold text-emerald-900">
+            {counts.enrolled}
+          </p>
+        </div>
+      </section>
+
       <div
         role="group"
         aria-label="Pipeline inquiry"
@@ -214,7 +268,7 @@ export default function InquiryPage() {
             </thead>
             <tbody>
               {visibleRows.map((row) => {
-                const href = waHref(row);
+                const href = waHref(row, classLabel(row.program_class_id));
                 const saving = savingId === row.id;
                 return (
                   <tr
@@ -228,10 +282,13 @@ export default function InquiryPage() {
                         </span>
                         {isOverdue(row) ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700">
-                            &gt; 24 jam
+                            Lewat SLA 24 jam
                           </span>
                         ) : null}
                       </div>
+                      <p className="text-xs font-semibold text-slate-500">
+                        {ageLabel(row.created_at)}
+                      </p>
                       <p className="text-xs text-slate-500">
                         {row.phone ?? "\u2014"}
                       </p>
@@ -249,9 +306,12 @@ export default function InquiryPage() {
                         </p>
                       ) : null}
                       {row.status === "enrolled" ? (
-                        <p className="mt-1 text-[11px] font-semibold text-emerald-700">
-                          Tandai &rarr; daftarkan di SMS (fase 2)
-                        </p>
+                        <Link
+                          href="/admin/sms/students"
+                          className="mt-2 inline-flex text-xs font-bold text-emerald-700 underline"
+                        >
+                          Buat data santri
+                        </Link>
                       ) : null}
                     </td>
                     <td className="px-3 py-2.5">
@@ -314,9 +374,16 @@ export default function InquiryPage() {
                           href={href}
                           target="_blank"
                           rel="noopener noreferrer"
+                          onClick={() => {
+                            if (row.status === "new") {
+                              void handleStatusChange(row, "contacted");
+                            }
+                          }}
                           className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700"
                         >
-                          Lanjut via WhatsApp
+                          {row.status === "new"
+                            ? "WhatsApp & tandai dihubungi"
+                            : "Lanjut via WhatsApp"}
                         </a>
                       ) : null}
                     </td>
