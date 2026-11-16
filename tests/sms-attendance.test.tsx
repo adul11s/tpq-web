@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { server, API_BASE, contentListHandler, CLASS_ROWS } from "./msw-server";
+import { server, contentListHandler, CLASS_ROWS } from "./msw-server";
 import { AttendanceGrid } from "@/components/admin/sms/AttendanceGrid";
 import type { AttendanceRow, Enrollment } from "@/lib/api/sms";
 

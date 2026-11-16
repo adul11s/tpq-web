@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { server, adminMeOk, API_BASE } from "./msw-server";
+import { server, adminMeOk } from "./msw-server";
 import { SessionProvider } from "../src/lib/admin/session";
 import { AppShell } from "../src/components/admin/AppShell";
 

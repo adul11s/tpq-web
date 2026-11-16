@@ -19,9 +19,26 @@ jobs:
         run: npm run check:content
       - name: Lint
         run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Production dependency audit
+        run: npm audit --omit=dev
       - name: Tests
         run: npm test
       - name: Build
         run: npm run build
         env:
           NEXT_PUBLIC_SITE_URL: https://tpq-qurani.example.id
+      - name: Install smoke browser
+        run: npx playwright install --with-deps chromium
+      - name: Public smoke tests (production mock build)
+        run: npm run test:smoke
+      - name: Upload smoke report and failure traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

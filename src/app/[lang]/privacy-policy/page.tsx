@@ -1,3 +1,4 @@
+import { rethrowUnlessNotFound } from "@/lib/api/client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PageContent } from "@/components/landing/PageContent";
@@ -16,7 +17,7 @@ export async function generateMetadata({
 }: PrivacyPolicyPageProps): Promise<Metadata> {
   const { lang: langParam } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
-  const page = await fetchPageBySlug("privacy-policy").catch(() => null);
+  const page = await fetchPageBySlug("privacy-policy").catch(rethrowUnlessNotFound);
   if (!page) {
     return { title: "Halaman tidak ditemukan" };
   }
@@ -28,7 +29,7 @@ export default async function PrivacyPolicyPage({
 }: PrivacyPolicyPageProps) {
   const { lang: langParam } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
-  const page = await fetchPageBySlug("privacy-policy").catch(() => null);
+  const page = await fetchPageBySlug("privacy-policy").catch(rethrowUnlessNotFound);
 
   if (!page) {
     notFound();

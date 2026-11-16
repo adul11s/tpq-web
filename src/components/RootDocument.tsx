@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Amiri, Baloo_2, Nunito } from "next/font/google";
-import "./globals.css";
+import "@/app/globals.css";
 import { Providers } from "@/app/providers";
 import { SITE_NAME } from "@/lib/seo";
+import type { Lang } from "@/lib/lang";
 
 const baloo = Baloo_2({
   variable: "--font-display",
@@ -29,10 +30,10 @@ export const metadata: Metadata = {
     "PAUD, TK, dan TPA Qur'ani: belajar Al-Qur'an, doa harian, dan akhlak Islami. Unduh materi pembelajaran untuk anak di rumah.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export function RootDocument({ children, lang }: { children: React.ReactNode; lang: Lang }) {
   return (
     <html
-      lang="id"
+      lang={lang}
       className={`${baloo.variable} ${nunito.variable} ${amiri.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">

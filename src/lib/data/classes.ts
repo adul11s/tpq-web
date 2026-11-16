@@ -1,4 +1,4 @@
-import { USE_MOCK_DATA } from "@/lib/api/client";
+import { ApiError, USE_MOCK_DATA } from "@/lib/api/client";
 import { getClassByCode as apiGetClassByCode, getClasses as apiGetClasses } from "@/lib/api/classes";
 import { mapClassDetail, mapClassSummary } from "@/lib/api/mappers";
 import { mockClasses } from "@/lib/mock/data";
@@ -42,7 +42,7 @@ export async function fetchClassByCode(code: string): Promise<ClassDetail> {
       (item) => item.code.toLowerCase() === code.toLowerCase(),
     );
     if (!classDetail) {
-      throw new Error(`Kelas ${code} tidak ditemukan`);
+      throw new ApiError(404, `Kelas ${code} tidak ditemukan`);
     }
     return classDetail;
   }

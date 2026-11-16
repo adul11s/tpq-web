@@ -101,9 +101,30 @@ npm run build && npm run start   # or npm run dev
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
 | `npm run start` | Serve production build |
-| `npm run lint` | ESLint |
+| `npm run lint` | ESLint, including a zero-warning gate |
+| `npm run typecheck` | Generate Next.js route types, then check TypeScript |
 | `npm test` | Vitest suite (jsdom + msw) |
+| `npm run test:smoke` | Desktop/mobile Chromium smoke tests against a production mock-data build |
 | `npm run check:content` | Poster-script policy check (release checklist 1.12) |
+
+### Reproducible public smoke tests
+
+No backend, database, or user credentials are needed for this suite:
+
+```sh
+npm ci
+npx playwright install chromium
+# Leave NEXT_PUBLIC_API_BASE_URL unset to build with the bundled mock data.
+env -u NEXT_PUBLIC_API_BASE_URL npm run build
+npm run test:smoke
+```
+
+The suite checks initial HTML language, public navigation, contact validation,
+missing-content status codes, and keyboard focus in the preview dialog on desktop
+and mobile. CI runs it after the production build and uploads the HTML report
+and failure traces. The full `npm run test:e2e` integration suite still uses the
+separate backend at `../api`; the smoke suite does not claim to validate backend
+authentication, authorization, or persistence.
 
 ### Content script policy (1.12)
 

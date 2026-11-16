@@ -1,4 +1,4 @@
-import { USE_MOCK_DATA } from "@/lib/api/client";
+import { ApiError, USE_MOCK_DATA } from "@/lib/api/client";
 import {
   mapCategory,
   mapDownloadResponse,
@@ -86,7 +86,7 @@ export async function fetchResourceBySlug(
   if (USE_MOCK_DATA) {
     const resource = mockResources.find((item) => item.slug === slug);
     if (!resource) {
-      throw new Error("Materi tidak ditemukan");
+      throw new ApiError(404, "Materi tidak ditemukan");
     }
     return resource;
   }

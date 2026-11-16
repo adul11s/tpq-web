@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
-import { server, API_BASE, usersListHandler } from "./msw-server";
+import { server, usersListHandler } from "./msw-server";
 import { SessionProvider } from "../src/lib/admin/session";
 import UsersPage from "../src/app/admin/pengguna/page";
 import type { AdminUser } from "../src/lib/types/admin";

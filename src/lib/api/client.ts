@@ -14,6 +14,11 @@ export class ApiError extends Error {
   }
 }
 
+export function rethrowUnlessNotFound(error: unknown): null {
+  if (error instanceof ApiError && error.status === 404) return null;
+  throw error;
+}
+
 export async function apiFetch<T>(
   path: string,
   init?: RequestInit,

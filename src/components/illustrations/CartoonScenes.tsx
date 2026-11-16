@@ -117,47 +117,6 @@ function SmallBook({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
   );
 }
 
-/** Open mushaf on a wooden rehal (Qur'an stand). */
-function Rehal({ x, y, s = 1 }: { x: number; y: number; s?: number }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <ellipse cx={0} cy={7} rx={38} ry={6} fill={GREEN_DARK} opacity={0.12} />
-      <path d="M-26 5 L17 -22 L23 -16 L-20 11 Z" fill="#b4793c" stroke="#8a5a2b" strokeWidth={1.2} />
-      <path d="M26 5 L-17 -22 L-23 -16 L20 11 Z" fill="#96612f" stroke="#7a4d22" strokeWidth={1.2} />
-      <path
-        d="M-33 -18 Q0 -31 0 -22 Q0 -31 33 -18 L33 -5 Q0 -15 0 -6 Q0 -15 -33 -5 Z"
-        fill="#fffdf7"
-        stroke="#c9bda8"
-        strokeWidth={1.6}
-      />
-      <path d="M0 -22 L0 -6" stroke="#c9bda8" strokeWidth={1.4} />
-      <g stroke="#b9ab95" strokeWidth={1.4} strokeLinecap="round">
-        <path d="M-25 -17 Q-13 -21 -4 -16" fill="none" />
-        <path d="M-24 -12 Q-13 -16 -5 -11" fill="none" />
-        <path d="M4 -16 Q13 -21 25 -17" fill="none" />
-        <path d="M5 -11 Q13 -16 24 -12" fill="none" />
-      </g>
-      <path d="M-2 -22 L-2 -33 L3 -33 L3 -22 Z" fill="#ef4444" />
-      <text
-        x={-16}
-        y={-7}
-        textAnchor="middle"
-        fontSize={13}
-        style={{ fontFamily: "var(--font-amiri, Amiri, serif)" }}
-        fill="#8b7a63"
-        direction="rtl"
-      >
-        القرآن
-      </text>
-      <g stroke="#bfae95" strokeWidth={1} strokeLinecap="round">
-        <path d="M10 -14 L28 -14" />
-        <path d="M12 -10 L30 -10" />
-        <path d="M10 -6 L26 -6" />
-      </g>
-    </g>
-  );
-}
-
 function HijaiyahBlock({
   x,
   y,
@@ -220,20 +179,6 @@ function Crayon({ x, y, rot = 0, color }: { x: number; y: number; rot?: number; 
       />
       <path d="M-4.5 -16 L0 -24 L4.5 -16 Z" fill={color} stroke={INK} strokeOpacity={0.4} strokeWidth={1.4} />
       <rect x={-4.5} y={-2} width={9} height={9} rx={1} fill="#ffffff" opacity={0.5} />
-    </g>
-  );
-}
-
-function Hand({ x, y, head, skin, flip = 1 }: { x: number; y: number; head: number; skin: string; flip?: 1 | -1 }) {
-  const r = head * 0.13;
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <circle cx={0} cy={0} r={r} fill={skin} stroke={INK} strokeOpacity={0.32} strokeWidth={1.4} />
-      <g fill={skin} stroke={INK} strokeOpacity={0.28} strokeWidth={1}>
-        {[0, 1, 2].map((i) => (
-          <circle key={i} cx={flip * (r * 0.45 + i * r * 0.5)} cy={-r * 0.55} r={r * 0.32} />
-        ))}
-      </g>
     </g>
   );
 }

@@ -1,3 +1,4 @@
+import { rethrowUnlessNotFound } from "@/lib/api/client";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -22,7 +23,7 @@ export async function generateMetadata({
 }: ResourceDetailPageProps): Promise<Metadata> {
   const { lang: langParam, slug } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
-  const resource = await fetchResourceBySlug(slug).catch(() => null);
+  const resource = await fetchResourceBySlug(slug).catch(rethrowUnlessNotFound);
   if (!resource) {
     return { title: "Materi tidak ditemukan" };
   }
@@ -47,7 +48,7 @@ export default async function ResourceDetailPage({
 }: ResourceDetailPageProps) {
   const { lang: langParam, slug } = await params;
   const lang: Lang = isLang(langParam) ? langParam : "id";
-  const resource = await fetchResourceBySlug(slug).catch(() => null);
+  const resource = await fetchResourceBySlug(slug).catch(rethrowUnlessNotFound);
 
   if (!resource) {
     notFound();

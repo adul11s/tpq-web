@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface PreviewModalProps {
   open: boolean;
@@ -11,40 +11,41 @@ interface PreviewModalProps {
 }
 
 export function PreviewModal({ open, title, onClose, children }: PreviewModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
   useEffect(() => {
-    if (!open) {
-      return;
-    }
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", onKeyDown);
+    const dialog = dialogRef.current;
+    if (!open || !dialog) return;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    dialog.showModal();
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
+      dialog.close();
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+        previousFocus.focus({ preventScroll: true });
+      }
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) {
     return null;
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label={`Pratinjau: ${title}`}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      className="fixed inset-0 m-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-3xl overflow-hidden rounded-2xl border-0 bg-white p-0 shadow-2xl backdrop:bg-slate-900/60 backdrop:backdrop-blur-sm"
     >
-      <button
-        type="button"
-        aria-label="Tutup pratinjau"
-        onClick={onClose}
-        className="absolute inset-0 cursor-default bg-slate-900/60 backdrop-blur-sm"
-      />
       <div className="relative flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
           <h2 className="truncate pr-4 text-sm font-bold text-slate-900">
@@ -69,6 +70,6 @@ export function PreviewModal({ open, title, onClose, children }: PreviewModalPro
         </div>
         <div className="overflow-y-auto bg-slate-100 p-4">{children}</div>
       </div>
-    </div>
+    </dialog>
   );
 }
